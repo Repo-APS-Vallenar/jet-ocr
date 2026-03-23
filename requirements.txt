@@ -1,0 +1,16 @@
+# Dependencias para Servidor de Producción JET OCR
+# Instalar con: pip install -r requirements.txt
+
+Flask>=3.0.0
+Flask-SQLAlchemy>=3.1.0
+requests>=2.31.0
+openpyxl>=3.1.2
+psycopg2-binary>=2.9.9
+Pillow>=10.2.0
+numpy>=1.24.0
+
+# Motor de Inteligencia Artificial
+easyocr>=1.7.0
+opencv-python-headless
+torch>=2.0.0
+torchvision

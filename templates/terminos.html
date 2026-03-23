@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos y Condiciones — JET OCR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #F8FAFC;
+            color: #1e293b;
+            line-height: 1.7;
+        }
+
+        /* Header */
+        header {
+            background: #0A2647;
+            padding: 18px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header a.logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        header a.back {
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        header a.back:hover { color: white; }
+
+        /* Hero */
+        .hero-legal {
+            background: linear-gradient(135deg, #0A2647 0%, #144272 100%);
+            padding: 60px 5% 50px;
+            text-align: center;
+            color: white;
+        }
+        .hero-legal h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .hero-legal p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.95rem;
+        }
+
+        /* Contenido */
+        .legal-content {
+            max-width: 820px;
+            margin: 50px auto 80px;
+            padding: 0 5%;
+        }
+
+        .legal-section {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(10, 38, 71, 0.06);
+            box-shadow: 0 4px 15px rgba(10, 38, 71, 0.02);
+        }
+
+        .legal-section h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0A2647;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legal-section h2 .badge {
+            width: 32px;
+            height: 32px;
+            background: rgba(247, 129, 4, 0.1);
+            color: #F78104;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .legal-section p, .legal-section li {
+            color: #475569;
+            font-size: 0.97rem;
+            margin-bottom: 10px;
+        }
+
+        .legal-section ul {
+            padding-left: 20px;
+        }
+
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 0.95rem;
+        }
+        .plan-table th {
+            background: #0A2647;
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .plan-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+        }
+        .plan-table tr:last-child td { border-bottom: none; }
+        .plan-table tr:nth-child(even) td { background: #f8fafc; }
+
+        .highlight-box {
+            background: rgba(247, 129, 4, 0.07);
+            border-left: 4px solid #F78104;
+            border-radius: 0 8px 8px 0;
+            padding: 15px 18px;
+            margin: 16px 0;
+            font-size: 0.95rem;
+            color: #64513B;
+        }
+
+        /* Footer */
+        footer {
+            background: #07172A;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            padding: 30px 5%;
+            font-size: 0.85rem;
+        }
+        footer a { color: rgba(255,255,255,0.55); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo">
+            <img src="{{ url_for('static', filename='logo_jetocr.jpg') }}" alt="JET OCR" style="height: 38px; border-radius: 5px;">
+        </a>
+        <a href="/" class="back"><i class="fa-solid fa-arrow-left"></i> Volver al Inicio</a>
+    </header>
+
+    <div class="hero-legal">
+        <h1><i class="fa-solid fa-file-contract" style="color: #F78104; margin-right: 10px;"></i>Términos y Condiciones</h1>
+        <p>Última actualización: Marzo 2026 &nbsp;·&nbsp; JET OCR Platform</p>
+    </div>
+
+    <div class="legal-content">
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-circle-info"></i></span> 1. Descripción del Servicio</h2>
+            <p>JET OCR es una plataforma SaaS (Software como Servicio) que permite a empresas e instituciones realizar auditorías y levantamientos de activos de hardware mediante tecnología de reconocimiento óptico de caracteres (OCR) a través de dispositivos móviles.</p>
+            <p>El servicio permite capturar datos de etiquetas de equipos (números de serie, MACs, modelos, u otros campos configurados por el administrador), sincronizarlos en la nube y exportarlos en formatos estándar como Excel.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-gift"></i></span> 2. Plan Freemium — Condiciones</h2>
+            <div class="highlight-box">
+                <strong>El Plan Freemium es completamente gratuito</strong> y no requiere tarjeta de crédito para comenzar. Está sujeto a las siguientes limitaciones:
+            </div>
+            <table class="plan-table">
+                <tr>
+                    <th>Recurso</th>
+                    <th>Límite Freemium</th>
+                    <th>Plan Pro</th>
+                    <th>Plan Premium</th>
+                </tr>
+                <tr>
+                    <td>Escaneos mensuales</td>
+                    <td>30</td>
+                    <td>1,000</td>
+                    <td>5,000</td>
+                </tr>
+                <tr>
+                    <td>Operadores</td>
+                    <td>Hasta 2</td>
+                    <td>Hasta 5</td>
+                    <td>Ilimitados</td>
+                </tr>
+                <tr>
+                    <td>Exportación Excel</td>
+                    <td>Limitada</td>
+                    <td>Completa</td>
+                    <td>Completa</td>
+                </tr>
+                <tr>
+                    <td>Soporte</td>
+                    <td>Básico (email)</td>
+                    <td>Prioritario</td>
+                    <td>24/7 Dedicado</td>
+                </tr>
+                <tr>
+                    <td>Marca Blanca</td>
+                    <td>No disponible</td>
+                    <td>No disponible</td>
+                    <td>✓ Incluido</td>
+                </tr>
+            </table>
+            <p style="margin-top: 15px; font-size: 0.88rem; color: #94a3b8;">Los límites de escaneos se reinician el primer día de cada mes calendario. Los escaneos no utilizados no se acumulan al mes siguiente.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-credit-card"></i></span> 3. Suscripciones y Pagos</h2>
+            <ul>
+                <li>Las suscripciones de pago (Pro y Premium) se facturan mensualmente en pesos chilenos (CLP), según los valores vigentes en el momento de contratación.</li>
+                <li>El ciclo de facturación comienza en la fecha de activación del plan de pago.</li>
+                <li>El usuario puede cancelar su suscripción en cualquier momento. La cancelación es efectiva al término del período de facturación vigente.</li>
+                <li>No se realizan reembolsos parciales por períodos no utilizados.</li>
+                <li>JET OCR se reserva el derecho de actualizar los precios con un aviso previo de al menos 30 días corridos.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-lock"></i></span> 4. Privacidad y Datos</h2>
+            <p>JET OCR toma en serio la privacidad de sus usuarios. Los datos capturados a través de la plataforma son de propiedad exclusiva de la empresa contratante (cliente).</p>
+            <ul>
+                <li>No vendemos ni compartimos los datos con terceros.</li>
+                <li>Los datos se almacenan en servidores seguros con cifrado en tránsito (HTTPS) y en reposo.</li>
+                <li>El acceso a los datos de una organización está restringido exclusivamente a sus propios administradores y operadores.</li>
+                <li>Al eliminar una cuenta, los datos asociados serán eliminados dentro de un plazo de 30 días.</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-robot"></i></span> 5. Precisión del OCR</h2>
+            <div class="highlight-box">
+                La tecnología OCR puede cometer errores de lectura, especialmente en etiquetas dañadas, de baja resolución, o con tipografías no estándar.
+            </div>
+            <p>JET OCR proporciona herramientas de corrección manual integradas en el flujo de escaneo. El usuario es responsable de validar y corregir los datos antes de considerarlos definitivos. JET OCR no se responsabiliza por decisiones tomadas a partir de datos no validados.</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-gavel"></i></span> 6. Limitación de Responsabilidad</h2>
+            <p>JET OCR ofrece el servicio "tal como está" y no garantiza disponibilidad ininterrumpida. En caso de interrupciones planificadas (mantenimiento), se notificará con anticipación.</p>
+            <p>JET OCR no será responsable por pérdida de datos derivada de uso incorrecto de la plataforma, acceso no autorizado atribuible a negligencia del usuario, o factores fuera de nuestro control (fuerza mayor).</p>
+        </div>
+
+        <div class="legal-section">
+            <h2><span class="badge"><i class="fa-solid fa-envelope"></i></span> 7. Contacto</h2>
+            <p>Si tienes preguntas sobre estos términos, puedes contactarnos a través del correo indicado en tu panel de administración o a través de nuestros canales oficiales.</p>
+            <p style="margin-top: 10px;">Estos Términos y Condiciones se rigen por las leyes de la República de Chile.</p>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 JET OCR. Todos los derechos reservados. &nbsp;|&nbsp;
+        <a href="/">Volver al Inicio</a>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría Inmutable - CMDB Proactiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .audit-row:hover { background-color: #f8fafc; }
+        .badge-swap { background-color: #dbeafe; color: #1e40af; }
+        .badge-new { background-color: #dcfce7; color: #166534; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+<nav class="bg-slate-900 text-white p-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold tracking-tight">CMDB <span class="text-blue-400">Audit Log</span></h1>
+        <div class="flex items-center gap-3 text-sm">
+            <span>Admin: <strong>{{ usuario_correo }}</strong></span>
+            <a href="/" class="text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-camera"></i> Escáner
+            </a>
+            <a href="/logout" class="text-red-400 hover:text-red-300 ml-2">
+                <i class="fa-solid fa-door-open"></i> Salir
+            </a>
+        </div>
+    </div>
+</nav>
+
+<main class="container mx-auto py-10 px-4">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">Historial de Movimientos de Activos</h2>
+                <p class="text-sm text-slate-500">Registro inmutable de SWAPs y nuevas instalaciones.</p>
+            </div>
+            <button class="text-sm font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Exportar Reporte
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-[10px] uppercase tracking-widest font-bold text-slate-500">
+                        <th class="p-4 border-b">Fecha/Hora</th>
+                        <th class="p-4 border-b">Acción</th>
+                        <th class="p-4 border-b">Asset Anterior (SN)</th>
+                        <th class="p-4 border-b">Asset Nuevo (SN)</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for log in logs %}
+                    <tr class="audit-row border-b border-slate-50 transition-colors">
+                        <td class="p-4 text-slate-500 font-mono text-[12px]">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td class="p-4">
+                            {% if log.action_type == 'SWAP_ASSET' %}
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold badge-swap">RECAMBIO (SWAP)</span>
+                            {% else %}
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold badge-new">REGISTRO OCR</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            {% if log.details.get('old_asset_sn') or log.details.get('old') %}
+                            <span class="text-red-500 font-bold">{{ log.details.get('old_asset_sn') or log.details.get('old') }}</span>
+                            {% else %}
+                            <span class="text-slate-300">---</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-emerald-600 font-bold">{{ log.details.get('new_asset_sn') or log.details.get('new') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="p-10 text-center text-slate-400 italic">No hay registros de auditoría aún.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer class="mt-10 text-center text-slate-400 text-xs pb-10">
+    &copy; 2026 IN_AN - CMDB Proactiva V2
+</footer>
+
+</body>
+</html>

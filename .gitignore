@@ -1,0 +1,24 @@
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 📦 Virtual Environments
+venv/
+.env
+env/
+ENV/
+
+# 📂 Uploads & Data
+uploads/
+*.db
+*.xlsx
+create_log.txt
+salida_ocr.txt
+debug_saas.txt
+
+# ⚙️ IDEs
+.idea/
+.vscode/
+*.swp
+.DS_Store

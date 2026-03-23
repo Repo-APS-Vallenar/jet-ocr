@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario OCR Inteligente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Cabecera -->
+        <header class="hero">
+            <div class="hero-bg"></div>
+            <h1><i class="fa-solid fa-microchip"></i> OCR Inventario</h1>
+            <p>Captura equipos con IA en segundos desde tu móvil.</p>
+            <div style="margin-top: 10px; font-size: 0.9rem; color: #cbd5e1;">
+                <i class="fa-solid fa-user-check"></i> Operador: <strong>{{ usuario_correo }}</strong>
+                &nbsp;|&nbsp;
+                <a href="/logout" style="color: #ffb1b1; text-decoration: underline;"><i
+                        class="fa-solid fa-door-open"></i> Salir</a>
+            </div>
+
+            <!-- MENÚ DE ADMINISTRACIÓN GLOBAL -->
+            {% if session.get('usuario_rol') == 'Admin' %}
+            <nav class="admin-nav" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+                <a href="{{ url_for('admin') }}" class="nav-btn" style="background: #3b82f6; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: none; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <i class="fa-solid fa-gauge-high"></i> Panel Admin
+                </a>
+                <a href="{{ url_for('audit') }}" class="nav-btn" style="background: rgba(255,255,255,0.1); color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s;">
+                    <i class="fa-solid fa-clipboard-list"></i> Historial
+                </a>
+            </nav>
+            {% endif %}
+
+            <!-- CONTROLES DE MODO DE RED -->
+            <div class="mode-toggle">
+                <span class="mode-label">Directo</span>
+                <label class="switch">
+                    <input type="checkbox" id="offline-mode-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="mode-label"><i class="fa-solid fa-wifi"
+                        style="text-decoration: line-through; margin-right:4px;"></i>Pasillos (Offline)</span>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <!-- Zona de Carga -->
+            <section class="upload-section card">
+
+                <!-- ESTADO COLA OFFLINE -->
+                <div id="offline-status-bar" class="offline-bar hidden">
+                    <div class="offline-info" style="flex: 1;">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Memoria: <strong id="queue-count">0</strong> fotos</span>
+                    </div>
+                    <!-- NUEVO BOTÓN PARA VER CARTILLA OFFLINE MEJORADO -->
+                    <button type="button" class="btn-primary" id="btn-ver-cartilla" style="background: #f59e0b; border-color: #f59e0b; color: white; padding: 6px 12px; font-size: 0.85rem; margin-right: 10px; display: none; border-radius: 8px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <i class="fa-solid fa-list-check"></i> Abrir Cartilla
+                    </button>
+                    <button type="button" class="btn-sync" id="btn-sync">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizar
+                    </button>
+                </div>
+
+                <div
+                    style="background-color: #eff6ff; color: #1e40af; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; border: 1px solid #bfdbfe; text-align: left; display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fa-solid fa-circle-info" style="margin-top: 2px;"></i>
+                    <span><strong>Atención:</strong> Toma la foto de <strong>un solo equipo por vez</strong> centrado en
+                        la etiqueta. Las fotos múltiples reducen la legibilidad.</span>
+                </div>
+
+                <form id="ocr-form" enctype="multipart/form-data">
+                    <div style="margin-bottom: 20px;">
+                        <!-- BOTÓN: SOLO CAMARA -->
+                        <label for="foto-upload-camara" class="file-label camera-label" style="margin-bottom:0; display:flex; flex-direction:column; padding: 25px; border-radius: 12px; align-items: center; justify-content: center; text-align: center; color: white; background: linear-gradient(135deg, #F78104 0%, #FAAB36 100%); box-shadow: 0 4px 15px rgba(247,129,4,0.3); border:none; cursor:pointer; width: 100%;">
+                            <i class="fa-solid fa-camera pulse" style="font-size: 2.5rem; margin-bottom: 8px;"></i>
+                            <span style="font-weight: 700; font-size: 1.1rem;">Tomar Foto</span>
+                            <span style="font-size: 0.8rem; opacity: 0.9; margin-top: 4px;">Usa la cámara del dispositivo</span>
+                            <input type="file" id="foto-upload-camara" name="foto" accept="image/*" capture="environment" style="display: none;">
+                        </label>
+                    </div>
+                    <div id="foto-name" style="text-align: center; color: #64748b; font-size: 0.88rem; margin-top: -10px; margin-bottom: 15px; font-weight: 500;"></div>
+
+                    <!-- METADATOS ADICIONALES -->
+                    <div class="meta-fields">
+                        <div class="meta-row">
+                            <label class="meta-label" for="ubicacion">
+                                <i class="fa-solid fa-location-dot" style="color:#3b82f6"></i> Ubicación / Box
+                            </label>
+                            <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej: Oficina 201 / Box 3"
+                                class="meta-input">
+                        </div>
+                        <div class="meta-row">
+                            <label class="meta-label" for="proyecto_id">
+                                <i class="fa-solid fa-folder-tree" style="color:#f59e0b"></i> Proyecto
+                            </label>
+                            <select id="proyecto_id" name="proyecto_id" class="meta-select">
+                                {% for p in proyectos %}
+                                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="meta-row">
+                            <label class="meta-label" for="usuario">
+                                <i class="fa-solid fa-user" style="color:#8b5cf6"></i> Usuario Asignado
+                                <span class="optional-tag">(opcional)</span>
+                            </label>
+                            <input type="text" id="usuario" name="usuario"
+                                placeholder="Nombre del usuario (si ya está asignado)" class="meta-input"
+                                value="{{ usuario_correo }}">
+                        </div>
+                        <div class="meta-row">
+                            <label class="meta-label" for="estado">
+                                <i class="fa-solid fa-circle-dot" style="color:#22c55e"></i> Estado del Equipo
+                            </label>
+                            <select id="estado" name="estado" class="meta-select">
+                                <option value="En Bodega">En Bodega / Sin asignar</option>
+                                <option value="Asignado">Asignado / En uso</option>
+                                <option value="En reparación">En reparación</option>
+                                <option value="Baja">De baja</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btn-procesar" disabled>
+                        <span><i class="fa-solid fa-wand-magic-sparkles"></i> Extraer y Actualizar</span>
+                    </button>
+
+                </form>
+
+                <div id="loader" class="loader-container hidden">
+                    <div class="spinner"></div>
+                    <!-- Barra de progreso para Sync Masivo -->
+                    <div class="progress-container" id="sync-progress-container" style="display:none; width: 100%; max-width: 300px; background: #e2e8f0; border-radius: 10px; height: 10px; overflow: hidden; margin: 10px 0;">
+                        <div class="progress-bar" id="sync-progress-bar" style="width: 0%; height: 100%; background: #2563eb; transition: width 0.3s ease;"></div>
+                    </div>
+                    <p class="loader-text">La Inteligencia Artificial está leyendo la etiqueta...</p>
+                </div>
+            </section>
+
+            <!-- Zona de Resultados -->
+            <section class="results-section hidden" id="results-area">
+                <div class="card result-card" id="result-card">
+                    <div class="status-icon" id="status-icon"></div>
+                    <h2 id="result-title">Procesando...</h2>
+
+                    <div class="data-grid hidden" id="data-grid">
+                        <div class="data-box">
+                            <span class="label">EQUIPO</span>
+                            <strong id="res-equipo">-</strong>
+                        </div>
+                        <div class="data-box highlight">
+                            <span class="label">S/N LEYÓ</span>
+                            <strong id="res-sn">-</strong>
+                        </div>
+                        <div class="data-box highlight-green">
+                            <span class="label">MAC DETECTADA</span>
+                            <strong id="res-mac">-</strong>
+                        </div>
+                    </div>
+
+                    <p id="result-message" class="result-message"></p>
+
+                    <div class="actions">
+                        <a href="/api/descargar_excel" class="btn-secondary hidden" id="btn-download">
+                            <i class="fa-solid fa-download"></i> Descargar Excel Nuevo
+                        </a>
+                        <button class="btn-outline" onclick="resetForm()">
+                            <i class="fa-solid fa-rotate-right"></i> Escanear Otro
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel Inteligente de DUPLICADOS -->
+            <section class="results-section hidden" id="duplicate-area">
+                <div class="card result-card">
+                    <div class="status-icon">
+                        <i class="fa-solid fa-circle-exclamation" style="color:#f59e0b; font-size:3.5rem"></i>
+                    </div>
+                    <h2 style="color:#f59e0b" id="dup-title">Ya Fue Registrado</h2>
+                    <p class="result-message" id="dup-message">Este equipo ya tiene MAC registrada. Completa o corrige
+                        los campos que faltan.</p>
+
+                    <!-- CONTENEDOR DE LA FOTO PREVISUALIZADA -->
+                    <div id="dup-preview-container" style="display:none; margin: 15px auto; text-align: center;">
+                        <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 5px;">
+                            <i class="fa-solid fa-eye"></i> Imagen escaneada (para guiarse)
+                        </span>
+                        <img id="dup-preview-img" src="" alt="Prueba OCR"
+                            style="max-height: 180px; max-width: 100%; border-radius: 8px; border: 2px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    </div>
+
+                    <div class="data-grid">
+                        <div class="data-box highlight-green">
+                            <span class="label">S/N Detectado / Corregir</span>
+                            <input type="text" id="dup-input-sn" class="meta-input"
+                                style="margin-top:5px; font-weight:bold; width:100%; border-color:#f59e0b;" required>
+                        </div>
+                        <div class="data-box highlight-green">
+                            <span class="label">MAC Detectada / Corregir</span>
+                            <input type="text" id="dup-input-mac" class="meta-input"
+                                style="margin-top:5px; font-weight:bold; width:100%; border-color:#22c55e;">
+                        </div>
+                        <div class="data-box">
+                            <span class="label">EQUIPO</span>
+                            <strong id="dup-equipo">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Actualización Parcial / Creación Forzada -->
+                    <form id="dup-form" class="dup-meta-form">
+                        <input type="hidden" name="forzar_actualizacion" value="true">
+
+                        <div class="meta-row">
+                            <label class="meta-label">
+                                <i class="fa-solid fa-location-dot" style="color:#3b82f6"></i> Ubicación / Box
+                            </label>
+                            <input type="text" id="dup-ubicacion" name="ubicacion" class="meta-input"
+                                placeholder="Ej: Oficina 201">
+                        </div>
+                        <div class="meta-row">
+                            <label class="meta-label">
+                                <i class="fa-solid fa-user" style="color:#8b5cf6"></i> Usuario Asignado
+                                <span class="optional-tag">(opcional)</span>
+                            </label>
+                            <input type="text" id="dup-usuario" name="usuario" class="meta-input"
+                                placeholder="Nombre del usuario">
+                        </div>
+                        <div class="meta-row">
+                            <label class="meta-label">
+                                <i class="fa-solid fa-circle-dot" style="color:#22c55e"></i> Estado del Equipo
+                            </label>
+                            <select id="dup-estado" name="estado" class="meta-select">
+                                <option value="En Bodega">En Bodega / Sin asignar</option>
+                                <option value="Asignado">Asignado / En uso</option>
+                                <option value="En reparación">En reparación</option>
+                                <option value="Baja">De baja</option>
+                            </select>
+                        </div>
+
+                        <div class="actions">
+                            <button type="submit" class="btn-primary"
+                                style="background:#f59e0b; box-shadow: 0 4px 14px rgba(245,158,11,0.35);">
+                                <i class="fa-solid fa-floppy-disk"></i> Guardar Actualización
+                            </button>
+                            <button type="button" class="btn-outline" onclick="resetForm()">
+                                <i class="fa-solid fa-rotate-right"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            <!-- Panel MULTI-EQUIPO: cuando una foto trae varios dispositivos -->
+            <section class="results-section hidden" id="multi-area">
+                <div class="card result-card">
+                    <div class="status-icon">
+                        <i class="fa-solid fa-layer-group" style="color:#3b82f6; font-size:3rem;"></i>
+                    </div>
+                    <h2 id="multi-title" style="color:#3b82f6">Varios equipos detectados</h2>
+                    <p class="result-message" id="multi-message"></p>
+
+                    <!-- Las tarjetas individuales se generan desde JS -->
+                    <div id="multi-cards-container"></div>
+
+                    <div class="actions" style="margin-top:1.5rem">
+                        <button class="btn-outline" onclick="resetForm()">
+                            <i class="fa-solid fa-rotate-right"></i> Escanear Otra Foto
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- PANEL MODAL: CARTILLA OFFLINE -->
+    <div id="cartilla-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; height: 85vh; overflow-y: auto; display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 15px;">
+                <h2 style="font-size: 1.3rem; color: #1e293b; margin: 0;"><i class="fa-solid fa-list-check" style="color:#f59e0b"></i> Cartilla Offline (<span id="cartilla-count">0</span>)</h2>
+                <button type="button" id="btn-cerrar-cartilla" style="background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <p style="font-size: 0.9rem; color: #64748b; margin-top: 0; margin-bottom: 15px;">Aquí puedes revisar y editar los datos de los equipos que fotografiaste antes de enviarlos al servidor.</p>
+
+            <!-- CONTENEDOR DE ITEMS -->
+            <div id="cartilla-items-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                <!-- JS se encargará de inyectar los items aquí -->
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #f1f5f9; text-align: center;">
+                 <button type="button" class="btn-sync" id="btn-sync-from-cartilla" style="width: 100%; justify-content: center; padding: 12px; font-size: 1rem;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizar Todo Ahora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISOR DE IMAGEN (FULLSCREEN) -->
+    <div id="image-viewer-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+        <button type="button" id="btn-cerrar-visor" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; font-size: 2rem; color: white; cursor: pointer; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;"><i class="fa-solid fa-xmark"></i></button>
+        <img id="visor-img" src="" style="max-width: 95%; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+        <p style="color: white; margin-top: 15px; font-family: sans-serif; opacity: 0.8;"><i class="fa-solid fa-magnifying-glass-plus"></i> Vista ampliada</p>
+    </div>
+
+    <!-- 🔄 MODAL CONFIRMACIÓN DE SINCRONIZACIÓN -->
+    <div id="modal-sync" style="display:none; position:fixed; inset:0; z-index:3000; background:rgba(10,38,71,0.5); backdrop-filter:blur(6px); justify-content:center; align-items:center;">
+        <div style="background:white; border-radius:20px; padding:40px 35px; max-width:420px; width:90%; box-shadow:0 25px 50px rgba(10,38,71,0.15); text-align:center; animation: fadeUp 0.3s ease-out;">
+            <div style="width:65px; height:65px; background:rgba(247,129,4,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:1.8rem; color:#F78104;">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h3 style="font-size:1.3rem; font-weight:800; color:#0A2647; margin-bottom:10px;">¿Sincronizar ahora?</h3>
+            <p id="modal-sync-desc" style="color:#64748b; font-size:0.97rem; line-height:1.6; margin-bottom:8px;"></p>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:28px;">Asegúrate de estar conectado a internet.<br>No cierres la pestaña durante el proceso.</p>
+            <div style="display:flex; gap:12px;">
+                <button id="modal-sync-cancel" style="flex:1; padding:13px; border-radius:12px; border:1.5px solid #e2e8f0; background:white; color:#64748b; font-size:0.95rem; font-weight:600; cursor:pointer; transition:all 0.2s;">
+                    Cancelar
+                </button>
+                <button id="modal-sync-confirm" style="flex:2; padding:13px; border-radius:12px; border:none; background:#F78104; color:white; font-size:0.95rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(247,129,4,0.3); transition:all 0.2s;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>&nbsp; Sí, Sincronizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de interactividad -->
+    <!-- localForage para manejar la base de datos IndexedDB nativa del teléfono de manera fácil -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <!-- Confetti para experiencia Premium -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+
+</html>

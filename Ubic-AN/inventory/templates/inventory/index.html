@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ubic-AN Pro TI</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body,html{height:100%;margin:0;font-family:sans-serif;background:#64748b}#app-container{display:flex;height:100vh}#sidebar{width:340px;background:#fff;border-right:1px solid #cbd5e1;display:flex;flex-direction:column;z-index:1000}#map-area{flex-grow:1;position:relative;background:#475569}#map{height:100%;width:100%}.asset-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;cursor:grab}.badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:5px;font-weight:700;margin-right:4px;margin-top:4px}.badge-green{background:#dcfce7;color:#15803d}.badge-purple{background:#f3e8ff;color:#7e22ce}.custom-div-icon{background:#2563eb;color:#fff;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}.floor-selector{position:absolute;top:15px;right:15px;z-index:1001;background:#fff;padding:8px;border-radius:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
+.popup-btn{background:#f1f5f9;border:1px solid #e2e8f0;padding:2px 5px;border-radius:4px;font-size:9px;cursor:pointer;margin-left:5px;font-weight:600}
+.popup-btn:hover{background:#e2e8f0}
+.btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;margin-top:10px;width:100%;padding:4px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer}
+.btn-danger:hover{background:#fecaca}
+</style>
+</head>
+<body>
+<div id="app-container">
+<div id="sidebar">
+<div class="p-5 bg-blue-700 text-white shadow-md"><h1 class="text-xl font-bold italic">Ubic-AN</h1><p class="text-[10px] opacity-70">SOPORTE TÉCNICO & REDES</p></div>
+<div class="p-3 bg-slate-100 border-b"><input type="text" id="asset-search" onkeyup="filterAssets()" placeholder="Buscar usuario, IP, rack o ubicación..." class="w-full p-2 text-sm border rounded outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"></div>
+<div class="p-4 flex-grow overflow-y-auto bg-slate-50">
+<div id="unassigned-list">
+{% for activo in activos_sin_asignar %}
+<div class="asset-card" draggable="true" ondragstart="dragStart(event)" data-id="{{activo.id}}" data-ip="{{activo.ip|default:''}}" data-usuario="{{activo.usuario|default:''}}" data-etiqueta="{{activo.etiqueta|default:''}}" data-marca="{{activo.marca|default:''}}" data-modelo="{{activo.modelo|default:''}}" data-anydesk="{{activo.anydesk|default:''}}" data-passany="{{activo.pass_anydesk|default:''}}" data-cpu="{{activo.cpu|default:''}}" data-ram="{{activo.ram|default:''}}" data-disk="{{activo.almacenamiento|default:''}}" data-win="{{activo.version_win|default:''}}" data-ubi="{{activo.ubicacion_texto|default:''}}">
+<div class="font-bold text-slate-800 text-sm mb-1 line-clamp-1 search-text">{{activo.usuario|default:"Sin usuario"}}{% if activo.etiqueta %}<span class="text-blue-600"> ({{activo.etiqueta}})</span>{% endif %}</div>
+<div class="text-[10px] text-slate-500 font-medium mb-1 uppercase search-text">{{activo.marca|default:""}} {{activo.modelo|default:""}}</div>
+<div class="text-[9px] text-slate-400 italic mb-1 search-text">{{activo.ubicacion_texto|default:""}}</div>
+<div class="flex flex-wrap search-text">{% if activo.ip %}<span class="badge badge-green">{{activo.ip}}</span>{% endif %}{% if activo.anydesk %}<span class="badge badge-purple">AD:{{activo.anydesk}}</span>{% endif %}</div>
+</div>
+{% endfor %}
+</div>
+</div>
+</div>
+<div id="map-area" ondragover="allowDrop(event)" ondrop="handleDrop(event)">
+<div class="floor-selector">
+<select id="plano-select" onchange="changePlano(this.value)" class="text-xs font-bold bg-transparent outline-none">
+<option value="">-- PISO --</option>
+{% for plano in planos %}<option value="{{plano.id}}" data-url="{{plano.imagen.url}}">{{plano.nombre}}</option>{% endfor %}
+</select>
+</div>
+<div id="map"></div>
+</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const assignedAssets=[
+{% for a in activos_asignados %}
+{id:"{{a.id}}",p_id:"{{a.plano.id|default:'0'}}",x:Number("{{a.coord_x|default:0}}"),y:Number("{{a.coord_y|default:0}}"),u:"{{a.usuario|default:'N/A'|escapejs}}",et:"{{a.etiqueta|default:''|escapejs}}",m:"{{a.marca|default:''|escapejs}} {{a.modelo|default:''|escapejs}}",ad:"{{a.anydesk|default:''|escapejs}}",pad:"{{a.pass_anydesk|default:''|escapejs}}",ip:"{{a.ip|default:''|escapejs}}",cpu:"{{a.cpu|default:''|escapejs}}",ram:"{{a.ram|default:''|escapejs}}",dsk:"{{a.almacenamiento|default:''|escapejs}}",win:"{{a.version_win|default:''|escapejs}}",ubi:"{{a.ubicacion_texto|default:''|escapejs}}"},
+{% endfor %}
+];
+let map,overlay,curId=null;const lyr=L.layerGroup();
+function init(){map=L.map('map',{crs:L.CRS.Simple,minZoom:-3,attributionControl:false});lyr.addTo(map)}
+function changePlano(v){if(!v)return;const s=document.getElementById('plano-select');const u=s.options[s.selectedIndex].getAttribute('data-url');if(overlay)map.removeLayer(overlay);lyr.clearLayers();curId=v;const i=new Image();i.onload=function(){const b=[[0,0],[this.height,this.width]];overlay=L.imageOverlay(u,b).addTo(map);map.fitBounds(b);map.invalidateSize();assignedAssets.forEach(a=>{if(String(a.p_id)===String(curId))addMarker(a)})};i.src=u}
+function addMarker(a){
+const icon=L.divIcon({className:'custom-div-icon',html:(a.u[0]||'?'),iconSize:[32,32]});
+const m=L.marker([a.y,a.x],{icon,draggable:true});
+const et=a.et?' <span style="color:#2563eb">('+a.et+')</span>':'';
+const adLink=a.ad?'<a href="anydesk:'+a.ad+'" style="color:#7e22ce;font-weight:700;text-decoration:none">'+a.ad+'</a>':'---';
+const h='<div style="min-width:260px"><b>'+a.u+'</b>'+et+'<br><small style="color:#64748b">'+a.m+'</small><br><small style="color:#94a3b8"><i>'+(a.ubi||'')+'</i></small><hr style="margin:8px 0;border:0;border-top:1px solid #eee">IP: <b>'+(a.ip||'---')+'</b> <button class="popup-btn" onclick="copyText(\''+a.ip+'\')">Copiar</button><br>AD: '+adLink+' (Pass: '+(a.pad||'---')+')<br><small><b>CPU:</b> '+(a.cpu||'---')+'</small><br><small><b>RAM:</b> '+(a.ram||'---')+' | <b>Disco:</b> '+(a.dsk||'---')+'</small><br><small><b>S.O:</b> '+(a.win||'---')+'</small><button class="btn-danger" onclick="unassign(\''+a.id+'\')">QUITAR DEL PLANO</button></div>';
+m.bindPopup(h);m.on('dragend',()=>{const p=m.getLatLng();save(a.id,p.lng,p.lat,curId)});lyr.addLayer(m)
+}
+function copyText(t){navigator.clipboard.writeText(t);alert('IP Copiada: '+t)}
+function unassign(id){
+    if(!confirm('¿Quitar este equipo del plano? Volverá a la lista de "Por ubicar".')) return;
+    fetch('/api/unassign-asset/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({activo_id:id})})
+    .then(r => r.json()).then(res => { if(res.status=='success') location.reload(); });
+}
+function filterAssets(){const q=document.getElementById('asset-search').value.toLowerCase();document.querySelectorAll('.asset-card').forEach(c=>{c.style.display=c.innerText.toLowerCase().includes(q)?'block':'none'})}
+function dragStart(e){e.dataTransfer.setData("detail",JSON.stringify(e.currentTarget.dataset))}
+function allowDrop(e){e.preventDefault()}
+function handleDrop(e){e.preventDefault();if(!curId)return;const r=document.getElementById('map').getBoundingClientRect();const p=map.containerPointToLatLng(L.point(e.clientX-r.left,e.clientY-r.top));const d=JSON.parse(e.dataTransfer.getData("detail"));const a={id:d.id,u:d.usuario,et:d.etiqueta,m:d.marca+" "+d.modelo,ad:d.anydesk,pad:d.passany,ip:d.ip,cpu:d.cpu,ram:d.ram,dsk:d.disk,win:d.win,ubi:d.ubi,x:p.lng,y:p.lat,p_id:curId};addMarker(a);assignedAssets.push(a);document.querySelector("[data-id='"+d.id+"']").remove();save(a.id,a.x,a.y,curId)}
+function save(id,x,y,p){fetch('/api/save-position/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({activo_id:id,x,y,plano_id:p})})}
+window.onload=()=>{init();const s=document.getElementById('plano-select');if(s.options.length>1){s.selectedIndex=1;changePlano(s.value)}};
+</script>
+</body>
+</html>

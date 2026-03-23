@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - OCR SaaS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #f1f5f9;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            padding: 2rem 1rem;
+            flex-shrink: 0;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+            padding-left: 10px;
+            color: #38bdf8;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #334155;
+            color: white;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            margin-left: 260px;
+            /* offset for fixed sidebar */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #0f172a;
+            font-size: 1.8rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-title {
+            color: #64748b;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+            /* Hidden by default, toggled via JS */
+        }
+
+        .table-container.active {
+            display: block;
+        }
+
+        .table-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 1.4rem;
+        }
+
+        /* DataTables Customization */
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin-left: 8px;
+            outline: none;
+        }
+
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 4px;
+        }
+
+        table.dataTable {
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+
+        table.dataTable thead th {
+            background: #f8fafc;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0 !important;
+            padding: 1rem !important;
+        }
+
+        table.dataTable tbody td {
+            padding: 1rem !important;
+            font-size: 0.9rem;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge.warning {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.info {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .btn-export {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-export:hover {
+            background: #059669;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        .close {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .btn-edit {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .btn-edit:hover {
+            background: #bae6fd;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        .btn-view {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-view:hover {
+            background: #e2e8f0;
+        }
+
+        /* === DISEÑO RESPONSIVO (MOBILE/TABLET) === */
+
+        /* Por defecto ocultos en Escritorio */
+        .hamburger-btn,
+        .mobile-close-btn {
+            display: none;
+        }
+
+        .mobile-only {
+            display: none !important;
+        }
+
+        .desktop-only {
+            display: table !important;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-only {
+                display: block !important;
+            }
+
+            .desktop-only {
+                display: none !important;
+            }
+
+            .admin-layout {
+                flex-direction: column;
+            }
+
+            /* --- SIDEBAR HAMBURGUER (DRAWER) --- */
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 260px;
+                z-index: 9999;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                align-items: stretch !important;
+                background: #1e293b;
+                padding: 2rem 1rem;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+            }
+
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(2px);
+                z-index: 9998;
+                display: none;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .sidebar-brand {
+                margin-bottom: 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+            }
+
+            #sidebar-nav {
+                flex-direction: column !important;
+                gap: 5px !important;
+                flex-wrap: nowrap !important;
+            }
+
+            .nav-item {
+                font-size: 0.95rem !important;
+                padding: 12px 15px !important;
+                margin-bottom: 5px !important;
+            }
+
+            .mobile-close-btn {
+                display: block !important;
+                background: none;
+                border: none;
+                color: #94a3b8;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            /* --- CONTENIDO PRINCIPAL --- */
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                margin-bottom: 1.5rem;
+            }
+
+            .hamburger-btn {
+                display: block !important;
+                background: white;
+                border: 1px solid #cbd5e1;
+                padding: 8px 12px;
+                border-radius: 8px;
+                font-size: 1.25rem;
+                color: #1e293b;
+                cursor: pointer;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            /* --- LIMPIEZA DATATABLES --- */
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter,
+            .dataTables_wrapper .dataTables_info,
+            .dataTables_wrapper .dataTables_paginate {
+                display: none !important;
+            }
+
+            .table-container {
+                padding: 0;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            .table-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px;
+                margin-bottom: 1rem;
+            }
+
+            .table-header h3 {
+                font-size: 1.15rem;
+            }
+
+            /* --- VISTA DE TARJETAS (CARDS) --- */
+            .cards-grid {
+                display: grid;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .cards-item {
+                background: white;
+                border-radius: 12px;
+                padding: 1.25rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border: 1px solid #e2e8f0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+                text-align: left;
+            }
+
+            .cards-item .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-bottom: 1px solid #f1f5f9;
+                padding-bottom: 0.75rem;
+                margin-bottom: 0.25rem;
+                gap: 12px;
+            }
+
+            .cards-item .card-title {
+                font-weight: 700;
+                color: #0f172a;
+                font-size: 0.95rem;
+                line-height: 1.4;
+            }
+
+            .cards-item .card-row {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.85rem;
+                color: #475569;
+                align-items: center;
+                padding: 4px 0;
+                border-bottom: 1px dashed #f1f5f9;
+            }
+
+            .cards-item .card-row:last-of-type {
+                border-bottom: none;
+            }
+
+            .cards-item .card-label {
+                font-weight: 600;
+                color: #64748b;
+                font-size: 0.8rem;
+            }
+
+            .cards-item .card-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 0.5rem;
+                border-top: 1px solid #f1f5f9;
+                padding-top: 0.75rem;
+                justify-content: flex-end;
+            }
+
+            .mobile-search-input {
+                width: 100%;
+                padding: 12px 16px;
+                border: 1px solid #cbd5e1;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                outline: none;
+                margin-bottom: 0.5rem;
+                box-sizing: border-box;
+                background: white;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            }
+
+            .stat-card {
+                padding: 1.25rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 15% auto;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand" style="display: flex; align-items: center; gap: 10px; padding: 15px;">
+                {% if tiene_logo %}
+                <img src="/uploads/logos/{{ empresa.id }}.png"
+                    style="max-height: 32px; max-width: 120px; border-radius: 4px; object-fit: contain;"
+                    alt="{{ empresa.name }}">
+                {% else %}
+                <span><i class="fa-solid fa-server"></i> JET OCR Admin</span>
+                {% endif %}
+                <button class="mobile-close-btn" id="close-sidebar" style="margin-left: auto;"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav id="sidebar-nav">
+                <a class="nav-item active" data-target="tab-resumen"><i class="fa-solid fa-chart-pie"></i> Resumen</a>
+                <a class="nav-item" data-target="tab-inventario"><i class="fa-solid fa-boxes-stacked"></i> Inventario
+                    Oficial</a>
+                <a class="nav-item" data-target="tab-log"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de
+                    Escaneos</a>
+                <a class="nav-item" data-target="tab-proyectos"><i class="fa-solid fa-folder-tree"></i> Proyectos (OCR
+                    Flex)</a>
+                <a class="nav-item" data-target="tab-usuarios"><i class="fa-solid fa-users"></i> Operadores</a>
+                <a class="nav-item" data-target="tab-config-ocr"><i class="fa-solid fa-wand-magic-sparkles"></i> Reglas
+                    de Escaneo (IA)</a>
+                <a href="#" class="nav-item" onclick="abrirPerfil()"><i class="fa-solid fa-user-gear"></i> Mi Perfil</a>
+
+                {% if session.get('usuario_correo') == 'businesswolsmart@gmail.com' %}
+                <a href="{{ url_for('saas_master') }}" class="nav-item"
+                    style="background: rgba(225, 29, 72, 0.05); color: #e11d48; border-left: 4px solid #e11d48; margin-top: 5px;">
+                    <i class="fa-solid fa-crown" style="color: #e11d48;"></i> Panel SaaS Master
+                </a>
+                {% endif %}
+                <!-- BANNER DE PLAN / SUSCRIPCIÓN -->
+                <div class="plan-banner"
+                    style="margin-top: auto; background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 12px; border: 1px solid #475569; font-size: 0.85rem; color: #cbd5e1; margin: 1.5rem 10px 10px 10px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: bold; color: white;">
+                            <i class="fa-solid fa-gem"
+                                style="color: {{ '#ef4444' if empresa.plan_type == 'Freemium' else '#f59e0b' }}"></i>
+                            Plan {{ empresa.plan_type }}
+                        </span>
+                        {% if empresa.plan_type != 'Premium' %}
+                        <a href="#" class="upgrade-btn"
+                            style="color: #38bdf8; font-weight: 600; text-decoration: none; font-size: 0.8rem; background: rgba(56, 189, 248, 0.1); padding: 3px 8px; border-radius: 6px;">Mejorar</a>
+                        {% endif %}
+                    </div>
+                    {% if empresa.plan_type == 'Freemium' or empresa.plan_type == 'Pro' %}
+                    <p style="margin: 4px 0; font-size: 0.8rem;">Escaneos: <strong>{{ total_registros }} / {{
+                            empresa.scans_quota }}</strong></p>
+                    <div
+                        style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; margin-top: 5px;">
+                        {% set pct = (total_registros / empresa.scans_quota) * 100 %}
+                        <div
+                            style="width: {{ pct if pct <= 100 else 100 }}%; height: 100%; background: #38bdf8; border-radius: 3px;">
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="margin: 4px 0; color: #34d399; font-weight: 600;"><i class="fa-solid fa-circle-check"></i>
+                        5,000 Escaneos mensuales</p>
+                    {% endif %}
+                </div>
+
+                <a href="/" class="nav-item"
+                    style="border-top: 1px solid #475569; border-radius: 0; padding-top: 1rem;"><i
+                        class="fa-solid fa-mobile-screen"></i> Modo Operador (App)</a>
+                <a href="/logout" class="nav-item" style="color: #ef4444; margin-top: 0.5rem;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </a>
+
+                <div
+                    style="margin-top: auto; padding: 15px 10px 0px 10px; border-top: 1px solid #334155; text-align: center; font-size: 0.72rem; color: #94a3b8;">
+                    Un producto de <br>
+                    <strong style="color: #38bdf8;">Business Wolsmart</strong>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header" style="display: flex; align-items: center; gap: 15px;">
+                <button class="hamburger-btn" id="hamburger-open"><i class="fa-solid fa-bars"></i></button>
+                <h1 id="header-title" style="margin: 0; flex-grow: 1;">Panel de control SaaS</h1>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/api/admin/exportar_excel" class="btn-export"><i class="fa-solid fa-file-excel"></i>
+                        Exportar a Excel</a>
+                </div>
+            </div>
+
+            <!-- TAB: Resumen -->
+            <div id="tab-resumen" class="table-container active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Equipos en BD</div>
+                        <div class="stat-value">{{ total_equipos }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Escaneos Realizados</div>
+                        <div class="stat-value">{{ total_registros }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Equipos Asignados</div>
+                        <div class="stat-value">{{ equipos_asignados }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Equipos en Bodega</div>
+                        <div class="stat-value">{{ equipos_bodega }}</div>
+                    </div>
+                    <div class="stat-card" style="border-top: 4px solid #10b981;">
+                        <div class="stat-title">Verificación Completada</div>
+                        <div class="stat-value">{{ porcentaje_verificado }}%</div>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 5px;">
+                            ({{ total_completos }} de {{ total_equipos }} con S/N + MAC)
+                        </div>
+                    </div>
+                    <div class="stat-card" style="border-top: 4px solid #3b82f6; background: #eff6ff;">
+                        <div class="stat-title" style="color: #1e3a8a;">⏱️ Tiempo Ahorrado</div>
+                        <div class="stat-value" style="color: #1e40af;">{{ tiempo_ahorrado }}</div>
+                        <div style="font-size: 0.825rem; color: #60a5fa; margin-top: 5px;">
+                            (Calculado vs digitación manual)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Proyectos (OCR Dinámico) -->
+            <div id="tab-proyectos" class="table-container" style="display: none;">
+                <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Proyectos y Configuración de OCR Dinámico</h3>
+                    <button class="btn-export" style="background:#3b82f6;" onclick="abrirCrearProyecto()">
+                        <i class="fa-solid fa-plus"></i> Crear Proyecto
+                    </button>
+                </div>
+                <table id="dt-proyectos" class="display desktop-only" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Proyecto</th>
+                            <th>Configuración OCR</th>
+                            <th>Fecha Creación</th>
+                            <th style="width: 80px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in proyectos %}
+                        <tr>
+                            <td>{{ p.id }}</td>
+                            <td><strong>{{ p.nombre }}</strong></td>
+                            <td><span class="badge info">{{ p.campos_ocr }}</span></td>
+                            <td>{{ p.fecha_creacion.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-actions">
+                                    <button class="btn-icon btn-edit" title="Editar Proyecto"
+                                        onclick="abrirEditarProyecto('{{ p.id }}', '{{ p.nombre }}', '{{ p.campos_ocr }}')">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <form action="/api/admin/eliminar_proyecto" method="POST"
+                                        onsubmit="return confirm('¿Seguro que deseas eliminar este proyecto y todos sus registros asociados?')">
+                                        <input type="hidden" name="proyecto_id" value="{{ p.id }}">
+                                        <button type="submit" class="btn-icon btn-delete" title="Eliminar Proyecto">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- CARDS MÓVIL (Proyectos) -->
+                <div class="mobile-only">
+                    <input type="text" class="mobile-search-input" placeholder="Buscar Proyecto..."
+                        onkeyup="filtrarTarjetas(this, 'cards-proyectos')">
+                    <div id="cards-proyectos" class="cards-grid">
+                        {% for p in proyectos %}
+                        <div class="cards-item">
+                            <div class="card-header">
+                                <span class="card-title">{{ p.nombre }}</span>
+                                <span class="badge info">{{ p.campos_ocr }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">ID:</span>
+                                <span>{{ p.id }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Creado:</span>
+                                <span>{{ p.fecha_creacion.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-icon btn-edit"
+                                    onclick="abrirEditarProyecto('{{ p.id }}', '{{ p.nombre }}', '{{ p.campos_ocr }}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <form action="/api/admin/eliminar_proyecto" method="POST"
+                                    onsubmit="return confirm('¿Seguro que deseas eliminar el proyecto?')">
+                                    <input type="hidden" name="proyecto_id" value="{{ p.id }}">
+                                    <button type="submit" class="btn-icon btn-delete"><i
+                                            class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Configuración OCR -->
+            <div id="tab-config-ocr" class="table-container" style="display: none;">
+                <div class="table-header">
+                    <h3 style="margin: 0;"><i class="fa-solid fa-wand-magic-sparkles"></i> Reglas de Lectura Inteligente
+                        (OCR)</h3>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-top: 4px;">Configura cómo lucen tus Números de
+                        Serie y qué datos extras quieres capturar.</p>
+                </div>
+
+                <div
+                    style="background: white; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <form id="form-config-ocr">
+                        <!-- SECCIÓN 1: NÚMERO DE SERIE -->
+                        <div style="margin-bottom: 30px;">
+                            <h4
+                                style="margin: 0 0 15px 0; color: #1e3a8a; border-bottom: 2px solid #eff6ff; padding-bottom: 8px;">
+                                1. Formato de Número de Serie (S/N)</h4>
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                                <div>
+                                    <label
+                                        style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155;">¿Empieza
+                                        con algo específico?</label>
+                                    <input type="text" id="cfg-sn-prefix" placeholder="Ej: ZTE, GPON, 30104..."
+                                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                    <span
+                                        style="font-size: 0.75rem; color: #64748b; margin-top: 4px; display: block;">Deja
+                                        vacío si el S/N puede empezar con cualquier letra/número.</span>
+                                </div>
+                                <div>
+                                    <label
+                                        style="display: block; font-weight: 600; margin-bottom: 8px; color: #334155;">¿Tiene
+                                        un largo fijo?</label>
+                                    <input type="number" id="cfg-sn-length" placeholder="Ej: 12, 15..."
+                                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                    <span
+                                        style="font-size: 0.75rem; color: #64748b; margin-top: 4px; display: block;">Deja
+                                        vacío si el largo varía.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: DATOS OPCIONALES -->
+                        <div style="margin-bottom: 30px;">
+                            <h4
+                                style="margin: 0 0 15px 0; color: #1e3a8a; border-bottom: 2px solid #eff6ff; padding-bottom: 8px;">
+                                2. Capturas Secundarias (Opcionales)</h4>
+                            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">Enciende los
+                                interruptores de los datos que desees extraer además del S/N.</p>
+
+                            <!-- NUEVA SECCIÓN: CAMPOS DINÁMICOS -->
+                            <div style="margin-bottom: 25px; background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #dcfce7;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #166534;">3. Campos Adicionales Especiales</label>
+                                <input type="text" id="cfg-campos-personalizados" placeholder="Ej: IMEI, TIPO, COLOR..." 
+                                    style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                <span style="font-size: 0.75rem; color: #15803d; margin-top: 4px; display: block;">Escribe los campos separados por COMA (,). El OCR intentará leerlos.</span>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div
+                                    style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #f1f5f9;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Dirección MAC Address</div>
+                                        <div style="font-size: 0.75rem; color: #64748b;">Formato de 12 caracteres
+                                            hexadecimales.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="cfg-req-mac">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div
+                                    style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #f1f5f9;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Part Number (P/N)</div>
+                                        <div style="font-size: 0.75rem; color: #64748b;">Extrae el código de parte del
+                                            fabricante.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="cfg-req-pn">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div
+                                    style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #f1f5f9;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Código EAN / Barras</div>
+                                        <div style="font-size: 0.75rem; color: #64748b;">Códigos comerciales
+                                            estandarizados.</div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="cfg-req-ean">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <button type="submit" class="btn-export"
+                                style="background: #1e3a8a; color: white; padding: 12px 24px; border-radius: 8px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Guardar Reglas
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB: Usuarios/Operadores -->
+            <div id="tab-usuarios" class="table-container" style="display: none;">
+                <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Gestión de Operadores en Terreno</h3>
+                    <button class="btn-export" style="background:#8b5cf6;" onclick="abrirCrearUsuario()">
+                        <i class="fa-solid fa-user-plus"></i> Añadir Operador
+                    </button>
+                </div>
+                <table id="dt-usuarios" class="display desktop-only" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Correo (User)</th>
+                            <th>Rol</th>
+                            <th>Creado</th>
+                            <th style="width: 80px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.correo }}</td>
+                            <td><span class="badge {% if u.rol == 'Admin' %}success{% else %}info{% endif %}">{{ u.rol
+                                    }}</span></td>
+                            <td>{{ u.fecha_creacion.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-actions">
+                                    {% if u.rol != 'Admin' %}
+                                    <button class="btn-icon btn-edit" title="Editar Operador"
+                                        onclick="abrirEditarUsuario('{{ u.id }}', '{{ u.correo }}', '{{ u.rol }}')">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <form action="/api/admin/eliminar_usuario" method="POST"
+                                        onsubmit="return confirm('¿Seguro que deseas eliminar a este Operador? Ya no podrá acceder a la App.')">
+                                        <input type="hidden" name="usuario_id" value="{{ u.id }}">
+                                        <button type="submit" class="btn-icon btn-delete" title="Desactivar Operador">
+                                            <i class="fa-solid fa-user-xmark"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- CARDS MÓVIL (Usuarios) -->
+                <div class="mobile-only">
+                    <input type="text" class="mobile-search-input" placeholder="Buscar Operador..."
+                        onkeyup="filtrarTarjetas(this, 'cards-usuarios')">
+                    <div id="cards-usuarios" class="cards-grid">
+                        {% for u in usuarios %}
+                        <div class="cards-item">
+                            <div class="card-header">
+                                <span class="card-title">{{ u.correo }}</span>
+                                <span class="badge {% if u.rol == 'Admin' %}success{% else %}info{% endif %}">{{ u.rol
+                                    }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">ID:</span>
+                                <span>{{ u.id }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Creado:</span>
+                                <span>{{ u.fecha_creacion.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            <div class="card-actions">
+                                {% if u.rol != 'Admin' %}
+                                <button class="btn-icon btn-edit"
+                                    onclick="abrirEditarUsuario('{{ u.id }}', '{{ u.correo }}', '{{ u.rol }}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <form action="/api/admin/eliminar_usuario" method="POST"
+                                    onsubmit="return confirm('¿Seguro que deseas eliminar al Operador?')">
+                                    <input type="hidden" name="usuario_id" value="{{ u.id }}">
+                                    <button type="submit" class="btn-icon btn-delete"><i
+                                            class="fa-solid fa-user-xmark"></i></button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <!-- Mini preview (Optional) -->
+            <p style="color: #64748b; font-size: 0.95rem;">Bienvenido al Panel de Administración. Usa la barra
+                lateral para navegar a la base de datos completa de Inventario, buscar números de serie específicos,
+                o visualizar el log de auditoría completo con todos los escaneos registrados en la plataforma.</p>
+
+
+            <!-- TAB: Inventario Oficial -->
+            <div id="tab-inventario" class="table-container" style="display: none;">
+                <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Base de Datos: Equipos Oficiales (<span id="count-total">{{ total_equipos
+                            }}</span>)</h3>
+                    <button class="btn-export" style="background:#3b82f6;" onclick="abrirCrear()">
+                        <i class="fa-solid fa-plus"></i> Añadir Manual
+                    </button>
+                </div>
+
+                <!-- 📅 FILTRO POR FECHA Y HORA -->
+                <div class="date-filter-container"
+                    style="display: flex; gap: 12px; margin: 15px 0; background: #f8fafc; padding: 14px 18px; border-radius: 14px; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; font-family: sans-serif;">
+                    <span style="font-size: 0.9rem; font-weight: 700; color: #0A2647;"><i
+                            class="fa-solid fa-clock-rotate-left" style="color: #F78104;"></i> Filtrar por
+                        Fecha/Hora:</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="datetime-local" id="min-datetime"
+                            style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem; color: #1e293b; background: white;">
+                    </div>
+                    <span style="color: #64748b; font-size: 0.9rem;">hasta</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="datetime-local" id="max-datetime"
+                            style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem; color: #1e293b; background: white;">
+                    </div>
+                    <button id="btn-clear-datetime"
+                        style="padding: 9px 15px; border-radius: 8px; border: 1px solid #fee2e2; background: white; color: #ef4444; font-size: 0.88rem; cursor: pointer; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 5px;"
+                        onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                        <i class="fa-solid fa-trash-can"></i> Limpiar
+                    </button>
+                </div>
+                <table id="dt-inventario" class="display desktop-only" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>MAC</th>
+                            <th>Nombre</th>
+                            <th>Ubicación</th>
+                            <th>Usuario</th>
+                            <th>Estado</th>
+                            <th>Fecha Actualización</th>
+                            <th style="width: 100px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eq in equipos %}
+                        <tr>
+                            <td><strong>{{ eq.sn }}</strong></td>
+                            <td>{% if eq.mac %}<span class="badge success">{{ eq.mac }}</span>{% else %}<span
+                                    class="badge danger"
+                                    style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">Falta
+                                    MAC</span>{% endif %}
+                            </td>
+                            <td>{{ eq.nombre or '-' }}</td>
+                            <td>{{ eq.ubicacion or '-' }}</td>
+                            <td>{{ eq.usuario or '-' }}</td>
+                            <td>
+                                {% if eq.estado == 'Asignado' %}
+                                <span class="badge info">{{ eq.estado }}</span>
+                                {% elif eq.estado %}
+                                <span class="badge warning">{{ eq.estado }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td data-order="{{ eq.fecha_actualizacion.isoformat() if eq.fecha_actualizacion else '' }}"
+                                style="font-size: 0.88rem; color: #475569; font-weight: 500;">
+                                {{ eq.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') if eq.fecha_actualizacion else 'Sin
+                                fecha' }}
+                            </td>
+                            <td>
+                                <div class="btn-actions">
+                                    <button class="btn-icon btn-view" title="Ver Detalle"
+                                        data-datos="{{ eq.datos_dinamicos | tojson | forceescape if eq.datos_dinamicos else '{}' }}"
+                                        onclick="verEquipo('{{ eq.id }}', '{{ eq.sn }}', '{{ eq.mac }}', '{{ eq.nombre }}', '{{ eq.ubicacion }}', '{{ eq.usuario }}', '{{ eq.estado }}', this.getAttribute('data-datos'))">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button class="btn-icon btn-edit" title="Editar"
+                                        onclick="abrirEditar('{{ eq.id }}', '{{ eq.sn }}', '{{ eq.mac }}', '{{ eq.nombre }}', '{{ eq.ubicacion }}', '{{ eq.usuario }}', '{{ eq.estado }}')">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <form action="/api/admin/eliminar_equipo" method="POST"
+                                        onsubmit="return confirm('¿Seguro que deseas eliminar este equipo?')">
+                                        <input type="hidden" name="equipo_id" value="{{ eq.id }}">
+                                        <button type="submit" class="btn-icon btn-delete" title="Eliminar">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- CARDS MÓVIL (Inventario) -->
+                <div class="mobile-only">
+                    <input type="text" class="mobile-search-input" placeholder="Buscar Equipo..."
+                        onkeyup="filtrarTarjetas(this, 'cards-inventario')">
+                    <div id="cards-inventario" class="cards-grid">
+                        {% for eq in equipos %}
+                        <div class="cards-item">
+                            <div class="card-header">
+                                <span class="card-title">{{ eq.sn }}</span>
+                                {% if eq.mac %}<span class="badge success">{{ eq.mac }}</span>{% else %}<span
+                                    class="badge danger">Falta MAC</span>{% endif %}
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Nombre:</span>
+                                <span>{{ eq.nombre or '-' }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Ubicación:</span>
+                                <span>{{ eq.ubicacion or '-' }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Estado:</span>
+                                <span>
+                                    {% if eq.estado == 'Asignado' %}
+                                    <span class="badge info">{{ eq.estado }}</span>
+                                    {% elif eq.estado %}
+                                    <span class="badge warning">{{ eq.estado }}</span>
+                                    {% else %}-{% endif %}
+                                </span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-icon btn-view"
+                                    data-datos="{{ eq.datos_dinamicos | tojson | forceescape if eq.datos_dinamicos else '{}' }}"
+                                    onclick="verEquipo('{{ eq.id }}', '{{ eq.sn }}', '{{ eq.mac }}', '{{ eq.nombre }}', '{{ eq.ubicacion }}', '{{ eq.usuario }}', '{{ eq.estado }}', this.getAttribute('data-datos'))">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="btn-icon btn-edit"
+                                    onclick="abrirEditar('{{ eq.id }}', '{{ eq.sn }}', '{{ eq.mac }}', '{{ eq.nombre }}', '{{ eq.ubicacion }}', '{{ eq.usuario }}', '{{ eq.estado }}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <form action="/api/admin/eliminar_equipo" method="POST"
+                                    onsubmit="return confirm('¿Seguro que deseas eliminar este equipo?')">
+                                    <input type="hidden" name="equipo_id" value="{{ eq.id }}">
+                                    <button type="submit" class="btn-icon btn-delete"><i
+                                            class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Histórico Log -->
+            <div id="tab-log" class="table-container" style="display: none;">
+                <div class="table-header">
+                    <h3>Auditoría: Todos los Escaneos OCR</h3>
+                </div>
+                <table id="dt-log" class="display desktop-only" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>S/N Detectado</th>
+                            <th>MAC Detectada</th>
+                            <th>Acción/Estado Resultante</th>
+                            <th>Locación Enviada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in registros %}
+                        <tr>
+                            <td data-sort="{{ reg.fecha_hora.isoformat() }}" style="color:#64748b;">
+                                {{ reg.fecha_hora.strftime('%Y-%m-%d %H:%M') }}
+                            </td>
+                            <td><strong>{{ reg.sn }}</strong></td>
+                            <td>{{ reg.mac }}</td>
+                            <td>
+                                {% if reg.estado_escaneo in ['success', 'Registrado', 'Encontrado'] %}
+                                <span class="badge success">Nuevo o Correcto</span>
+                                {% elif 'duplicate' in reg.estado_escaneo or 'Duplicado' in reg.estado_escaneo %}
+                                <span class="badge warning">Actualización Metadata</span>
+                                {% else %}
+                                <span class="badge danger">{{ reg.estado_escaneo }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ reg.ubicacion_enviada or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- CARDS MÓVIL (Logs) -->
+                <div class="mobile-only">
+                    <input type="text" class="mobile-search-input" placeholder="Buscar en Logs..."
+                        onkeyup="filtrarTarjetas(this, 'cards-log')">
+                    <div id="cards-log" class="cards-grid">
+                        {% for reg in registros %}
+                        <div class="cards-item">
+                            <div class="card-header">
+                                <span class="card-title">{{ reg.sn }}</span>
+                                <span>
+                                    {% if reg.estado_escaneo in ['success', 'Registrado', 'Encontrado'] %}
+                                    <span class="badge success">✅ Éxito</span>
+                                    {% elif 'duplicate' in reg.estado_escaneo or 'Duplicado' in reg.estado_escaneo %}
+                                    <span class="badge warning">🔄 Update</span>
+                                    {% else %}
+                                    <span class="badge danger">⚠️ {{ reg.estado_escaneo }}</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">MAC:</span>
+                                <span>{{ reg.mac or '-' }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Fecha:</span>
+                                <span style="font-size: 0.8rem; color: #64748b;">{{ reg.fecha_hora.strftime('%Y-%m-%d
+                                    %H:%M') }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Ubicación:</span>
+                                <span>{{ reg.ubicacion_enviada or '-' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Edición -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Equipo</h2>
+                <span class="close" onclick="cerrarEditar()">&times;</span>
+            </div>
+            <form action="/api/admin/editar_equipo" method="POST">
+                <input type="hidden" id="edit-id" name="equipo_id">
+                <div class="form-group">
+                    <label>S/N (Serie)</label>
+                    <input type="text" id="edit-sn" name="sn" required>
+                </div>
+                <div class="form-group">
+                    <label>MAC</label>
+                    <input type="text" id="edit-mac" name="mac">
+                </div>
+                <div class="form-group">
+                    <label>Nombre / Modelo</label>
+                    <input type="text" id="edit-nombre" name="nombre">
+                </div>
+                <div class="form-group">
+                    <label>Ubicación / Box</label>
+                    <input type="text" id="edit-ubicacion" name="ubicacion">
+                </div>
+                <div class="form-group">
+                    <label>Usuario Asignado</label>
+                    <input type="text" id="edit-usuario" name="usuario">
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="edit-estado" name="estado">
+                        <option value="En Bodega">En Bodega</option>
+                        <option value="Asignado">Asignado</option>
+                        <option value="En reparación">En reparación</option>
+                        <option value="Baja">Baja</option>
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarEditar()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #3b82f6;">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Mejorar Plan -->
+    <div id="plansModal" class="modal">
+        <div class="modal-content" style="max-width: 850px; width: 95%;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-rocket" style="color: #3b82f6;"></i> Subir de Nivel / Planes SaaS</h2>
+                <span class="close" onclick="cerrarPlanes()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="color: #64748b; margin-bottom: 25px; text-align: center;">Escala tu capacidad espacial e
+                    integra herramientas de Business Intelligence.</p>
+
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; align-items: start;">
+                    <!-- FREE -->
+                    <div
+                        style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 25px; background: #fff; text-align: center; position: relative;">
+                        <span
+                            style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; position: absolute; top: 15px; right: 15px;">FREE</span>
+                        <h3 style="margin-top: 10px;">Freemium</h3>
+                        <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 15px 0 10px 0;">$0
+                            <span style="font-size: 0.9rem; color: #64748b; font-weight:normal;">/mes</span></div>
+                        <ul
+                            style="text-align: left; list-style: none; padding: 0; margin-bottom: 30px; font-size: 0.88rem; color: #475569;">
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i> 30
+                                escaneos totales</li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i> 14
+                                días de prueba</li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i> 1
+                                Admin / 2 Operadores</li>
+                        </ul>
+                        {% if empresa.plan_type == 'Freemium' %}
+                        <button
+                            style="width:100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #94a3b8; font-weight: 600;"
+                            disabled>Tu Plan Actual</button>
+                        {% else %}
+                        <button
+                            style="width:100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #94a3b8; font-weight: 600;"
+                            disabled>Básico</button>
+                        {% endif %}
+                    </div>
+
+                    <!-- PRO -->
+                    <div
+                        style="border: 2px solid #3b82f6; border-radius: 16px; padding: 25px; background: #fff; text-align: center; position: relative; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);">
+                        <span
+                            style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);">POPULAR</span>
+                        <h3 style="margin-top: 10px;">Plan PRO</h3>
+                        <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 15px 0 10px 0;">$19.99
+                            <span style="font-size: 0.9rem; color: #64748b; font-weight:normal;">/mes</span></div>
+                        <ul
+                            style="text-align: left; list-style: none; padding: 0; margin-bottom: 30px; font-size: 0.88rem; color: #475569;">
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i> 🚀
+                                <strong>1,000 escaneos</strong> /mes</li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i>
+                                Tiempo ilimitado</li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i>
+                                Hasta 2 Admins / 5 Operadores</li>
+                        </ul>
+                        {% if empresa.plan_type == 'Pro' %}
+                        <button
+                            style="width:100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #94a3b8; font-weight: 600;"
+                            disabled>Tu Plan Actual</button>
+                        {% else %}
+                        <button
+                            style="width:100%; padding: 12px; border-radius: 10px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer;"
+                            onclick="comprarPlan('pro')">Actualizar a Pro</button>
+                        {% endif %}
+                    </div>
+
+                    <!-- PREMIUM -->
+                    <div
+                        style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 25px; background: #fff; text-align: center; position: relative;">
+                        <span
+                            style="background: #fdf2f8; color: #be185d; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; position: absolute; top: 15px; right: 15px;">ENTERPRISE</span>
+                        <h3 style="margin-top: 10px;">PREMIUM</h3>
+                        <div style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 15px 0 10px 0;">$49.99
+                            <span style="font-size: 0.9rem; color: #64748b; font-weight:normal;">/mes</span></div>
+                        <ul
+                            style="text-align: left; list-style: none; padding: 0; margin-bottom: 30px; font-size: 0.88rem; color: #475569;">
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i> 🚀
+                                <strong>5,000 Escaneos mensuales</strong></li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-star" style="color:#f59e0b;"></i>
+                                Visión Computarizada IA</li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i>
+                                Dashboard Métricas / Gráficos</li>
+                            <li style="margin-bottom: 10px;"><i class="fa-solid fa-check" style="color:#10b981;"></i>
+                                Admins y Operadores Ilimitados</li>
+                            <li
+                                style="margin-top: 12px; font-size: 0.78rem; color: #64748b; font-style: italic; list-style: none;">
+                                <i class="fa-solid fa-circle-info"></i> Consultar a soporte para volúmenes mayores.</li>
+                        </ul>
+                        {% if empresa.plan_type == 'Premium' %}
+                        <button
+                            style="width:100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #94a3b8; font-weight: 600;"
+                            disabled>Tu Plan Actual</button>
+                        {% else %}
+                        <button
+                            style="width:100%; padding: 12px; border-radius: 10px; border: 1px solid #1e293b; background: white; color: #1e293b; font-weight: 600; cursor: pointer;"
+                            onclick="comprarPlan('premium')">Adquirir Premium</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-user-gear" style="color: #3b82f6;"></i> Mi Perfil (Admin)</h2>
+                <span class="close" onclick="cerrarPerfil()">&times;</span>
+            </div>
+            <form action="/api/admin/editar_perfil" method="POST">
+                <div class="form-group">
+                    <label style="font-weight: 600; color: #475569;">Correo Electrónico</label>
+                    <input type="text" value="{{ session.get('usuario_correo') }}"
+                        style="background: #f1f5f9; cursor: not-allowed;" readonly>
+                    <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; display:block;">El correo no puede
+                        modificarse por seguridad en esta versión.</span>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label style="font-weight: 600; color: #475569;">Nombre de la Empresa *</label>
+                    <input type="text" name="nombre_empresa" value="{{ empresa.name }}" required>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label style="font-weight: 600; color: #475569;">Cambiar Contraseña</label>
+                    <input type="password" name="password"
+                        placeholder="Ingresa una nueva contraseña si deseas cambiarla">
+                    <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; display:block;">Dejar vacío para
+                        mantener la actual.</span>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarPerfil()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #3b82f6;"><i
+                            class="fa-solid fa-check"></i> Guardar Cambios</button>
+                </div>
+            </form>
+
+            <!-- Formulario de Logo (Marca Blanca) -->
+            <form action="/api/admin/editar_logo" method="POST" enctype="multipart/form-data"
+                style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                <div class="form-group">
+                    <label style="font-weight: 600; color: #475569;">Logo Corporativo (Marca Blanca)</label>
+                    <input type="file" name="logo" accept="image/*" required
+                        style="font-size: 0.85rem; padding: 5px; border: 1px dashed #cbd5e1; border-radius: 8px; width: 100%;">
+                    <span style="font-size: 0.75rem; color: #64748b; margin-top: 4px; display:block;">Sube una imagen
+                        (PNG o JPG). Se redimensionará automáticamente.</span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button type="submit" class="btn-export"
+                        style="background: #10b981; font-size: 0.85rem; padding: 6px 12px;"><i
+                            class="fa-solid fa-upload"></i> Subir Logo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Creación -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registrar Nuevo Equipo (Manual)</h2>
+                <span class="close" onclick="cerrarCrear()">&times;</span>
+            </div>
+            <form action="/api/admin/crear_equipo_manual" method="POST">
+                <div class="form-group">
+                    <label>S/N (Serie) *</label>
+                    <input type="text" id="create-sn" name="sn" required placeholder="Ej: FONE12345678">
+                </div>
+                <div class="form-group">
+                    <label>MAC</label>
+                    <input type="text" id="create-mac" name="mac" placeholder="Ej: 00:11:22:33:44:55">
+                </div>
+                <div class="form-group">
+                    <label>Nombre / Modelo <span style="color:#64748b;font-weight:normal;font-size:0.8rem;">(Se
+                            auto-calcula si está vacío)</span></label>
+                    <input type="text" id="create-nombre" name="nombre" placeholder="Ej: Fortifone">
+                </div>
+                <div class="form-group">
+                    <label>Ubicación / Box</label>
+                    <input type="text" id="create-ubicacion" name="ubicacion" placeholder="Ej: Recepción">
+                </div>
+                <div class="form-group">
+                    <label>Usuario Asignado</label>
+                    <input type="text" id="create-usuario" name="usuario" placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="create-estado" name="estado">
+                        <option value="En Bodega">En Bodega</option>
+                        <option value="Asignado" selected>Asignado</option>
+                        <option value="En reparación">En reparación</option>
+                        <option value="Baja">Baja</option>
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarCrear()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #10b981;"><i
+                            class="fa-solid fa-check"></i> Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Vista (Details) -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalle del Equipo</h2>
+                <span class="close" onclick="cerrarVer()">&times;</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0 0 10px 0;"><strong>S/N (Serie):</strong> <span id="view-sn"
+                            style="color: #0f172a;"></span></p>
+                    <p style="margin: 0 0 10px 0;"><strong>MAC:</strong> <span id="view-mac"
+                            style="color: #0f172a;"></span></p>
+                    <p style="margin: 0 0 10px 0;"><strong>Nombre / Modelo:</strong> <span id="view-nombre"
+                            style="color: #0f172a;"></span></p>
+                    <p style="margin: 0 0 10px 0;"><strong>Ubicación:</strong> <span id="view-ubicacion"
+                            style="color: #0f172a;"></span></p>
+                    <p style="margin: 0 0 10px 0;"><strong>Usuario:</strong> <span id="view-usuario"
+                            style="color: #0f172a;"></span></p>
+                    <p style="margin: 0;"><strong>Estado:</strong> <span id="view-estado" class="badge"
+                            style="font-size: 0.9em;"></span></p>
+                </div>
+                <!-- Sección para Datos Dinámicos -->
+                <div id="view-datos-dinamicos" style="background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; display: none;">
+                    <h4 style="margin: 0 0 8px 0; color: #475569; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em;">Datos Personalizados</h4>
+                    <div id="view-datos-dinamicos-items" style="display: grid; grid-template-columns: 1fr; gap: 6px;">
+                        <!-- Se llena vía JS -->
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn-export" style="background: #3b82f6;"
+                    onclick="cerrarVer()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear Proyecto -->
+    <div id="createProyectoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crear Nuevo Proyecto</h2>
+                <span class="close" onclick="cerrarCrearProyecto()">&times;</span>
+            </div>
+            <form action="/api/admin/crear_proyecto" method="POST">
+                <div class="form-group">
+                    <label>Nombre del Proyecto *</label>
+                    <input type="text" name="nombre" placeholder="Ej: Clínica Centro" required>
+                </div>
+                <div class="form-group">
+                    <label>Campos a identificar (Separados por coma) *</label>
+                    <input type="text" name="campos_ocr" value="S/N,MAC" required>
+                    <span style="display:block; font-size: 0.75rem; color: #64748b; margin-top: 5px;">
+                        Define qué variables quieres que el OCR intente extraer de las cajas en este proyecto
+                        particular.
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarCrearProyecto()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #3b82f6;"><i
+                            class="fa-solid fa-check"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Proyecto -->
+    <div id="editProyectoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Proyecto</h2>
+                <span class="close" onclick="cerrarEditarProyecto()">&times;</span>
+            </div>
+            <form action="/api/admin/editar_proyecto" method="POST">
+                <input type="hidden" id="edit-proyecto-id" name="proyecto_id">
+                <div class="form-group">
+                    <label>Nombre del Proyecto *</label>
+                    <input type="text" id="edit-proyecto-nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Campos a identificar (Separados por coma) *</label>
+                    <input type="text" id="edit-proyecto-campos" name="campos_ocr" required>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarEditarProyecto()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #3b82f6;"><i
+                            class="fa-solid fa-check"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Crear Operador -->
+    <div id="createUsuarioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir Nuevo Operador</h2>
+                <span class="close" onclick="cerrarCrearUsuario()">&times;</span>
+            </div>
+            <form action="/api/admin/crear_usuario" method="POST">
+                <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" name="correo" placeholder="juan.terreno@empresa.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña Inicial *</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                    <span style="display:block; font-size: 0.75rem; color: #64748b; margin-top: 5px;">
+                        El operador debe usar esta contraseña para iniciar sesión en la Aplicación Móvil.
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarCrearUsuario()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #8b5cf6;"><i
+                            class="fa-solid fa-user-plus"></i> Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Operador -->
+    <div id="editUsuarioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Operador</h2>
+                <span class="close" onclick="cerrarEditarUsuario()">&times;</span>
+            </div>
+            <form action="/api/admin/editar_usuario" method="POST">
+                <input type="hidden" id="edit-usuario-id" name="usuario_id">
+                <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" id="edit-usuario-correo" name="correo" required>
+                </div>
+                <div class="form-group">
+                    <label>Cambiar Contraseña (Opcional)</label>
+                    <input type="password" name="password" placeholder="Solo si deseas cambiarla">
+                    <span style="display:block; font-size: 0.75rem; color: #64748b; margin-top: 5px;">
+                        Si dejas este campo vacío, la contraseña actual se mantendrá intacta.
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-export" style="background: #94a3b8;"
+                        onclick="cerrarEditarUsuario()">Cancelar</button>
+                    <button type="submit" class="btn-export" style="background: #3b82f6;"><i
+                            class="fa-solid fa-check"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        // --- SISTEMA DE NOTIFICACIONES TOAST ---
+        function mostrarNotificacion(mensaje, tipo = 'success') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = "position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;";
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.style.cssText = "background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; transform: translateY(20px); opacity: 0; transition: all 0.3s ease;";
+            if (tipo === 'danger' || tipo === 'error') toast.style.background = '#ef4444';
+
+            const icon = tipo === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${mensaje}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => { toast.style.transform = 'translateY(0)'; toast.style.opacity = '1'; }, 10);
+            setTimeout(() => {
+                toast.style.transform = 'translateY(20px)'; toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        function abrirEditar(id, sn, mac, nombre, ubicacion, usuario, estado) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-sn').value = sn;
+            document.getElementById('edit-mac').value = (mac === 'None' ? '' : mac);
+            document.getElementById('edit-nombre').value = (nombre === 'None' ? '' : nombre);
+            document.getElementById('edit-ubicacion').value = (ubicacion === 'None' ? '' : ubicacion);
+            document.getElementById('edit-usuario').value = (usuario === 'None' ? '' : usuario);
+
+            const sel = document.getElementById('edit-estado');
+            for (let o of sel.options) if (o.value === estado) o.selected = true;
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function cerrarEditar() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function abrirCrear() {
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function cerrarCrear() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        function abrirVer() {
+            document.getElementById('viewModal').style.display = 'block';
+        }
+
+        function cerrarVer() {
+            document.getElementById('viewModal').style.display = 'none';
+        }
+
+        function abrirCrearProyecto() {
+            document.getElementById('createProyectoModal').style.display = 'block';
+        }
+
+        function cerrarCrearProyecto() {
+            document.getElementById('createProyectoModal').style.display = 'none';
+        }
+
+        function abrirEditarProyecto(id, nombre, campos) {
+            document.getElementById('edit-proyecto-id').value = id;
+            document.getElementById('edit-proyecto-nombre').value = nombre;
+            document.getElementById('edit-proyecto-campos').value = campos;
+            document.getElementById('editProyectoModal').style.display = 'block';
+        }
+
+        function cerrarEditarProyecto() {
+            document.getElementById('editProyectoModal').style.display = 'none';
+        }
+
+        function abrirCrearUsuario() {
+            document.getElementById('createUsuarioModal').style.display = 'block';
+        }
+
+        function cerrarCrearUsuario() {
+            document.getElementById('createUsuarioModal').style.display = 'none';
+        }
+
+        function abrirEditarUsuario(id, correo, rol) {
+            document.getElementById('edit-usuario-id').value = id;
+            document.getElementById('edit-usuario-correo').value = correo;
+            document.getElementById('editUsuarioModal').style.display = 'block';
+        }
+
+        function cerrarEditarUsuario() {
+            document.getElementById('editUsuarioModal').style.display = 'none';
+        }
+
+        function abrirPlanes() {
+            document.getElementById('plansModal').style.display = 'block';
+        }
+
+        function cerrarPlanes() {
+            document.getElementById('plansModal').style.display = 'none';
+        }
+
+        function comprarPlan(tipo) {
+            const btns = document.querySelectorAll('#plansModal button');
+            btns.forEach(b => { if (!b.disabled) b.innerText = 'Cargando...'; b.disabled = true; });
+
+            fetch('/api/admin/crear_preferencia', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan_type: tipo })
+            })
+                .then(r => r.json())
+                .then(data => {
+                        if (data.status === 'success' && data.url) {
+                            window.location.href = data.url;
+                        } else {
+                            mostrarNotificacion('Error: ' + (data.message || 'No se pudo procesar.'), 'error');
+                            setTimeout(() => location.reload(), 2000);
+                        }
+                    })
+                    .catch(err => {
+                        mostrarNotificacion('Error de red al conectar con MercadoPago.', 'error');
+                        setTimeout(() => location.reload(), 2000);
+                    });
+        }
+
+        function abrirPerfil() {
+            document.getElementById('profileModal').style.display = 'block';
+            if ($(window).width() <= 768) {
+                $('#sidebar').removeClass('open');
+                $('#sidebar-overlay').removeClass('active');
+            }
+        }
+
+        function cerrarPerfil() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            if (event.target == document.getElementById('editModal')) {
+                cerrarEditar();
+            }
+            if (event.target == document.getElementById('createModal')) {
+                cerrarCrear();
+            }
+            if (event.target == document.getElementById('viewModal')) {
+                cerrarVer();
+            }
+            if (event.target == document.getElementById('createProyectoModal')) {
+                cerrarCrearProyecto();
+            }
+            if (event.target == document.getElementById('createUsuarioModal')) {
+                cerrarCrearUsuario();
+            }
+            if (event.target == document.getElementById('editUsuarioModal')) {
+                cerrarEditarUsuario();
+            }
+            if (event.target == document.getElementById('editProyectoModal')) {
+                cerrarEditarProyecto();
+            }
+            if (event.target == document.getElementById('plansModal')) {
+                cerrarPlanes();
+            }
+            if (event.target == document.getElementById('profileModal')) {
+                cerrarPerfil();
+            }
+        }
+
+        function verEquipo(id, sn, mac, nombre, ubicacion, usuario, estado, datosDinamicosRaw = '{}') {
+            const snText = (sn === 'None' || !sn) ? '-' : sn;
+            document.getElementById('view-sn').textContent = snText;
+            document.getElementById('view-mac').textContent = (mac === 'None' || !mac) ? '-' : mac;
+            document.getElementById('view-nombre').textContent = (nombre === 'None' || !nombre) ? '-' : nombre;
+            document.getElementById('view-ubicacion').textContent = (ubicacion === 'None' || !ubicacion) ? '-' : ubicacion;
+            document.getElementById('view-usuario').textContent = (usuario === 'None' || !usuario) ? '-' : usuario;
+            const estadoEl = document.getElementById('view-estado');
+            estadoEl.textContent = (estado === 'None' || !estado) ? 'Operativo' : estado;
+
+            // Adjust badge color based on status
+            estadoEl.className = 'badge'; // Reset
+            if (estado === 'Asignado') estadoEl.classList.add('success'); 
+            else if (estado === 'En reparación') estadoEl.classList.add('warning');
+            else if (estado === 'Baja') estadoEl.classList.add('danger');
+            else estadoEl.classList.add('info');
+
+            // --- RENDER DATOS DINÁMICOS ---
+            const containerSec = document.getElementById('view-datos-dinamicos');
+            const containerItems = document.getElementById('view-datos-dinamicos-items');
+            containerItems.innerHTML = ''; // Limpiar
+
+            try {
+                // Decodificar si viene escaparizado para evitar errores
+                let jsonStr = datosDinamicosRaw;
+                if (jsonStr.startsWith("&#34;") || jsonStr.includes("&quot;")) {
+                    const txt = document.createElement("textarea");
+                    txt.innerHTML = jsonStr;
+                    jsonStr = txt.value;
+                }
+                
+                const datos = JSON.parse(jsonStr || '{}');
+                const keys = Object.keys(datos);
+
+                if (keys.length > 0) {
+                    containerSec.style.display = 'block';
+                    keys.forEach(key => {
+                        const div = document.createElement('div');
+                        div.style.cssText = "display: flex; justify-content: space-between; font-size: 0.88rem; color: #1e293b; padding: 4px 0; border-bottom: 1px solid #e2e8f0;";
+                        div.innerHTML = `<strong style="color: #64748b;">${key}:</strong> <span>${datos[key]}</span>`;
+                        containerItems.appendChild(div);
+                    });
+                } else {
+                    containerSec.style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Error parseando datos dinámicos:", e);
+                containerSec.style.display = 'none';
+            }
+
+            abrirVer();
+        }
+
+        // --- BUSCADOR FILTRADO MÓVIL (Con Paginación) ---
+        function filtrarTarjetas(input, gridId) {
+            let filterValue = input.value.toLowerCase();
+            let $grid = $(`#${gridId}`);
+            let $cards = $grid.find('.cards-item');
+            let $btn = $grid.next('.btn-load-more');
+
+            if (filterValue === "") {
+                // Sin filtro: Volver a mostrar solo las primeras 10
+                $cards.hide();
+                $cards.slice(0, 10).show();
+                let remaining = $cards.length - 10;
+                if ($cards.length > 10) {
+                    if ($btn.length === 0) {
+                        $grid.after(`<button class="btn-load-more" style="width:100%; margin-top:10px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; font-weight:600; cursor:pointer;" onclick="cargarMasCards(this)">Ver más (${remaining} restantes)</button>`);
+                    } else {
+                        $btn.text(`Ver más (${remaining} restantes)`).show();
+                    }
+                }
+                return;
+            }
+
+            if ($btn.length) $btn.hide(); // Ocultar paginador durante búsqueda
+
+            $cards.each(function () {
+                let text = $(this).text().toLowerCase();
+                if (text.indexOf(filterValue) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        function cargarMasCards(btn) {
+            let $grid = $(btn).prev('.cards-grid');
+            let $hiddenCards = $grid.find('.cards-item:hidden');
+            let limit = 10;
+
+            $hiddenCards.slice(0, limit).fadeIn(150);
+
+            let remaining = $grid.find('.cards-item:hidden').length;
+            if (remaining > 0) {
+                $(btn).text(`Ver más (${remaining} restantes)`);
+            } else {
+                $(btn).remove();
+            }
+        }
+
+        $(document).ready(function () {
+            // --- INICIALIZAR PAGINACIÓN CARDS EN MÓVIL ---
+            function inicializarPaginacionCards() {
+                $('.cards-grid').each(function () {
+                    let $grid = $(this);
+                    let $cards = $grid.find('.cards-item');
+                    let limit = 10;
+
+                    $cards.each(function (index) {
+                        if (index >= limit) $(this).hide();
+                    });
+
+                    if ($cards.length > limit) {
+                        let remaining = $cards.length - limit;
+                        let btnHtml = `<button class="btn-load-more" style="width:100%; margin-top:10px; background:#3b82f6; color:white; border:none; padding:12px; border-radius:8px; font-weight:600; cursor:pointer;" onclick="cargarMasCards(this)">Ver más (${remaining} restantes)</button>`;
+                        $grid.after(btnHtml);
+                    }
+                });
+            }
+            inicializarPaginacionCards();
+            // --- ACTUALIZAR PLAN (MODAL) ---
+            $('.upgrade-btn').on('click', function (e) {
+                e.preventDefault();
+                abrirPlanes();
+                if ($(window).width() <= 768) {
+                    $('#sidebar').removeClass('open');
+                    $('#sidebar-overlay').removeClass('active');
+                }
+            });
+
+            // --- LOGICA SIDEBAR MÓVIL (HAMBURGER) ---
+            $('#hamburger-open').on('click', function () {
+                $('#sidebar').addClass('open');
+                $('#sidebar-overlay').addClass('active');
+            });
+
+            $('#close-sidebar, #sidebar-overlay').on('click', function () {
+                $('#sidebar').removeClass('open');
+                $('#sidebar-overlay').removeClass('active');
+            });
+
+            $('#sidebar-nav .nav-item').on('click', function () {
+                if ($(window).width() <= 768) {
+                    $('#sidebar').removeClass('open');
+                    $('#sidebar-overlay').removeClass('active');
+                }
+            });
+            // Inicializar DataTables
+            // ⚡ FILTRO DE RANGO DE FECHA Y HORA PARA DATATABLES
+            $.fn.dataTable.ext.search.push(
+                function (settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'dt-inventario') return true;
+
+                    var minStr = $('#min-datetime').val();
+                    var maxStr = $('#max-datetime').val();
+                    var dateStr = data[6]; // Columna 7 (Fecha Actualización)
+
+                    if (dateStr === 'Sin fecha' || !dateStr) return true;
+
+                    try {
+                        var parts = dateStr.trim().split(' ');
+                        var dateParts = parts[0].split('/');
+                        var timeParts = parts[1] ? parts[1].split(':') : ["00", "00"];
+
+                        // DD/MM/YYYY -> Date(YYYY, MM-1, DD, HH, MM)
+                        var date = new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1]);
+
+                        var minDate = minStr ? new Date(minStr) : null;
+                        var maxDate = maxStr ? new Date(maxStr) : null;
+
+                        if (
+                            (minDate === null && maxDate === null) ||
+                            (minDate === null && date <= maxDate) ||
+                            (minDate <= date && maxDate === null) ||
+                            (minDate <= date && date <= maxDate)
+                        ) {
+                            return true;
+                        }
+                    } catch (e) {
+                        return true;
+                    }
+                    return false;
+                }
+            );
+
+            // Redibujar al cambiar inputs
+            $('#min-datetime, #max-datetime').on('change', function () {
+                $('#dt-inventario').DataTable().draw();
+            });
+
+            $('#btn-clear-datetime').on('click', function () {
+                $('#min-datetime').val('');
+                $('#max-datetime').val('');
+                $('#dt-inventario').DataTable().draw();
+            });
+
+            $('#dt-inventario').DataTable({
+                "pageLength": 100,
+                "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "Todos"]],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
+                    "lengthMenu": "Mostrar _MENU_ registros por página",
+                    "zeroRecords": "No se encontraron resultados",
+                    "info": "Mostrando página _PAGE_ de _PAGES_ (Total: _MAX_ registros)",
+                    "infoEmpty": "No hay registros disponibles",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)"
+                },
+                "order": []
+            });
+
+            $('#dt-log').DataTable({
+                "pageLength": 100,
+                "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "Todos"]],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "order": [[0, "desc"]]
+            });
+
+            $('#dt-proyectos').DataTable({
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "order": [[0, "asc"]]
+            });
+
+            $('#dt-usuarios').DataTable({
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "order": [[0, "asc"]]
+            });
+
+            // Lógica de Pestañas (Tabs)
+            const navItems = document.querySelectorAll('#sidebar-nav .nav-item[data-target]');
+            const tabContainers = document.querySelectorAll('.table-container');
+            const headerTitle = document.getElementById('header-title');
+
+            const titles = {
+                'tab-resumen': 'Resumen General',
+                'tab-inventario': 'Inventario oficial de Equipos y Proyectos',
+                'tab-log': 'Métricas e Histórico (Log OCR)',
+                'tab-proyectos': 'Configuración de Proyectos y Extracción Flexible (OCR)',
+                'tab-usuarios': 'Control de Empleados en Terreno',
+                'tab-config-ocr': 'Reglas de Lectura Inteligente (OCR)'
+            };
+
+            // CARGAR Y GUARDAR CONFIGURACIÓN OCR
+            const ocrItem = document.querySelector('[data-target="tab-config-ocr"]');
+            if (ocrItem) {
+                ocrItem.addEventListener('click', function () {
+                    fetch('/api/admin/config_ocr')
+                        .then(r => r.json())
+                        .then(data => {
+                            document.getElementById('cfg-sn-prefix').value = data.sn_prefix;
+                            if (document.getElementById('cfg-campos-personalizados')) { document.getElementById('cfg-campos-personalizados').value = data.campos_personalizados || ""; }
+                            document.getElementById('cfg-sn-length').value = data.sn_length;
+                            document.getElementById('cfg-req-mac').checked = data.require_mac;
+                            document.getElementById('cfg-req-pn').checked = data.require_pn;
+                            document.getElementById('cfg-req-ean').checked = data.require_ean;
+                        });
+                });
+            }
+
+            const cfgForm = document.getElementById('form-config-ocr');
+            if (cfgForm) {
+                cfgForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    const data = {
+                        sn_prefix: document.getElementById('cfg-sn-prefix').value.trim(),
+                        campos_personalizados: document.getElementById('cfg-campos-personalizados') ? document.getElementById('cfg-campos-personalizados').value.trim() : "",
+                        sn_length: document.getElementById('cfg-sn-length').value,
+                        require_mac: document.getElementById('cfg-req-mac').checked,
+                        require_pn: document.getElementById('cfg-req-pn').checked,
+                        require_ean: document.getElementById('cfg-req-ean').checked
+                    };
+
+                    fetch('/api/admin/config_ocr', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.status === 'success') {
+                                mostrarNotificacion('¡Reglas de Escaneo Guardadas Correctamente!', 'success');
+                            } else {
+                                mostrarNotificacion('Error al guardar: ' + res.message, 'danger');
+                            }
+                        });
+                });
+            }
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+
+                    tabContainers.forEach(container => {
+                        container.classList.remove('active');
+                        container.style.display = 'none';
+                    });
+
+                    const targetId = this.getAttribute('data-target');
+                    document.getElementById(targetId).style.display = 'block';
+                    document.getElementById(targetId).classList.add('active');
+
+                    // Cambiar el hash en la URL para permitir recargas y persistencia
+                    if (history.pushState) {
+                        history.pushState(null, null, '#' + targetId);
+                    } else {
+                        location.hash = '#' + targetId;
+                    }
+
+                    if (targetId === 'tab-inventario') {
+                        $('#dt-inventario').DataTable().columns.adjust().draw();
+                    } else if (targetId === 'tab-log') {
+                        $('#dt-log').DataTable().columns.adjust().draw();
+                    } else if (targetId === 'tab-proyectos') {
+                        $('#dt-proyectos').DataTable().columns.adjust().draw();
+                    } else if (targetId === 'tab-usuarios') {
+                        $('#dt-usuarios').DataTable().columns.adjust().draw();
+                    }
+
+                    headerTitle.textContent = titles[targetId];
+                });
+            });
+
+            // Leer el hash al cargar la página
+            const initialHash = window.location.hash;
+            if (initialHash) {
+                // Eliminar el # y buscar el botón de la navegación que corresponda
+                const targetId = initialHash.replace('#', '');
+                const targetBtn = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+                if (targetBtn) {
+                    targetBtn.click();
+                }
+            } else {
+                // Si no hay hash, forzar el click en el primero que es el "Resumen"
+                const firstBtn = document.querySelector('.nav-item[data-target="tab-resumen"]');
+                if (firstBtn) firstBtn.click();
+            }
+        });
+    </script>
+</body>
+
+</html>

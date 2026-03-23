@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Inteligente con IA | Auditorías OCR</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A2647; /* Azul Deep Tech */
+            --primary-hover: #144272; /* Azul Corporativo */
+            --dark: #0A2647;
+            --light: #F8FAFC;
+            --accent: #F78104; /* Naranja JET */
+            --gradient-1: linear-gradient(135deg, #F78104 0%, #0A2647 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            background-color: #ffffff;
+            color: var(--dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* 👑 Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(10, 38, 71, 0.05);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.03);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-outline {
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(10, 38, 71, 0.03);
+            transform: translateY(-2px);
+        }
+
+        .btn-solid {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(10, 38, 71, 0.15);
+        }
+
+        .btn-solid:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 38, 71, 0.2);
+        }
+
+        /* 🚀 Hero Section */
+        .hero {
+            padding: 120px 5% 100px;
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at 10% 20%, rgba(247, 129, 4, 0.03) 0%, rgba(255, 255, 255, 1) 90%);
+            overflow: hidden;
+        }
+
+        /* Floating background blobs */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(247, 129, 4, 0.05);
+            filter: blur(80px);
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            z-index: -1;
+            animation: float 6s infinite alternate ease-in-out;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(10, 38, 71, 0.04);
+            filter: blur(60px);
+            border-radius: 50%;
+            bottom: -50px;
+            left: -50px;
+            z-index: -1;
+            animation: float 8s infinite alternate-reverse ease-in-out;
+        }
+
+        .hero h1 {
+            font-size: 3.75rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            color: var(--dark);
+            animation: fadeUp 0.8s ease-out;
+        }
+
+        .hero h1 span {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            position: relative;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #475569;
+            max-width: 650px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+            animation: fadeUp 1s ease-out;
+        }
+
+        .hero .btn-solid {
+            animation: fadeUp 1.2s ease-out;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            background: var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Pulse glow CTA */
+        .hero .btn-solid::after {
+            content: '';
+            position: absolute;
+            top: -50%; right: -50%; bottom: -50%; left: -50%;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0), rgba(255,255,255,0.4), rgba(255,255,255,0));
+            transform: rotate(45deg);
+            transition: all 1s ease;
+        }
+        
+        .hero .btn-solid:hover::after {
+            left: 100%;
+            top: 100%;
+        }
+
+        /* ✨ Features Section */
+        .features {
+            padding: 80px 5%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 35px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            border: 1px solid rgba(10, 38, 71, 0.05);
+            padding: 35px;
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            box-shadow: 0 10px 20px rgba(10, 38, 71, 0.02);
+            animation: fadeUp 1.4s ease-out;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(10, 38, 71, 0.06);
+            border-color: rgba(247, 129, 4, 0.15);
+        }
+
+        .feature-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+
+        /* 💰 Pricing section */
+        .pricing {
+            padding: 100px 5%;
+            background: linear-gradient(180deg, #ffffff 0%, #F8FAFC 100%);
+            text-align: center;
+            position: relative;
+        }
+
+        .pricing h2 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 50px;
+            color: var(--dark);
+        }
+
+        .pricing-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            background: white;
+            border-radius: 24px;
+            padding: 45px 35px;
+            flex: 1;
+            min-width: 290px;
+            max-width: 320px;
+            shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .price-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(10, 38, 71, 0.06);
+        }
+
+        .price-card.popular {
+            border-color: var(--primary);
+            box-shadow: 0 15px 35px rgba(10, 38, 71, 0.08);
+            transform: scale(1.03);
+            background: radial-gradient(circle at top right, #ffffff 0%, rgba(20, 66, 114, 0.01) 100%);
+        }
+        
+        .price-card.popular:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-1);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(247, 129, 4, 0.3);
+        }
+
+        .price-card h4 {
+            margin: 0 0 12px;
+            font-size: 1.3rem;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .price span {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .price-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 35px;
+            text-align: left;
+        }
+
+        .price-features li {
+            padding: 12px 0;
+            color: #475569;
+            font-size: 0.98rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(10, 38, 71, 0.03);
+        }
+
+        .price-features li i {
+            color: #22C55E; /* Verde Éxito */
+            font-size: 1.1rem;
+        }
+
+        .btn-price {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(15px); }
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(0); }
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 900px) {
+            /* Ocultar nav central en tablets */
+            header nav { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            /* Header */
+            header { padding: 14px 5%; }
+            .nav-buttons { gap: 8px; }
+            .btn { padding: 10px 16px; font-size: 0.88rem; }
+
+            /* Hero */
+            .hero { padding: 80px 5% 60px; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1.05rem; }
+            .hero .btn-solid { padding: 14px 30px; font-size: 1rem; }
+
+            /* Features */
+            .features { padding: 50px 5%; gap: 20px; grid-template-columns: 1fr; }
+
+            /* Stats */
+            .stats-grid { gap: 30px; }
+            .stat-item h3 { font-size: 2.25rem; }
+
+            /* How it works */
+            .how-it-works { padding: 60px 5%; }
+            .how-it-works h2 { font-size: 2rem; margin-bottom: 35px; }
+            .steps-grid { flex-direction: column; align-items: center; gap: 30px; }
+            .step-card { min-width: unset; width: 100%; max-width: 420px; }
+
+            /* FAQ */
+            .faq { padding: 60px 5%; }
+            .faq h2 { font-size: 2rem; }
+
+            /* CTA Final */
+            section h2 { font-size: 2rem !important; }
+
+            /* Pricing (obsoleto, por si acaso) */
+            .pricing-grid { flex-direction: column; align-items: center; }
+            .price-card.popular { transform: none; }
+            .price-card.popular:hover { transform: translateY(-8px); }
+        }
+
+        @media (max-width: 480px) {
+            /* Pantallas muy pequeñas */
+            .hero h1 { font-size: 1.85rem; }
+            .hero p { font-size: 0.95rem; }
+            .stat-item h3 { font-size: 2rem; }
+            .how-it-works h2, .faq h2 { font-size: 1.7rem; }
+            header { flex-wrap: wrap; gap: 12px; }
+            .nav-buttons { width: 100%; justify-content: center; }
+            .footer-content { flex-direction: column; text-align: center; }
+        }
+
+        /* 🛠️ Cómo Funciona */
+        .how-it-works { padding: 80px 5%; text-align: center; }
+        .how-it-works h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 50px; }
+        .steps-grid { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
+        .step-card { flex: 1; min-width: 250px; position: relative; text-align: center; }
+        .step-number { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; margin: 0 auto 20px; box-shadow: 0 4px 10px rgba(247, 129, 4, 0.3); }
+
+        /* 📊 Stats Section */
+        .stats { padding: 60px 5%; background: var(--primary); color: white; text-align: center; position: relative; }
+        .stats-grid { display: flex; justify-content: space-around; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; gap: 30px; }
+        .stat-item h3 { font-size: 3rem; font-weight: 800; color: #F78104; margin-bottom: 10px; }
+        .stat-item p { color: #94a3b8; font-size: 1rem; }
+
+        /* ❓ FAQ Section */
+        .faq { padding: 80px 5%; max-width: 800px; margin: 0 auto; text-align: center; }
+        .faq h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 40px; color: var(--dark); }
+        .faq-item { text-align: left; background: white; border: 1px solid rgba(10, 38, 71, 0.05); border-radius: 12px; margin-bottom: 15px; padding: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease;
+            padding: 0 0 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 200px;
+            padding-top: 12px;
+        }
+        .faq-item.open .faq-chevron {
+            transform: rotate(180deg);
+        }
+        .faq-chevron {
+            transition: transform 0.3s ease;
+            color: var(--accent);
+        }
+
+        /* 🌻 Footer */
+        footer { padding: 50px 5%; background: #07172A; color: white; text-align: center; border-top: 1px solid rgba(255,255,255,0.03); }
+        .footer-content { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px; align-items: center; }
+
+        @media (max-width: 600px) {
+            .footer-content { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo">
+            <img src="{{ url_for('static', filename='logo_jetocr.jpg') }}" alt="JET OCR Logo" style="height: 45px; border-radius: 6px;">
+        </a>
+        <nav style="display: flex; gap: 28px; align-items: center;">
+            <a href="#caracteristicas" style="color: #475569; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s;">Características</a>
+            <a href="#pasos" style="color: #475569; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s;">Cómo Funciona</a>
+            <a href="{{ url_for('signup') }}" style="color: #475569; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s;">Precios</a>
+            <a href="#ayuda" style="color: #475569; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s;">Ayuda</a>
+        </nav>
+        <div class="nav-buttons">
+            <a href="{{ url_for('login') }}" class="btn btn-outline">Iniciar Sesión</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-solid">Registrarse</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Auditorías de Equipos <br><span>con Inteligencia Artificial</span></h1>
+        <p>Optimiza tus inventarios de hardware leyendo cualquier código o texto al instante con la cámara de tu celular. Sincroniza en la nube sin errores.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-solid" style="font-size: 1.1rem; padding: 15px 35px;">Comenzar Ahora</a>
+    </section>
+
+    <section class="features" id="caracteristicas">
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(247, 129, 4, 0.1); color: #F78104;"><i class="fa-solid fa-bolt"></i></div>
+            <h3>Escaneo de Alta Velocidad</h3>
+            <p>Captura cualquier dato en 3 segundos con la cámara de tu celular. <strong>¡Soporta corrección manual al instante!</strong></p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(20, 66, 114, 0.1); color: #144272;"><i class="fa-solid fa-wifi-slash"></i></div>
+            <h3>Modo Offline Inteligente</h3>
+            <p>¿Sin señal en bodegas o sótanos? Escanea con tranquilidad. Tus datos se sincronizarán al recuperar la conexión.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(10, 38, 71, 0.1); color: #0A2647;"><i class="fa-solid fa-chart-simple"></i></div>
+            <h3>Gestión y Control Total</h3>
+            <p>Administra operadores, límites de escaneo, proyectos y exporta informes en Excel desde tu panel central.</p>
+        </div>
+    </section>
+
+
+
+    <!-- 🟢 Cómo Funciona -->
+    <section class="how-it-works" id="pasos">
+        <h2>Optimiza tu inventario en 3 pasos</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Crea tu Proyecto</h3>
+                <p style="color: #64748b; font-size:0.95rem;">Configura de forma dinámica las variables que necesitas leer en tus activos (ej: Serie, MAC, Modelo).</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Escanea y Valida</h3>
+                <p style="color: #64748b; font-size:0.95rem;">Usa el celular para auditar. Edita o corrige a mano si alguna etiqueta está dañada para asegurar 100% de precisión.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Descarga Reportes</h3>
+                <p style="color: #64748b; font-size:0.95rem;">Exporta todos los datos conciliados a Excel listos para la toma de decisiones, sin errores humanos.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 📊 Stats -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>85%</h3>
+                <p>Menos errores de digitación</p>
+            </div>
+            <div class="stat-item">
+                <h3>12 hrs</h3>
+                <p>Tiempo ahorrado promedio al mes</p>
+            </div>
+            <div class="stat-item">
+                <h3>100%</h3>
+                <p>Disponibilidad y sincronización nube</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ❓ FAQ -->
+    <section class="faq" id="ayuda">
+        <h2>Información Útil</h2>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>¿Qué pasa si una etiqueta está rota?</span>
+                <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </div>
+            <div class="faq-answer">La cámara te permite leer lo que sea legible y el resto lo podrás <strong>digitar a mano en la misma línea</strong> de auditoría, ganando la velocidad del OCR sin perder el hilo.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>¿Puedo usarlo sin conexión a internet?</span>
+                <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </div>
+            <div class="faq-answer">¡Absolutamente! La app guarda los escaneos de forma local y los <strong>sincroniza en automático</strong> tan pronto como el dispositivo detecte señal de red.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>¿El límite de escaneo es por mes?</span>
+                <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </div>
+            <div class="faq-answer">Correcto. El saldo de escaneos se reinicia mensualmente según el ciclo de facturación del plan que elijas (Freemium, Pro o Premium).</div>
+        </div>
+    </section>
+
+    <script>
+        // FAQ Acordeón
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.parentElement;
+                const isOpen = item.classList.contains('open');
+                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+                if (!isOpen) item.classList.add('open');
+            });
+        });
+    </script>
+
+    <!-- 🚀 CTA Final -->
+    <section style="padding: 100px 5%; text-align: center; background: linear-gradient(135deg, #0A2647 0%, #144272 100%); position: relative; overflow: hidden;">
+        <!-- Blob decorativo -->
+        <div style="position: absolute; width: 500px; height: 500px; background: rgba(247,129,4,0.07); border-radius: 50%; filter: blur(80px); top: -150px; right: -100px;"></div>
+        <div style="position: absolute; width: 350px; height: 350px; background: rgba(255,255,255,0.03); border-radius: 50%; filter: blur(60px); bottom: -100px; left: -80px;"></div>
+
+        <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; font-weight: 600;">Sin tarjeta de crédito</p>
+        <h2 style="font-size: 2.75rem; font-weight: 800; color: white; margin-bottom: 20px; line-height: 1.2;">¿Sigues digitando seriales<br>a mano?</h2>
+        <p style="font-size: 1.15rem; color: rgba(255,255,255,0.65); max-width: 580px; margin: 0 auto 40px; line-height: 1.6;">Prueba JET OCR gratis hoy y transforma la manera en que tu equipo audita activos. Comienza en minutos.</p>
+
+        <a href="{{ url_for('signup') }}" style="display: inline-block; background: #F78104; color: white; padding: 18px 48px; border-radius: 14px; font-weight: 800; font-size: 1.15rem; text-decoration: none; box-shadow: 0 8px 25px rgba(247, 129, 4, 0.4); transition: all 0.3s ease; letter-spacing: 0.3px;">
+            Pruébalo Gratis &nbsp;<i class="fa-solid fa-arrow-right"></i>
+        </a>
+
+        <p style="margin-top: 22px; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
+            Al registrarte aceptas nuestros
+            <a href="/terminos" style="color: rgba(255,255,255,0.55); text-decoration: underline; transition: color 0.2s;">Términos y Condiciones</a>
+            — Plan Freemium con 30 escaneos mensuales gratuitos.
+        </p>
+    </section>
+
+    <!-- 🌻 Footer -->
+
+    <footer>
+        <div class="footer-content">
+            <div style="text-align: left;">
+                <img src="{{ url_for('static', filename='logo_jetocr.jpg') }}" alt="Logo" style="height: 35px; filter: brightness(0.95); border-radius: 4px;">
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 10px;">Tecnología OCR aplicada a auditorías de hardware ágiles.</p>
+            </div>
+            <div style="font-size: 0.85rem; color: #94a3b8;">
+                &copy; 2026 JET OCR. Un producto de <strong>Business Wolsmart</strong>.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
