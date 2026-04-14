@@ -71,20 +71,22 @@ def process_excel(file_path):
             ws_id = ws_res[0] if ws_res else None
             
             datos_dinamicos = json.dumps({
+                "modelo": modelo,
                 "boca_red": boca_red, 
                 "fecha_catastro": str(datetime.now().date()),
                 "responsabilidad_legal": "Fianza CESFAM"
             })
             
             sql = """
-                INSERT INTO equipos (id, nombre, serial, modelo, workstation_id, datos_dinamicos, categoria, estado)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, 'Operativo')
-                ON CONFLICT (serial) DO UPDATE SET 
+                INSERT INTO equipos (id, nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
+                VALUES (%s, %s, %s, %s, %s, %s, 'Operativo')
+                ON CONFLICT (sn) DO UPDATE SET 
                 workstation_id = EXCLUDED.workstation_id,
                 datos_dinamicos = EXCLUDED.datos_dinamicos
                 RETURNING id
             """
-            cur.execute(sql, (equipo_id, nombre, serial, modelo, ws_id, datos_dinamicos, categoria))
+            cur.execute(sql, (equipo_id, nombre, serial, ws_id, datos_dinamicos, categoria))
+
             final_id = cur.fetchone()[0]
             
             # Generar QR

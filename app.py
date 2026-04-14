@@ -1397,7 +1397,7 @@ def pago_exitoso():
 def ver_equipo(uuid_equipo):
     # Consulta avanzada que trae el equipo y su workstation vinculada desde Supabase
     sql = """
-        SELECT e.id, e.nombre, e.serial, e.modelo, e.datos_dinamicos, w.codigo_puesto, w.inherited_zone, e.estado, e.categoria
+        SELECT e.id, e.nombre, e.sn, e.datos_dinamicos, w.codigo_puesto, w.inherited_zone, e.estado, e.categoria
         FROM equipos e
         LEFT JOIN workstations w ON e.workstation_id = w.id
         WHERE e.id = %s
@@ -1414,18 +1414,20 @@ def ver_equipo(uuid_equipo):
             flash("Equipo no registrado en el catastro.", "warning")
             return redirect(url_for('landing'))
 
+        datos_extra = data[3] if data[3] else {}
         equipo_info = {
             "id": data[0],
             "nombre": data[1],
-            "serial": data[2],
-            "modelo": data[3],
-            "red": data[4].get('boca_red', 'No especificada') if data[4] else 'No especificada',
-            "puesto": data[5] or "Sin Puesto Vinculado",
-            "zona": data[6] or "Zona Desconocida",
-            "estado": data[7] or "Indefinido",
-            "categoria": data[8] or "Hardware",
-            "legal": data[4].get('responsabilidad_legal', 'No especificada') if data[4] else 'No especificada'
+            "serial": data[2], # Mapeamos 'sn' a 'serial' para el template
+            "modelo": datos_extra.get('modelo', 'No especificado'),
+            "red": datos_extra.get('boca_red', 'No especificada'),
+            "puesto": data[4] or "Sin Puesto Vinculado",
+            "zona": data[5] or "Zona Desconocida",
+            "estado": data[6] or "Indefinido",
+            "categoria": data[7] or "Hardware",
+            "legal": datos_extra.get('responsabilidad_legal', 'No especificada')
         }
+
         return render_template('detalle_equipo.html', equipo=equipo_info)
     except Exception as e:
         print(f"Error en inventario: {e}")
