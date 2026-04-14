@@ -1439,28 +1439,35 @@ def ver_equipo(id_equipo):
 @app.route('/inventario')
 def inventario_list():
     sql = """
-        SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria, e.datos_dinamicos
+        SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria, e.datos_dinamicos, e.area
         FROM equipos e
         LEFT JOIN workstations w ON e.workstation_id = w.id
-        ORDER BY e.id DESC
+        ORDER BY e.area ASC, e.id DESC
     """
     conn = db.engine.raw_connection()
     cur = conn.cursor()
     cur.execute(sql)
-    equipos = cur.fetchall()
+    equipos_raw = cur.fetchall()
     
-    # Obtener workstations para los selects
+    inventarios = {}
+    for eq in equipos_raw:
+        area = eq[7] or 'GENERAL'
+        if area not in inventarios:
+            inventarios[area] = []
+        inventarios[area].append(eq)
+    
+    # Obtener workstations para los selects de edición
     cur.execute("SELECT id, codigo_puesto FROM workstations ORDER BY codigo_puesto")
     workstations = cur.fetchall()
     
     cur.close()
     conn.close()
-    return render_template('inventario_list.html', equipos=equipos, workstations=workstations)
+    return render_template('inventario_list.html', inventarios=inventarios, workstations=workstations)
 
 @app.route('/api/equipo/<int:id>')
 def api_get_equipo(id):
     sql = """
-        SELECT e.id, e.nombre, e.sn, e.workstation_id, e.datos_dinamicos, e.categoria, e.estado, w.codigo_puesto
+        SELECT e.id, e.nombre, e.sn, e.workstation_id, e.datos_dinamicos, e.categoria, e.estado, w.codigo_puesto, e.area
         FROM equipos e
         LEFT JOIN workstations w ON e.workstation_id = w.id
         WHERE e.id = %s
@@ -1475,7 +1482,8 @@ def api_get_equipo(id):
         "id": data[0], "nombre": data[1], "sn": data[2], 
         "workstation_id": data[3], "extra": data[4] or {},
         "categoria": data[5], "estado": data[6],
-        "puesto_nombre": data[7]
+        "puesto_nombre": data[7],
+        "area": data[8] or "General"
     })
 
 @app.route('/api/equipo/update/<int:id>', methods=['POST'])
@@ -1487,7 +1495,7 @@ def api_update_equipo(id):
         
         sql = """
             UPDATE equipos 
-            SET nombre=%s, sn=%s, workstation_id=%s, categoria=%s, estado=%s, datos_dinamicos=%s
+            SET nombre=%s, sn=%s, workstation_id=%s, categoria=%s, estado=%s, datos_dinamicos=%s, area=%s
             WHERE id=%s
         """
         cur.execute(sql, (
@@ -1497,6 +1505,7 @@ def api_update_equipo(id):
             data.get('categoria'),
             data.get('estado'),
             json.dumps(data.get('extra', {})),
+            data.get('area', 'General'),
             id
         ))
         conn.commit()

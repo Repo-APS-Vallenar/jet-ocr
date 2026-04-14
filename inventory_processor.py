@@ -146,15 +146,15 @@ def process_excel(file_path):
                 ws_id = ws_res[0] if ws_res else None
                 
                 sql = """
-                    INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
-                    VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo')
+                    INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado, area)
+                    VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo', %s)
                     ON CONFLICT (sn) DO UPDATE SET 
                     nombre = EXCLUDED.nombre,
                     workstation_id = COALESCE(EXCLUDED.workstation_id, equipos.workstation_id),
                     datos_dinamicos = EXCLUDED.datos_dinamicos
                     RETURNING id
                 """
-                cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos))
+                cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos, sheet_name))
                 final_id = cur.fetchone()[0]
                 
                 # Generar QR

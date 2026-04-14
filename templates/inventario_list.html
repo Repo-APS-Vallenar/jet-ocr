@@ -76,43 +76,100 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Inventario General</h1>
-            <p>{{ equipos|length }} equipos registrados</p>
+            <h1>Gestor de Inventarios</h1>
+            <p>Organizado por Áreas Técnicas</p>
+        </div>
+
+        <!-- TABS DE NAVEGACIÓN -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
+            <button class="tab-btn active" onclick="showInventory('ALL')">TODOS</button>
+            {% for area in inventarios.keys()|sort %}
+            <button class="tab-btn" onclick="showInventory('{{ area }}')">{{ area }}</button>
+            {% endfor %}
         </div>
 
         <div class="card">
-            <table>
+            <table id="inventoryTable">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Nombre / Modelo</th>
                         <th>S/N</th>
                         <th>Ubicación</th>
-                        <th>Estado</th>
+                        <th>Área</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for eq in equipos %}
-                    <tr>
-                        <td>{{ eq[0] }}</td>
-                        <td><strong>{{ eq[1] }}</strong><br><small style="color:var(--text-muted)">{{ eq[5] }}</small></td>
-                        <td><code>{{ eq[2] }}</code></td>
-                        <td>{{ eq[3] or 'No asignada' }}</td>
-                        <td>{{ eq[4] }}</td>
-                        <td>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <button onclick="openEditModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
-                                <button onclick="openViewModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;" title="Ver Detalle">👁️</button>
-                                <a href="{{ url_for('inventario_eliminar', id=eq[0]) }}" onclick="return confirm('¿Eliminar este equipo de forma permanente?')" style="text-decoration:none;" title="Eliminar">🗑️</a>
-                            </div>
-                        </td>
-                    </tr>
+                    {% for area, equipos in inventarios.items() %}
+                        {% for eq in equipos %}
+                        <tr class="inventory-row" data-area="{{ area }}">
+                            <td>{{ eq[0] }}</td>
+                            <td><strong>{{ eq[1] }}</strong><br><small style="color:var(--text-muted)">{{ eq[5] }}</small></td>
+                            <td><code>{{ eq[2] }}</code></td>
+                            <td>{{ eq[3] or 'No asignada' }}</td>
+                            <td><span style="font-size: 10px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">{{ area }}</span></td>
+                            <td>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button onclick="openEditModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
+                                    <button onclick="openViewModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;" title="Ver Detalle">👁️</button>
+                                    <a href="{{ url_for('inventario_eliminar', id=eq[0]) }}" onclick="return confirm('¿Eliminar de forma permanente?')" style="text-decoration:none;" title="Eliminar">🗑️</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Estilos de las pestañas -->
+    <style>
+        .tab-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+        }
+    </style>
+
+    <script>
+        function showInventory(area) {
+            // Actualizar botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (btn.innerText === area || (area === 'ALL' && btn.innerText === 'TODOS')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Filtrar filas
+            document.querySelectorAll('.inventory-row').forEach(row => {
+                if (area === 'ALL' || row.getAttribute('data-area') === area) {
+                    row.style.display = 'table-row';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
 
     <!-- MODAL DE VISTA -->
     <div id="viewModal" class="modal">
@@ -167,13 +224,19 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select id="edit_estado">
-                        <option value="Operativo">Operativo</option>
-                        <option value="En Reparación">En Reparación</option>
-                        <option value="De Baja">De Baja</option>
-                    </select>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Vincular a Inventario (Área)</label>
+                        <input type="text" id="edit_area" placeholder="Ej: Laboratorio, Administración...">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select id="edit_estado">
+                            <option value="Operativo">Operativo</option>
+                            <option value="En Reparación">En Reparación</option>
+                            <option value="De Baja">De Baja</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="dynamic-fields" id="dynamicFields">
@@ -230,6 +293,7 @@
                     document.getElementById('edit_categoria').value = data.categoria;
                     document.getElementById('edit_estado').value = data.estado;
                     document.getElementById('edit_workstation').value = data.workstation_id || "";
+                    document.getElementById('edit_area').value = data.area || "";
                     
                     const container = document.getElementById('dynamicFields');
                     container.innerHTML = '<h3>Editar Especificaciones</h3>';
@@ -265,6 +329,7 @@
                 categoria: document.getElementById('edit_categoria').value,
                 estado: document.getElementById('edit_estado').value,
                 workstation_id: document.getElementById('edit_workstation').value,
+                area: document.getElementById('edit_area').value,
                 extra: extra
             };
 
