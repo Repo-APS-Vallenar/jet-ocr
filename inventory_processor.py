@@ -1,3 +1,4 @@
+import traceback
 from datetime import datetime
 import pandas as pd
 import qrcode
@@ -111,10 +112,6 @@ def process_excel(file_path):
 
                 ubicacion = clean(row.get('UBICACIÓN', row.get('UBICACION', 'N/A')), 'N/A')
                 
-import traceback
-
-# ... (resto de funciones iguales)
-
                 # Capturar TODO técnicamente
                 full_data = {}
                 for col in df.columns:
