@@ -1393,9 +1393,9 @@ def pago_exitoso():
 
 # --- MÓDULO DE INVENTARIO Y QR ---
 
-@app.route('/equipo/<uuid_equipo>')
-def ver_equipo(uuid_equipo):
-    # Consulta avanzada que trae el equipo y su workstation vinculada desde Supabase
+@app.route('/equipo/<int:id_equipo>')
+def ver_equipo(id_equipo):
+    # Consulta avanzada usando el ID numérico
     sql = """
         SELECT e.id, e.nombre, e.sn, e.datos_dinamicos, w.codigo_puesto, w.inherited_zone, e.estado, e.categoria
         FROM equipos e
@@ -1405,7 +1405,8 @@ def ver_equipo(uuid_equipo):
     try:
         conn = db.engine.raw_connection()
         cur = conn.cursor()
-        cur.execute(sql, (uuid_equipo,))
+        cur.execute(sql, (id_equipo,))
+
         data = cur.fetchone()
         cur.close()
         conn.close()

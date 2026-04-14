@@ -57,7 +57,6 @@ def process_excel(file_path):
     
     for _, row in df.iterrows():
         try:
-            equipo_id = str(uuid.uuid4())
             nombre = str(row.get('Nombre_Equipo', 'Equipo Desconocido'))
             serial = str(row.get('Serie', 'N/A'))
             modelo = str(row.get('Modelo', 'N/A'))
@@ -77,22 +76,23 @@ def process_excel(file_path):
                 "responsabilidad_legal": "Fianza CESFAM"
             })
             
+            # Dejamos que el ID sea autoincremental (serial)
             sql = """
-                INSERT INTO equipos (id, nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
-                VALUES (%s, %s, %s, %s, %s, %s, 'Operativo')
+                INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
+                VALUES (%s, %s, %s, %s, %s, 'Operativo')
                 ON CONFLICT (sn) DO UPDATE SET 
                 workstation_id = EXCLUDED.workstation_id,
                 datos_dinamicos = EXCLUDED.datos_dinamicos
                 RETURNING id
             """
-            cur.execute(sql, (equipo_id, nombre, serial, ws_id, datos_dinamicos, categoria))
-
+            cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos, categoria))
             final_id = cur.fetchone()[0]
             
-            # Generar QR
+            # Generar QR con el ID numérico
             qr_link = f"{BASE_URL}/equipo/{final_id}"
             qr_file = f"{QR_OUTPUT_DIR}/{codigo_puesto}_{serial}.png"
             generate_styled_qr(qr_link, qr_file, f"{codigo_puesto} | {serial}")
+
             
             summary["created"] += 1
             print(f"✅ Procesado: {nombre} [{codigo_puesto}]")
