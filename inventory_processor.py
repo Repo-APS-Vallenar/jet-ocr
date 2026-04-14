@@ -48,106 +48,105 @@ def generate_styled_qr(data, filename, label):
     final_img.save(filename)
 
 def process_excel(file_path):
-    print(f"🚀 Iniciando proceso de catastro experto...")
-    # Leer el Excel sin asumir cabecera para buscarla manualmente
-    df_raw = pd.read_excel(file_path, header=None)
-    
-    header_row = 0
-    for i, row in df_raw.iterrows():
-        # Buscamos una fila que tenga palabras clave de nuestro inventario
-        row_str = " ".join([str(x).upper() for x in row.values])
-        if 'MARCA' in row_str or 'SERIE' in row_str or 'UBICACION' in row_str or 'UBICACIÓN' in row_str:
-            header_row = i
-            break
-    
-    print(f"📍 Cabecera detectada en la fila: {header_row}")
-    # Volver a cargar el DF desde la fila correcta
-    df = pd.read_excel(file_path, header=header_row)
-    
-    # Normalización de columnas: quitar espacios y pasar a mayúsculas para evitar fallos
-    df.columns = [str(c).strip().upper() for c in df.columns]
-    print(f"📊 Columnas reales detectadas: {list(df.columns)}")
+    print(f"🚀 Iniciando buscador de inventario multi-hoja...")
+    xls = pd.ExcelFile(file_path)
     
     conn = get_db_connection()
     cur = conn.cursor()
     
     summary = {"created": 0, "errors": 0}
     
-    for _, row in df.iterrows():
-        try:
-            # Si toda la fila está vacía, saltar
-            if row.isnull().all():
-                continue
+    for sheet_name in xls.sheet_names:
+        print(f"\n📖 Procesando hoja: [{sheet_name}]")
+        df_raw = pd.read_excel(xls, sheet_name=sheet_name, header=None)
+        
+        # Buscar cabecera en esta hoja
+        header_row = -1
+        for i, row in df_raw.iterrows():
+            row_str = " ".join([str(x).upper() for x in row.values])
+            if any(k in row_str for k in ['MARCA', 'MODELO', 'SERIAL', 'SERIE', 'ROUTER', 'UBICACION']):
+                header_row = i
+                break
+        
+        if header_row == -1:
+            print(f"⚠️ No se encontró cabecera válida en '{sheet_name}', saltando...")
+            continue
+            
+        print(f"📍 Cabecera detectada en fila: {header_row}")
+        df = pd.read_excel(xls, sheet_name=sheet_name, header=header_row)
+        df.columns = [str(c).strip().upper() for c in df.columns]
+        
+        for _, row in df.iterrows():
+            try:
+                if row.isnull().all(): continue
 
-            # Mapeo según imagen (ahora en MAYÚSCULAS y sin espacios)
-            marca = str(row.get('MARCA', '')).replace('nan', '').strip()
-            modelo = str(row.get('MODELO', '')).replace('nan', '').strip()
-            nombre = f"{marca} {modelo}".strip() or "Equipo Desconocido"
-            
-            serial = str(row.get('N. SERIE', row.get('N SERIE', 'N/A'))).replace('/', '-').replace('nan', 'N/A').strip()
-            # Si el serial sigue siendo N/A o vacío, intentamos con alguna otra columna que se le parezca
-            if serial in ['N/A', '', 'None']:
-                 serial = str(row.get('SERIE', 'N/A')).replace('nan', 'N/A').strip()
-            
-            # Si no hay nombre ni serial válido, saltamos la fila (posible fila de adorno en Excel)
-            if nombre == "Equipo Desconocido" and serial == 'N/A':
-                continue
+                # Prioridad de datos: MARCA + MODELO o lo que haya
+                marca = str(row.get('MARCA', row.get('ROUTER', row.get('UNIDAD', '')))).replace('nan', '').strip()
+                modelo = str(row.get('MODELO', '')).replace('nan', '').strip()
+                
+                # Serial: Buscar en varias columnas posibles
+                serial = str(row.get('N. SERIE', row.get('N SERIE', row.get('SERIE', row.get('SERIAL', 'N/A'))))).strip()
+                serial = serial.replace('nan', 'N/A').replace('/', '-')
+                
+                nombre = f"{marca} {modelo}".strip() or "Equipo Desconocido"
+                
+                # Si el serial y el nombre son basura, saltamos
+                if serial == 'N/A' and nombre == "Equipo Desconocido":
+                    continue
 
-            ubicacion = str(row.get('UBICACIÓN', row.get('UBICACION', 'N/A'))).replace('nan', 'N/A').strip()
-            usuario = str(row.get('USUARIO', 'N/A')).replace('nan', 'N/A').strip()
-            
-            # Buscar Workstation vinculada por Ubicación (ya que no hay código de puesto explícito)
-            cur.execute("SELECT id FROM workstations WHERE codigo_puesto ILIKE %s OR inherited_zone ILIKE %s", 
-                       (f"%{ubicacion}%", f"%{ubicacion}%"))
-            ws_res = cur.fetchone()
-            ws_id = ws_res[0] if ws_res else None
-            
-            # Capturar TODO el resto de columnas para datos_dinamicos
-            full_data = row.to_dict()
-            # Convertir fechas a string para JSON si existen
-            for k, v in full_data.items():
-                if pd.api.types.is_datetime64_any_dtype(v) or hasattr(v, 'isoformat'):
-                    full_data[k] = str(v)
-                elif pd.isna(v):
-                    full_data[k] = None
+                ubicacion = str(row.get('UBICACIÓN', row.get('UBICACION', 'N/A'))).replace('nan', 'N/A').strip()
+                
+                # Capturar TODO (CPU, RAM, Discos, AnyDesk, etc.)
+                full_data = {}
+                for col in df.columns:
+                    val = row.get(col)
+                    if pd.notna(val) and "UNNAMED" not in str(col).upper():
+                        if pd.api.types.is_datetime64_any_dtype(val) or hasattr(val, 'isoformat'):
+                            full_data[str(col).lower()] = str(val)
+                        else:
+                            full_data[str(col).lower()] = str(val)
 
-            full_data["fecha_catastro"] = str(datetime.now().date())
-            full_data["responsabilidad_legal"] = "Fianza CESFAM"
-            
-            datos_dinamicos = json.dumps(full_data)
-            
-            sql = """
-                INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
-                VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo')
-                ON CONFLICT (sn) DO UPDATE SET 
-                workstation_id = EXCLUDED.workstation_id,
-                datos_dinamicos = EXCLUDED.datos_dinamicos
-                RETURNING id
-            """
-            cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos))
-            final_id = cur.fetchone()[0]
-            
-            # Generar QR (limpiando el nombre del archivo de caracteres raros)
-            safe_serial = "".join([c for c in serial if c.isalnum()])
-            qr_link = f"{BASE_URL}/equipo/{final_id}"
-            qr_file = os.path.join(QR_OUTPUT_DIR, f"QR_{safe_serial}.png")
-            
-            generate_styled_qr(qr_link, qr_file, f"{nombre} | {serial}")
-            
-            summary["created"] += 1
-            print(f"✅ Procesado: {nombre} [{serial}] en {ubicacion}")
-            
-        except Exception as e:
-            summary["errors"] += 1
-            print(f"❌ Error en fila: {e}")
+                full_data["fecha_catastro"] = str(datetime.now().date())
+                full_data["hoja_origen"] = sheet_name
+                
+                datos_dinamicos = json.dumps(full_data)
+                
+                # Buscar Workstation vinculada
+                cur.execute("SELECT id FROM workstations WHERE codigo_puesto ILIKE %s OR inherited_zone ILIKE %s", 
+                           (f"%{ubicacion}%", f"%{ubicacion}%"))
+                ws_res = cur.fetchone()
+                ws_id = ws_res[0] if ws_res else None
+                
+                sql = """
+                    INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
+                    VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo')
+                    ON CONFLICT (sn) DO UPDATE SET 
+                    workstation_id = COALESCE(EXCLUDED.workstation_id, equipos.workstation_id),
+                    datos_dinamicos = EXCLUDED.datos_dinamicos
+                    RETURNING id
+                """
+                cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos))
+                final_id = cur.fetchone()[0]
+                
+                # Generar QR
+                safe_serial = "".join([c for c in serial if c.isalnum()]) or str(final_id)
+                qr_link = f"{BASE_URL}/equipo/{final_id}"
+                qr_file = os.path.join(QR_OUTPUT_DIR, f"QR_{safe_serial}.png")
+                generate_styled_qr(qr_link, qr_file, f"{nombre} | {serial}")
+                
+                summary["created"] += 1
+                print(f"   ✅ {nombre} [{serial}]")
+                
+            except Exception as e:
+                summary["errors"] += 1
+                print(f"   ❌ Error: {e}")
 
     conn.commit()
     cur.close()
     conn.close()
-    print(f"\n✨ RESUMEN: {summary['created']} equipos procesados, {summary['errors']} errores.")
+    print(f"\n✨ FINALIZADO: {summary['created']} procesados, {summary['errors']} errores.")
 
 if __name__ == "__main__":
     init_process()
     print("🚀 Iniciando procesamiento automático de INVENTARIO_AN.xlsx...")
     process_excel('INVENTARIO_AN.xlsx')
-
