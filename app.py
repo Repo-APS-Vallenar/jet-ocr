@@ -9,6 +9,7 @@ import script_mac_sn as ocr_script
 import uuid
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 import requests
+import json
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'super-secreto-temporal-123')
@@ -1436,7 +1437,6 @@ def ver_equipo(id_equipo):
         return "Error interno del servidor", 500
 
 @app.route('/inventario')
-@login_required
 def inventario_list():
     sql = """
         SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria
@@ -1453,7 +1453,6 @@ def inventario_list():
     return render_template('inventario_list.html', equipos=equipos)
 
 @app.route('/inventario/nuevo', methods=['GET', 'POST'])
-@login_required
 def inventario_nuevo():
     if request.method == 'POST':
         nombre = request.form.get('nombre')
@@ -1493,7 +1492,6 @@ def inventario_nuevo():
     return render_template('inventario_form.html', workstations=workstations, equipo=None)
 
 @app.route('/inventario/editar/<int:id>', methods=['GET', 'POST'])
-@login_required
 def inventario_editar(id):
     conn = db.engine.raw_connection()
     cur = conn.cursor()
@@ -1544,7 +1542,6 @@ def inventario_editar(id):
     return render_template('inventario_form.html', workstations=workstations, equipo=equipo_dict)
 
 @app.route('/inventario/eliminar/<int:id>')
-@login_required
 def inventario_eliminar(id):
     conn = db.engine.raw_connection()
     cur = conn.cursor()
