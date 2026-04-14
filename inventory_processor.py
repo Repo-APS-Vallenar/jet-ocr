@@ -51,6 +51,10 @@ def process_excel(file_path):
     print(f"🚀 Iniciando proceso de catastro experto...")
     df = pd.read_excel(file_path)
     
+    # Normalización de columnas: quitar espacios y pasar a mayúsculas para evitar fallos
+    df.columns = [str(c).strip().upper() for c in df.columns]
+    print(f"📊 Columnas detectadas: {list(df.columns)}")
+    
     conn = get_db_connection()
     cur = conn.cursor()
     
@@ -58,14 +62,26 @@ def process_excel(file_path):
     
     for _, row in df.iterrows():
         try:
-            # Mapeo según imagen: [MARCA] [MODELO] [N. SERIE] [UBICACION]
-            marca = str(row.get('MARCA', ''))
-            modelo = str(row.get('MODELO', ''))
+            # Si toda la fila está vacía, saltar
+            if row.isnull().all():
+                continue
+
+            # Mapeo según imagen (ahora en MAYÚSCULAS y sin espacios)
+            marca = str(row.get('MARCA', '')).replace('nan', '').strip()
+            modelo = str(row.get('MODELO', '')).replace('nan', '').strip()
             nombre = f"{marca} {modelo}".strip() or "Equipo Desconocido"
             
-            serial = str(row.get('N. SERIE', 'N/A')).replace('/', '-').strip()
-            ubicacion = str(row.get('UBICACIÓN', row.get('UBICACION', 'N/A')))
-            usuario = str(row.get('USUARIO', 'N/A'))
+            serial = str(row.get('N. SERIE', row.get('N SERIE', 'N/A'))).replace('/', '-').replace('nan', 'N/A').strip()
+            # Si el serial sigue siendo N/A o vacío, intentamos con alguna otra columna que se le parezca
+            if serial in ['N/A', '', 'None']:
+                 serial = str(row.get('SERIE', 'N/A')).replace('nan', 'N/A').strip()
+            
+            # Si no hay nombre ni serial válido, saltamos la fila (posible fila de adorno en Excel)
+            if nombre == "Equipo Desconocido" and serial == 'N/A':
+                continue
+
+            ubicacion = str(row.get('UBICACIÓN', row.get('UBICACION', 'N/A'))).replace('nan', 'N/A').strip()
+            usuario = str(row.get('USUARIO', 'N/A')).replace('nan', 'N/A').strip()
             
             # Buscar Workstation vinculada por Ubicación (ya que no hay código de puesto explícito)
             cur.execute("SELECT id FROM workstations WHERE codigo_puesto ILIKE %s OR inherited_zone ILIKE %s", 
