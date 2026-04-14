@@ -1435,11 +1435,135 @@ def ver_equipo(id_equipo):
         print(f"Error en inventario: {e}")
         return "Error interno del servidor", 500
 
+@app.route('/inventario')
+@login_required
+def inventario_list():
+    sql = """
+        SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria
+        FROM equipos e
+        LEFT JOIN workstations w ON e.workstation_id = w.id
+        ORDER BY e.id DESC
+    """
+    conn = db.engine.raw_connection()
+    cur = conn.cursor()
+    cur.execute(sql)
+    equipos = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('inventario_list.html', equipos=equipos)
+
+@app.route('/inventario/nuevo', methods=['GET', 'POST'])
+@login_required
+def inventario_nuevo():
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        sn = request.form.get('sn')
+        ws_id = request.form.get('workstation_id')
+        categoria = request.form.get('categoria', 'Hardware')
+        estado = request.form.get('estado', 'Operativo')
+        
+        # Procesar datos dinámicos desde el formulario si se desea
+        datos = {
+            "modelo": request.form.get('modelo'),
+            "cpu": request.form.get('cpu'),
+            "ram": request.form.get('ram'),
+            "manual_entry": True
+        }
+        
+        sql = "INSERT INTO equipos (nombre, sn, workstation_id, categoria, estado, datos_dinamicos) VALUES (%s, %s, %s, %s, %s, %s)"
+        conn = db.engine.raw_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(sql, (nombre, sn, ws_id if ws_id else None, categoria, estado, json.dumps(datos)))
+            conn.commit()
+            flash("Equipo creado con éxito", "success")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error al crear: {e}", "danger")
+        finally:
+            cur.close()
+            conn.close()
+        return redirect(url_for('inventario_list'))
+
+    # Para el desplegable de estaciones
+    cur = db.engine.raw_connection().cursor()
+    cur.execute("SELECT id, codigo_puesto FROM workstations ORDER BY codigo_puesto")
+    workstations = cur.fetchall()
+    cur.close()
+    return render_template('inventario_form.html', workstations=workstations, equipo=None)
+
+@app.route('/inventario/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def inventario_editar(id):
+    conn = db.engine.raw_connection()
+    cur = conn.cursor()
+    
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        sn = request.form.get('sn')
+        ws_id = request.form.get('workstation_id')
+        categoria = request.form.get('categoria')
+        estado = request.form.get('estado')
+        
+        # Recuperar datos dinámicos actuales y actualizar
+        cur.execute("SELECT datos_dinamicos FROM equipos WHERE id = %s", (id,))
+        old_data = cur.fetchone()[0] or {}
+        old_data.update({
+            "modelo": request.form.get('modelo'),
+            "cpu": request.form.get('cpu'),
+            "ram": request.form.get('ram')
+        })
+        
+        sql = """
+            UPDATE equipos 
+            SET nombre=%s, sn=%s, workstation_id=%s, categoria=%s, estado=%s, datos_dinamicos=%s
+            WHERE id=%s
+        """
+        try:
+            cur.execute(sql, (nombre, sn, ws_id if ws_id else None, categoria, estado, json.dumps(old_data), id))
+            conn.commit()
+            flash("Equipo actualizado", "success")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error: {e}", "danger")
+        return redirect(url_for('inventario_list'))
+
+    cur.execute("SELECT * FROM equipos WHERE id = %s", (id,))
+    equipo = cur.fetchone()
+    # Convertir a dict para facilidad en el template
+    equipo_dict = {
+        "id": equipo[0], "nombre": equipo[1], "sn": equipo[2], 
+        "workstation_id": equipo[3], "extra": equipo[4] or {},
+        "categoria": equipo[5], "estado": equipo[6]
+    }
+    
+    cur.execute("SELECT id, codigo_puesto FROM workstations ORDER BY codigo_puesto")
+    workstations = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('inventario_form.html', workstations=workstations, equipo=equipo_dict)
+
+@app.route('/inventario/eliminar/<int:id>')
+@login_required
+def inventario_eliminar(id):
+    conn = db.engine.raw_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM equipos WHERE id = %s", (id,))
+        conn.commit()
+        flash("Equipo eliminado", "info")
+    except Exception as e:
+        flash(f"Error: {e}", "danger")
+    finally:
+        cur.close()
+        conn.close()
+    return redirect(url_for('inventario_list'))
+
 @app.route('/escanear')
 def escanear_qr():
     return render_template('escanear.html')
 
-
+if __name__ == '__main__':
     with app.app_context():
         inicializar_db()
     # host='0.0.0.0' permite que otros dispositivos en la red local (el celular) accedan a la página
