@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Editar' if equipo else 'Nuevo' }} Equipo | Jet-OCR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 { font-weight: 800; margin-bottom: 30px; }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn-box {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ 'Editar' if equipo else 'Crear Nuevo' }} Equipo</h1>
+        
+        <div class="form-card">
+            <form method="POST">
+                <div class="form-group">
+                    <label>Nombre del Equipo / Marca</label>
+                    <input type="text" name="nombre" value="{{ equipo.nombre if equipo else '' }}" placeholder="Ej: Lenovo IdeaCentre" required>
+                </div>
+
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Número de Serie (SN)</label>
+                        <input type="text" name="sn" value="{{ equipo.sn if equipo else '' }}" placeholder="Ej: MP2DPP92" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select name="categoria">
+                            <option value="Hardware" {{ 'selected' if equipo and equipo.categoria == 'Hardware' }}>Hardware</option>
+                            <option value="Redes" {{ 'selected' if equipo and equipo.categoria == 'Redes' }}>Redes</option>
+                            <option value="Periférico" {{ 'selected' if equipo and equipo.categoria == 'Periférico' }}>Periférico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Ubicación / Puesto de Trabajo</label>
+                    <select name="workstation_id">
+                        <option value="">-- Sin Vincular --</option>
+                        {% for ws in workstations %}
+                        <option value="{{ ws[0] }}" {{ 'selected' if equipo and equipo.workstation_id == ws[0] }}>
+                            {{ ws[1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select name="estado">
+                        <option value="Operativo" {{ 'selected' if equipo and equipo.estado == 'Operativo' }}>Operativo</option>
+                        <option value="En Reparación" {{ 'selected' if equipo and equipo.estado == 'En Reparación' }}>En Reparación</option>
+                        <option value="De Baja" {{ 'selected' if equipo and equipo.estado == 'De Baja' }}>De Baja</option>
+                    </select>
+                </div>
+
+                <div class="section-title" style="font-size: 12px; color: var(--primary); margin: 20px 0 10px; text-transform: uppercase;">Especificaciones Extras</div>
+                
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Modelo Específico</label>
+                        <input type="text" name="modelo" value="{{ equipo.extra.modelo if equipo else '' }}" placeholder="Ej: AIO 3 24ALC6">
+                    </div>
+                    <div class="form-group">
+                        <label>Procesador (CPU)</label>
+                        <input type="text" name="cpu" value="{{ equipo.extra.cpu if equipo else '' }}" placeholder="Ej: AMD Ryzen 5">
+                    </div>
+                </div>
+
+                <div class="btn-box">
+                    <a href="{{ url_for('inventario_list') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
