@@ -80,31 +80,47 @@ def process_excel(file_path):
             try:
                 if row.isnull().all(): continue
 
-                # Prioridad de datos: MARCA + MODELO o lo que haya
-                marca = str(row.get('MARCA', row.get('ROUTER', row.get('UNIDAD', '')))).replace('nan', '').strip()
-                modelo = str(row.get('MODELO', '')).replace('nan', '').strip()
+                # Función de limpieza robusta
+                def clean(val, default=''):
+                    v = str(val).strip()
+                    if v.lower() in ['nan', 'none', 'n/a', 'null', '']:
+                        return default
+                    return v
+
+                marca = clean(row.get('MARCA', row.get('ROUTER', row.get('UNIDAD', ''))))
+                modelo = clean(row.get('MODELO', ''))
+                serial = clean(row.get('N. SERIE', row.get('N SERIE', row.get('SERIE', row.get('SERIAL', '')))), 'N/A')
                 
-                # Serial: Buscar en varias columnas posibles
-                serial = str(row.get('N. SERIE', row.get('N SERIE', row.get('SERIE', row.get('SERIAL', 'N/A'))))).strip()
-                serial = serial.replace('nan', 'N/A').replace('/', '-')
+                # Inteligencia: Si el modelo parece un serial y el serial está vacío, moverlo
+                # Un serial suele tener letras y números y no tiene espacios
+                if serial == 'N/A' and len(modelo) > 5 and any(c.isdigit() for c in modelo) and any(c.isalpha() for c in modelo) and ' ' not in modelo:
+                    serial = modelo
+                    modelo = 'Modelo Genérico'
                 
-                nombre = f"{marca} {modelo}".strip() or "Equipo Desconocido"
+                # Nombre final
+                if marca and modelo:
+                    nombre = f"{marca} {modelo}"
+                elif marca or modelo:
+                    nombre = marca or modelo
+                else:
+                    nombre = f"Equipo {serial}" if serial != 'N/A' else "Equipo Desconocido"
                 
-                # Si el serial y el nombre son basura, saltamos
+                # Si sigue siendo basura, saltamos
                 if serial == 'N/A' and nombre == "Equipo Desconocido":
                     continue
 
-                ubicacion = str(row.get('UBICACIÓN', row.get('UBICACION', 'N/A'))).replace('nan', 'N/A').strip()
+                ubicacion = clean(row.get('UBICACIÓN', row.get('UBICACION', 'N/A')), 'N/A')
                 
-                # Capturar TODO (CPU, RAM, Discos, AnyDesk, etc.)
+                # Capturar TODO técnicamente
                 full_data = {}
                 for col in df.columns:
                     val = row.get(col)
-                    if pd.notna(val) and "UNNAMED" not in str(col).upper():
+                    val_clean = clean(val, None)
+                    if val_clean and "UNNAMED" not in str(col).upper():
                         if pd.api.types.is_datetime64_any_dtype(val) or hasattr(val, 'isoformat'):
                             full_data[str(col).lower()] = str(val)
                         else:
-                            full_data[str(col).lower()] = str(val)
+                            full_data[str(col).lower()] = val_clean
 
                 full_data["fecha_catastro"] = str(datetime.now().date())
                 full_data["hoja_origen"] = sheet_name
@@ -121,6 +137,7 @@ def process_excel(file_path):
                     INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
                     VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo')
                     ON CONFLICT (sn) DO UPDATE SET 
+                    nombre = EXCLUDED.nombre,
                     workstation_id = COALESCE(EXCLUDED.workstation_id, equipos.workstation_id),
                     datos_dinamicos = EXCLUDED.datos_dinamicos
                     RETURNING id
