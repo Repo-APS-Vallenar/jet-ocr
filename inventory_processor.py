@@ -156,7 +156,9 @@ def process_excel(file_path):
                 
             except Exception as e:
                 summary["errors"] += 1
-                print(f"   ❌ Error: {e}")
+                row_data = {k: v for k, v in row.to_dict().items() if pd.notna(v)}
+                print(f"   ❌ Error en fila {_+1}: {e}")
+                print(f"      📝 Datos conflictivos: {row_data}")
 
     conn.commit()
     cur.close()
