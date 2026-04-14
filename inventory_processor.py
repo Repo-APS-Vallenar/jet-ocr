@@ -48,11 +48,24 @@ def generate_styled_qr(data, filename, label):
     
     final_img.save(filename)
 
+def ensure_schema(conn):
+    cur = conn.cursor()
+    try:
+        cur.execute("ALTER TABLE equipos ADD COLUMN IF NOT EXISTS area TEXT DEFAULT 'General';")
+        conn.commit()
+        print("✅ Esquema de base de datos verificado (Column AREA OK)")
+    except Exception as e:
+        conn.rollback()
+        print(f"⚠️ Nota sobre esquema: {e}")
+    finally:
+        cur.close()
+
 def process_excel(file_path):
     print(f"🚀 Iniciando buscador de inventario multi-hoja...")
     xls = pd.ExcelFile(file_path)
     
     conn = get_db_connection()
+    ensure_schema(conn)
     cur = conn.cursor()
     
     summary = {"created": 0, "errors": 0}
@@ -167,6 +180,7 @@ def process_excel(file_path):
                 print(f"   ✅ {nombre} [{serial}]")
                 
             except Exception as e:
+                conn.rollback()
                 summary["errors"] += 1
                 row_data = {k: v for k, v in row.to_dict().items() if pd.notna(v)}
                 print(f"   ❌ Error en fila {_+1}: {e}")
