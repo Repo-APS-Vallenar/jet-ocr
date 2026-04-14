@@ -14,6 +14,7 @@
             --text-muted: #94a3b8;
             --accent: #10b981;
             --danger: #ef4444;
+            --modal-bg: rgba(15, 23, 42, 0.9);
         }
 
         body {
@@ -24,109 +25,59 @@
             padding: 20px;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
         }
-
-        h1 { font-weight: 800; font-size: 28px; }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
+            background: var(--card-bg); border-radius: 20px; padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 12px; color: var(--text-muted); padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        td { padding: 15px; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
+        .btn { padding: 8px 16px; border-radius: 10px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
+        .btn-primary { background: var(--primary); color: white; }
+
+        /* MODAL STYLES */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: var(--modal-bg); backdrop-filter: blur(5px);
+            justify-content: center; align-items: center;
         }
 
-        th {
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            padding: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .modal-content {
+            background: var(--card-bg); width: 90%; max-width: 600px; max-height: 90vh;
+            border-radius: 24px; padding: 30px; position: relative; overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        td {
-            padding: 15px;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-muted); }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        input, select {
+            width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: white; font-size: 14px;
         }
 
-        .badge {
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
+        .dynamic-fields {
+            margin-top: 20px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1);
         }
 
-        .status-op { background: rgba(16, 185, 129, 0.1); color: var(--accent); }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .action-link:hover { color: var(--primary); }
-        .delete:hover { color: var(--danger); }
-
-        .flash {
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid var(--primary);
-            color: var(--text-main);
-        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash {{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
         <div class="header">
             <h1>Inventario General</h1>
-            <a href="{{ url_for('inventario_nuevo') }}" class="btn btn-primary">+ Nuevo Equipo</a>
+            <p>{{ equipos|length }} equipos registrados</p>
         </div>
 
         <div class="card">
@@ -148,11 +99,10 @@
                         <td><strong>{{ eq[1] }}</strong><br><small style="color:var(--text-muted)">{{ eq[5] }}</small></td>
                         <td><code>{{ eq[2] }}</code></td>
                         <td>{{ eq[3] or 'No asignada' }}</td>
-                        <td><span class="badge status-op">{{ eq[4] }}</span></td>
-                        <td class="actions">
-                            <a href="{{ url_for('inventario_editar', id=eq[0]) }}" class="action-link">✏️</a>
-                            <a href="{{ url_for('ver_equipo', id_equipo=eq[0]) }}" class="action-link" target="_blank">👁️</a>
-                            <a href="{{ url_for('inventario_eliminar', id=eq[0]) }}" class="action-link delete" onclick="return confirm('¿Seguro quieres eliminar este equipo?')">🗑️</a>
+                        <td>{{ eq[4] }}</td>
+                        <td>
+                            <button onclick="openEditModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;">✏️</button>
+                            <a href="{{ url_for('ver_equipo', id_equipo=eq[0]) }}" target="_blank" style="text-decoration:none;">👁️</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -160,5 +110,123 @@
             </table>
         </div>
     </div>
+
+    <!-- MODAL DE EDICIÓN -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Editar Equipo</h2>
+            <form id="editForm">
+                <input type="hidden" id="edit_id">
+                
+                <div class="form-group">
+                    <label>Nombre del Equipo</label>
+                    <input type="text" id="edit_nombre" required>
+                </div>
+
+                <div class="grid">
+                    <div class="form-group">
+                        <label>S/N (Serie)</label>
+                        <input type="text" id="edit_sn" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="edit_categoria">
+                            <option value="Hardware">Hardware</option>
+                            <option value="Redes">Redes</option>
+                            <option value="Periférico">Periférico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Ubicación (Workstation)</label>
+                    <select id="edit_workstation">
+                        <option value="">-- Sin Vincular --</option>
+                        {% for ws in workstations %}
+                        <option value="{{ ws[0] }}">{{ ws[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="edit_estado">
+                        <option value="Operativo">Operativo</option>
+                        <option value="En Reparación">En Reparación</option>
+                        <option value="De Baja">De Baja</option>
+                    </select>
+                </div>
+
+                <div class="dynamic-fields" id="dynamicFields">
+                    <!-- Los campos del Excel se cargarán aquí -->
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:20px;">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id) {
+            fetch(`/api/equipo/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('edit_id').value = data.id;
+                    document.getElementById('edit_nombre').value = data.nombre;
+                    document.getElementById('edit_sn').value = data.sn;
+                    document.getElementById('edit_categoria').value = data.categoria;
+                    document.getElementById('edit_estado').value = data.estado;
+                    document.getElementById('edit_workstation').value = data.workstation_id || "";
+                    
+                    // Limpiar y cargar campos dinámicos
+                    const container = document.getElementById('dynamicFields');
+                    container.innerHTML = '<h3>Detalles Técnicos (Excel)</h3>';
+                    
+                    Object.keys(data.extra).forEach(key => {
+                        const div = document.createElement('div');
+                        div.className = 'form-group';
+                        div.innerHTML = `
+                            <label style="text-transform: capitalize;">${key.replace(/_/g, ' ')}</label>
+                            <input type="text" class="extra-field" data-key="${key}" value="${data.extra[key]}">
+                        `;
+                        container.appendChild(div);
+                    });
+                    
+                    document.getElementById('editModal').style.display = 'flex';
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        document.getElementById('editForm').onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_id').value;
+            
+            const extra = {};
+            document.querySelectorAll('.extra-field').forEach(input => {
+                extra[input.getAttribute('data-key')] = input.value;
+            });
+
+            const payload = {
+                nombre: document.getElementById('edit_nombre').value,
+                sn: document.getElementById('edit_sn').value,
+                categoria: document.getElementById('edit_categoria').value,
+                estado: document.getElementById('edit_estado').value,
+                workstation_id: document.getElementById('edit_workstation').value,
+                extra: extra
+            };
+
+            fetch(`/api/equipo/update/${id}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            }).then(() => {
+                location.reload();
+            });
+        };
+    </script>
 </body>
 </html>

@@ -1439,7 +1439,7 @@ def ver_equipo(id_equipo):
 @app.route('/inventario')
 def inventario_list():
     sql = """
-        SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria
+        SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria, e.datos_dinamicos
         FROM equipos e
         LEFT JOIN workstations w ON e.workstation_id = w.id
         ORDER BY e.id DESC
@@ -1448,98 +1448,63 @@ def inventario_list():
     cur = conn.cursor()
     cur.execute(sql)
     equipos = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template('inventario_list.html', equipos=equipos)
-
-@app.route('/inventario/nuevo', methods=['GET', 'POST'])
-def inventario_nuevo():
-    if request.method == 'POST':
-        nombre = request.form.get('nombre')
-        sn = request.form.get('sn')
-        ws_id = request.form.get('workstation_id')
-        categoria = request.form.get('categoria', 'Hardware')
-        estado = request.form.get('estado', 'Operativo')
-        
-        # Procesar datos dinámicos desde el formulario si se desea
-        datos = {
-            "modelo": request.form.get('modelo'),
-            "cpu": request.form.get('cpu'),
-            "ram": request.form.get('ram'),
-            "manual_entry": True
-        }
-        
-        sql = "INSERT INTO equipos (nombre, sn, workstation_id, categoria, estado, datos_dinamicos) VALUES (%s, %s, %s, %s, %s, %s)"
-        conn = db.engine.raw_connection()
-        cur = conn.cursor()
-        try:
-            cur.execute(sql, (nombre, sn, ws_id if ws_id else None, categoria, estado, json.dumps(datos)))
-            conn.commit()
-            flash("Equipo creado con éxito", "success")
-        except Exception as e:
-            conn.rollback()
-            flash(f"Error al crear: {e}", "danger")
-        finally:
-            cur.close()
-            conn.close()
-        return redirect(url_for('inventario_list'))
-
-    # Para el desplegable de estaciones
-    cur = db.engine.raw_connection().cursor()
+    
+    # Obtener workstations para los selects
     cur.execute("SELECT id, codigo_puesto FROM workstations ORDER BY codigo_puesto")
     workstations = cur.fetchall()
+    
     cur.close()
-    return render_template('inventario_form.html', workstations=workstations, equipo=None)
+    conn.close()
+    return render_template('inventario_list.html', equipos=equipos, workstations=workstations)
 
-@app.route('/inventario/editar/<int:id>', methods=['GET', 'POST'])
-def inventario_editar(id):
+@app.route('/api/equipo/<int:id>')
+def api_get_equipo(id):
+    sql = """
+        SELECT e.id, e.nombre, e.sn, e.workstation_id, e.datos_dinamicos, e.categoria, e.estado, w.codigo_puesto
+        FROM equipos e
+        LEFT JOIN workstations w ON e.workstation_id = w.id
+        WHERE e.id = %s
+    """
     conn = db.engine.raw_connection()
     cur = conn.cursor()
+    cur.execute(sql, (id,))
+    data = cur.fetchone()
+    if not data: return jsonify({"error": "No encontrado"}), 404
     
-    if request.method == 'POST':
-        nombre = request.form.get('nombre')
-        sn = request.form.get('sn')
-        ws_id = request.form.get('workstation_id')
-        categoria = request.form.get('categoria')
-        estado = request.form.get('estado')
-        
-        # Recuperar datos dinámicos actuales y actualizar
-        cur.execute("SELECT datos_dinamicos FROM equipos WHERE id = %s", (id,))
-        old_data = cur.fetchone()[0] or {}
-        old_data.update({
-            "modelo": request.form.get('modelo'),
-            "cpu": request.form.get('cpu'),
-            "ram": request.form.get('ram')
-        })
+    return jsonify({
+        "id": data[0], "nombre": data[1], "sn": data[2], 
+        "workstation_id": data[3], "extra": data[4] or {},
+        "categoria": data[5], "estado": data[6],
+        "puesto_nombre": data[7]
+    })
+
+@app.route('/api/equipo/update/<int:id>', methods=['POST'])
+def api_update_equipo(id):
+    data = request.json
+    try:
+        conn = db.engine.raw_connection()
+        cur = conn.cursor()
         
         sql = """
             UPDATE equipos 
             SET nombre=%s, sn=%s, workstation_id=%s, categoria=%s, estado=%s, datos_dinamicos=%s
             WHERE id=%s
         """
-        try:
-            cur.execute(sql, (nombre, sn, ws_id if ws_id else None, categoria, estado, json.dumps(old_data), id))
-            conn.commit()
-            flash("Equipo actualizado", "success")
-        except Exception as e:
-            conn.rollback()
-            flash(f"Error: {e}", "danger")
-        return redirect(url_for('inventario_list'))
-
-    cur.execute("SELECT * FROM equipos WHERE id = %s", (id,))
-    equipo = cur.fetchone()
-    # Convertir a dict para facilidad en el template
-    equipo_dict = {
-        "id": equipo[0], "nombre": equipo[1], "sn": equipo[2], 
-        "workstation_id": equipo[3], "extra": equipo[4] or {},
-        "categoria": equipo[5], "estado": equipo[6]
-    }
-    
-    cur.execute("SELECT id, codigo_puesto FROM workstations ORDER BY codigo_puesto")
-    workstations = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template('inventario_form.html', workstations=workstations, equipo=equipo_dict)
+        cur.execute(sql, (
+            data.get('nombre'), 
+            data.get('sn'), 
+            data.get('workstation_id') if data.get('workstation_id') else None,
+            data.get('categoria'),
+            data.get('estado'),
+            json.dumps(data.get('extra', {})),
+            id
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/inventario/eliminar/<int:id>')
 def inventario_eliminar(id):
