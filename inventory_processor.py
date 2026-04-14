@@ -49,11 +49,24 @@ def generate_styled_qr(data, filename, label):
 
 def process_excel(file_path):
     print(f"🚀 Iniciando proceso de catastro experto...")
-    df = pd.read_excel(file_path)
+    # Leer el Excel sin asumir cabecera para buscarla manualmente
+    df_raw = pd.read_excel(file_path, header=None)
+    
+    header_row = 0
+    for i, row in df_raw.iterrows():
+        # Buscamos una fila que tenga palabras clave de nuestro inventario
+        row_str = " ".join([str(x).upper() for x in row.values])
+        if 'MARCA' in row_str or 'SERIE' in row_str or 'UBICACION' in row_str or 'UBICACIÓN' in row_str:
+            header_row = i
+            break
+    
+    print(f"📍 Cabecera detectada en la fila: {header_row}")
+    # Volver a cargar el DF desde la fila correcta
+    df = pd.read_excel(file_path, header=header_row)
     
     # Normalización de columnas: quitar espacios y pasar a mayúsculas para evitar fallos
     df.columns = [str(c).strip().upper() for c in df.columns]
-    print(f"📊 Columnas detectadas: {list(df.columns)}")
+    print(f"📊 Columnas reales detectadas: {list(df.columns)}")
     
     conn = get_db_connection()
     cur = conn.cursor()
