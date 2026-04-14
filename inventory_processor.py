@@ -112,21 +112,30 @@ def process_excel(file_path):
 
                 ubicacion = clean(row.get('UBICACIÓN', row.get('UBICACION', 'N/A')), 'N/A')
                 
-                # Capturar TODO técnicamente
+                # Capturar TODO técnicamente (Incluso vacíos para mantener fidelidad)
                 full_data = {}
                 for col in df.columns:
+                    col_name = str(col).strip().lower()
+                    if "UNNAMED" in col_name.upper(): continue
+                    
                     val = row.get(col)
-                    val_clean = clean(val, None)
-                    if val_clean and "UNNAMED" not in str(col).upper():
-                        # Eliminar caracteres no imprimibles que rompen JSON/SQL
+                    val_clean = clean(val, "") # Guardar como vacío si no hay nada
+                    
+                    if isinstance(val, (datetime, pd.Timestamp)):
+                        full_data[col_name] = str(val)
+                    else:
+                        # Sanitizar caracteres que rompen JSON
                         val_sanitized = "".join(c for c in str(val_clean) if c.isprintable()).strip()
-                        if pd.api.types.is_datetime64_any_dtype(val) or hasattr(val, 'isoformat'):
-                            full_data[str(col).lower()] = str(val)
-                        else:
-                            full_data[str(col).lower()] = val_sanitized
+                        full_data[col_name] = val_sanitized
 
                 full_data["fecha_catastro"] = str(datetime.now().date())
                 full_data["hoja_origen"] = sheet_name
+                
+                # OBLIGATORIO: Serial Number
+                if serial == 'N/A' or not serial:
+                    print(f"   ⚠️ Saltando fila {_+1}: No tiene Número de Serie")
+                    summary["errors"] += 1
+                    continue
                 
                 datos_dinamicos = json.dumps(full_data)
                 

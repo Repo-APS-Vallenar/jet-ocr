@@ -226,27 +226,16 @@
                 {% endif %}
             </div>
 
-            <span class="section-title">Ubicación y Asignación</span>
-            <div class="data-grid">
-                <div class="data-item">
-                    <span class="data-label">Puesto Relacionado</span>
-                    <span class="data-value">{{ equipo.puesto }}</span>
+            <span class="section-title">Registro Completo (Excel)</span>
+            <div class="info-card" style="margin-top: 5px;">
+                <div class="data-grid" style="grid-template-columns: 1fr; gap: 10px; margin-bottom: 0;">
+                    {% for key, value in equipo.datos_extra.items() %}
+                    <div class="data-item" style="border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px;">
+                        <span class="data-label" style="text-transform: capitalize;">{{ key.replace('_', ' ') }}</span>
+                        <span class="data-value" style="font-size: 14px; color: #fff;">{{ value if value else '—' }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
-                <div class="data-item">
-                    <span class="data-label">Zona / Edificio</span>
-                    <span class="data-value">{{ equipo.zona }}</span>
-                </div>
-                {% if equipo.datos_extra and equipo.datos_extra.USUARIO %}
-                <div class="data-item full-width">
-                    <span class="data-label">Usuario Asignado (Excel)</span>
-                    <span class="data-value">{{ equipo.datos_extra.USUARIO }}</span>
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="info-card">
-                <span class="data-label">Responsabilidad Legal</span>
-                <span class="data-value">{{ equipo.legal }}</span>
             </div>
         </div>
 
