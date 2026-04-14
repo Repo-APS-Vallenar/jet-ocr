@@ -151,7 +151,7 @@
                         <td><span class="badge status-op">{{ eq[4] }}</span></td>
                         <td class="actions">
                             <a href="{{ url_for('inventario_editar', id=eq[0]) }}" class="action-link">✏️</a>
-                            <a href="{{ url_for('equipo_detalle', id_equipo=eq[0]) }}" class="action-link" target="_blank">👁️</a>
+                            <a href="{{ url_for('ver_equipo', id_equipo=eq[0]) }}" class="action-link" target="_blank">👁️</a>
                             <a href="{{ url_for('inventario_eliminar', id=eq[0]) }}" class="action-link delete" onclick="return confirm('¿Seguro quieres eliminar este equipo?')">🗑️</a>
                         </td>
                     </tr>
