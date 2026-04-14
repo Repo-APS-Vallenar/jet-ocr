@@ -101,8 +101,11 @@
                         <td>{{ eq[3] or 'No asignada' }}</td>
                         <td>{{ eq[4] }}</td>
                         <td>
-                            <button onclick="openEditModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;">✏️</button>
-                            <a href="{{ url_for('ver_equipo', id_equipo=eq[0]) }}" target="_blank" style="text-decoration:none;">👁️</a>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <button onclick="openEditModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button>
+                                <button onclick="openViewModal({{ eq[0] }})" style="background:none; border:none; cursor:pointer;" title="Ver Detalle">👁️</button>
+                                <a href="{{ url_for('inventario_eliminar', id=eq[0]) }}" onclick="return confirm('¿Eliminar este equipo de forma permanente?')" style="text-decoration:none;" title="Eliminar">🗑️</a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -111,11 +114,26 @@
         </div>
     </div>
 
+    <!-- MODAL DE VISTA -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-modal" onclick="closeViewModal()">&times;</span>
+            <div id="viewHeader" style="text-align: center; margin-bottom: 20px;">
+                <h2 id="view_nombre" style="margin-bottom: 5px;"></h2>
+                <span id="view_sn" style="color: var(--text-muted); font-family: monospace;"></span>
+            </div>
+            <div id="viewDetails" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <!-- Detalles dinámicos aquí -->
+            </div>
+            <button onclick="closeViewModal()" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Cerrar</button>
+        </div>
+    </div>
+
     <!-- MODAL DE EDICIÓN -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle">Editar Equipo</h2>
+            <h2>Editar Equipo</h2>
             <form id="editForm">
                 <input type="hidden" id="edit_id">
                 
@@ -168,6 +186,40 @@
     </div>
 
     <script>
+        function openViewModal(id) {
+            fetch(`/api/equipo/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('view_nombre').innerText = data.nombre;
+                    document.getElementById('view_sn').innerText = `S/N: ${data.sn}`;
+                    
+                    const container = document.getElementById('viewDetails');
+                    container.innerHTML = `
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:20px;">
+                            <div><label>Categoría</label><div style="font-size:14px;">${data.categoria}</div></div>
+                            <div><label>Estado</label><div style="font-size:14px;">${data.estado}</div></div>
+                            <div style="grid-column: span 2;"><label>Ubicación</label><div style="font-size:14px;">${data.puesto_nombre || 'Sin Vincular'}</div></div>
+                        </div>
+                        <h3 style="font-size:12px; color:var(--primary); text-transform:uppercase; margin-bottom:10px;">Especificaciones Excel</h3>
+                    `;
+                    
+                    Object.keys(data.extra).forEach(key => {
+                        const div = document.createElement('div');
+                        div.style.padding = '8px 0';
+                        div.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+                        div.innerHTML = `
+                            <span style="font-size:11px; color:var(--text-muted); text-transform:capitalize; display:block;">${key.replace(/_/g, ' ')}</span>
+                            <span style="font-size:14px; color:#fff;">${data.extra[key] || '—'}</span>
+                        `;
+                        container.appendChild(div);
+                    });
+                    
+                    document.getElementById('viewModal').style.display = 'flex';
+                });
+        }
+
+        function closeViewModal() { document.getElementById('viewModal').style.display = 'none'; }
+
         function openEditModal(id) {
             fetch(`/api/equipo/${id}`)
                 .then(res => res.json())
@@ -179,9 +231,8 @@
                     document.getElementById('edit_estado').value = data.estado;
                     document.getElementById('edit_workstation').value = data.workstation_id || "";
                     
-                    // Limpiar y cargar campos dinámicos
                     const container = document.getElementById('dynamicFields');
-                    container.innerHTML = '<h3>Detalles Técnicos (Excel)</h3>';
+                    container.innerHTML = '<h3>Editar Especificaciones</h3>';
                     
                     Object.keys(data.extra).forEach(key => {
                         const div = document.createElement('div');
@@ -197,9 +248,7 @@
                 });
         }
 
-        function closeModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
         document.getElementById('editForm').onsubmit = function(e) {
             e.preventDefault();
