@@ -111,16 +111,22 @@ def process_excel(file_path):
 
                 ubicacion = clean(row.get('UBICACIÓN', row.get('UBICACION', 'N/A')), 'N/A')
                 
+import traceback
+
+# ... (resto de funciones iguales)
+
                 # Capturar TODO técnicamente
                 full_data = {}
                 for col in df.columns:
                     val = row.get(col)
                     val_clean = clean(val, None)
                     if val_clean and "UNNAMED" not in str(col).upper():
+                        # Eliminar caracteres no imprimibles que rompen JSON/SQL
+                        val_sanitized = "".join(c for c in str(val_clean) if c.isprintable()).strip()
                         if pd.api.types.is_datetime64_any_dtype(val) or hasattr(val, 'isoformat'):
                             full_data[str(col).lower()] = str(val)
                         else:
-                            full_data[str(col).lower()] = val_clean
+                            full_data[str(col).lower()] = val_sanitized
 
                 full_data["fecha_catastro"] = str(datetime.now().date())
                 full_data["hoja_origen"] = sheet_name
@@ -158,6 +164,7 @@ def process_excel(file_path):
                 summary["errors"] += 1
                 row_data = {k: v for k, v in row.to_dict().items() if pd.notna(v)}
                 print(f"   ❌ Error en fila {_+1}: {e}")
+                traceback.print_exc() # Esto nos dirá la línea exacta
                 print(f"      📝 Datos conflictivos: {row_data}")
 
     conn.commit()
