@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escanear Inventario | CESFAM Altiplano Norte</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #00d2ff;
+        }
+
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #334155 !important;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #reader__dashboard {
+            background: #1e293b !important;
+            padding: 20px !important;
+        }
+
+        button {
+            background: #00d2ff !important;
+            color: #0f172a !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            border-radius: 10px !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            cursor: pointer;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            text-align: center;
+            color: #94a3b8;
+            background: rgba(51, 65, 85, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SISTEMA DE CATASTRO</h1>
+        <p>Apunta la cámara al código QR del equipo</p>
+    </div>
+
+    <div id="reader"></div>
+
+    <div class="instructions">
+        <i class="fas fa-info-circle"></i> Al detectar el código, se verificará automáticamente la integridad del vínculo legal con el puesto de trabajo.
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan Result: ${decodedText}`);
+            // Validación básica para asegurar que es un link del sistema
+            if (decodedText.includes('/equipo/')) {
+                window.location.href = decodedText;
+            } else {
+                alert("Código no válido para el sistema de inventario.");
+            }
+        }
+
+        function onScanFailure(error) {
+            // Se puede ignorar el error de "no detectado"
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>

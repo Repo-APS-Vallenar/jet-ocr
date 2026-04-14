@@ -424,7 +424,7 @@ def login():
         usuario = Usuario.query.filter_by(correo=correo).first()
         
         # --- DEBUG LOG ---
-        with open("c:/Users/usuario/Documents/Proyectos/IN_AN/debug_saas.txt", "w") as f_debug:
+        with open("debug_saas.txt", "w") as f_debug:
             f_debug.write(f"Correo ingresado: {correo}\n")
             f_debug.write(f"Usuario en DB: {usuario is not None}\n")
             if usuario:
@@ -1391,7 +1391,51 @@ def pago_exitoso():
     return redirect(url_for('admin'))
 
 
-if __name__ == '__main__':
+# --- MÓDULO DE INVENTARIO Y QR ---
+
+@app.route('/equipo/<uuid_equipo>')
+def ver_equipo(uuid_equipo):
+    # Consulta avanzada que trae el equipo y su workstation vinculada desde Supabase
+    sql = """
+        SELECT e.id, e.nombre, e.serial, e.modelo, e.datos_dinamicos, w.codigo_puesto, w.inherited_zone, e.estado, e.categoria
+        FROM equipos e
+        LEFT JOIN workstations w ON e.workstation_id = w.id
+        WHERE e.id = %s
+    """
+    try:
+        conn = db.engine.raw_connection()
+        cur = conn.cursor()
+        cur.execute(sql, (uuid_equipo,))
+        data = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if not data:
+            flash("Equipo no registrado en el catastro.", "warning")
+            return redirect(url_for('landing'))
+
+        equipo_info = {
+            "id": data[0],
+            "nombre": data[1],
+            "serial": data[2],
+            "modelo": data[3],
+            "red": data[4].get('boca_red', 'No especificada') if data[4] else 'No especificada',
+            "puesto": data[5] or "Sin Puesto Vinculado",
+            "zona": data[6] or "Zona Desconocida",
+            "estado": data[7] or "Indefinido",
+            "categoria": data[8] or "Hardware",
+            "legal": data[4].get('responsabilidad_legal', 'No especificada') if data[4] else 'No especificada'
+        }
+        return render_template('detalle_equipo.html', equipo=equipo_info)
+    except Exception as e:
+        print(f"Error en inventario: {e}")
+        return "Error interno del servidor", 500
+
+@app.route('/escanear')
+def escanear_qr():
+    return render_template('escanear.html')
+
+
     with app.app_context():
         inicializar_db()
     # host='0.0.0.0' permite que otros dispositivos en la red local (el celular) accedan a la página
