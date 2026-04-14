@@ -107,5 +107,6 @@ def process_excel(file_path):
 if __name__ == "__main__":
     from datetime import datetime
     init_process()
-    print("Dime el nombre del archivo Excel cuando estés listo para procesar.")
-    # process_excel('catastro.xlsx')
+    print("🚀 Iniciando procesamiento automático de INVENTARIO_AN.xlsx...")
+    process_excel('INVENTARIO_AN.xlsx')
+
