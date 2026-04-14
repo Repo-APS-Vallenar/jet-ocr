@@ -57,41 +57,47 @@ def process_excel(file_path):
     
     for _, row in df.iterrows():
         try:
-            nombre = str(row.get('Nombre_Equipo', 'Equipo Desconocido'))
-            serial = str(row.get('Serie', 'N/A'))
-            modelo = str(row.get('Modelo', 'N/A'))
-            codigo_puesto = str(row.get('Codigo_Puesto', ''))
-            boca_red = str(row.get('Boca_Red', ''))
-            categoria = str(row.get('Categoria', 'Hardware'))
+            # Mapeo según imagen: [MARCA] [MODELO] [N. SERIE] [UBICACION]
+            marca = str(row.get('MARCA', ''))
+            modelo = str(row.get('MODELO', ''))
+            nombre = f"{marca} {modelo}".strip() or "Equipo Desconocido"
             
-            # Buscar Workstation vinculada
-            cur.execute("SELECT id FROM workstations WHERE codigo_puesto = %s", (codigo_puesto,))
+            serial = str(row.get('N. SERIE', 'N/A')).replace('/', '-').strip()
+            ubicacion = str(row.get('UBICACION', 'N/A'))
+            usuario = str(row.get('USUARIO', 'N/A'))
+            
+            # Buscar Workstation vinculada por Ubicación (ya que no hay código de puesto explícito)
+            cur.execute("SELECT id FROM workstations WHERE codigo_puesto ILIKE %s OR inherited_zone ILIKE %s", 
+                       (f"%{ubicacion}%", f"%{ubicacion}%"))
             ws_res = cur.fetchone()
             ws_id = ws_res[0] if ws_res else None
             
             datos_dinamicos = json.dumps({
                 "modelo": modelo,
-                "boca_red": boca_red, 
+                "usuario_original": usuario,
+                "ubicacion_excel": ubicacion,
                 "fecha_catastro": str(datetime.now().date()),
                 "responsabilidad_legal": "Fianza CESFAM"
             })
             
-            # Dejamos que el ID sea autoincremental (serial)
             sql = """
                 INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
-                VALUES (%s, %s, %s, %s, %s, 'Operativo')
+                VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo')
                 ON CONFLICT (sn) DO UPDATE SET 
                 workstation_id = EXCLUDED.workstation_id,
                 datos_dinamicos = EXCLUDED.datos_dinamicos
                 RETURNING id
             """
-            cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos, categoria))
+            cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos))
             final_id = cur.fetchone()[0]
             
-            # Generar QR con el ID numérico
+            # Generar QR (limpiando el nombre del archivo de caracteres raros)
+            safe_serial = "".join([c for c in serial if c.isalnum()])
             qr_link = f"{BASE_URL}/equipo/{final_id}"
-            qr_file = f"{QR_OUTPUT_DIR}/{codigo_puesto}_{serial}.png"
-            generate_styled_qr(qr_link, qr_file, f"{codigo_puesto} | {serial}")
+            qr_file = os.path.join(QR_OUTPUT_DIR, f"QR_{safe_serial}.png")
+            
+            generate_styled_qr(qr_link, qr_file, f"{nombre} | {serial}")
+
 
             
             summary["created"] += 1
