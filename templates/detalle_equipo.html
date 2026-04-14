@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Equipo | Jet-OCR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .icon-box {
+            background: rgba(255, 255, 255, 0.2);
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 40px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 8px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .data-item {
+            margin-bottom: 15px;
+        }
+
+        .data-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .data-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .footer {
+            padding: 0 30px 30px;
+            text-align: center;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            background: transparent;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .btn-back:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 0;
+                max-width: none;
+            }
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="status-badge">{{ equipo.estado }}</span>
+            <div class="icon-box">💻</div>
+            <h1>{{ equipo.nombre }}</h1>
+            <p>S/N: {{ equipo.serial }}</p>
+        </div>
+
+        <div class="content">
+            <span class="section-title">Especificaciones Técnicas</span>
+            <div class="data-grid">
+                <div class="data-item">
+                    <span class="data-label">Modelo</span>
+                    <span class="data-value">{{ equipo.modelo }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Categoría</span>
+                    <span class="data-value">{{ equipo.categoria }}</span>
+                </div>
+                {% if equipo.datos_extra %}
+                    {% if equipo.datos_extra.CPU %}
+                    <div class="data-item">
+                        <span class="data-label">Procesador</span>
+                        <span class="data-value">{{ equipo.datos_extra.CPU }}</span>
+                    </div>
+                    {% endif %}
+                    {% if equipo.datos_extra['RAM/TIPO'] %}
+                    <div class="data-item">
+                        <span class="data-label">Memoria RAM</span>
+                        <span class="data-value">{{ equipo.datos_extra['RAM/TIPO'] }}</span>
+                    </div>
+                    {% endif %}
+                    {% if equipo.datos_extra.ALMACENAMIEN %}
+                    <div class="data-item">
+                        <span class="data-label">Disco / Almacenamiento</span>
+                        <span class="data-value">{{ equipo.datos_extra.ALMACENAMIEN }}</span>
+                    </div>
+                    {% endif %}
+                    {% if equipo.datos_extra['VERSION WIN'] %}
+                    <div class="data-item">
+                        <span class="data-label">Sistema Operativo</span>
+                        <span class="data-value">{{ equipo.datos_extra['VERSION WIN'] }}</span>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <span class="section-title">Ubicación y Asignación</span>
+            <div class="data-grid">
+                <div class="data-item">
+                    <span class="data-label">Puesto Relacionado</span>
+                    <span class="data-value">{{ equipo.puesto }}</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">Zona / Edificio</span>
+                    <span class="data-value">{{ equipo.zona }}</span>
+                </div>
+                {% if equipo.datos_extra and equipo.datos_extra.USUARIO %}
+                <div class="data-item full-width">
+                    <span class="data-label">Usuario Asignado (Excel)</span>
+                    <span class="data-value">{{ equipo.datos_extra.USUARIO }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="info-card">
+                <span class="data-label">Responsabilidad Legal</span>
+                <span class="data-value">{{ equipo.legal }}</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p style="font-size: 10px; color: var(--text-muted);">ID de Inventario: {{ equipo.id }}</p>
+            <a href="/" class="btn-back">← Volver al Panel</a>
+        </div>
+    </div>
+</body>
+</html>

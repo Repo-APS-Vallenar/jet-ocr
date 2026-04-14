@@ -1,3 +1,4 @@
+from datetime import datetime
 import pandas as pd
 import qrcode
 import os
@@ -63,7 +64,7 @@ def process_excel(file_path):
             nombre = f"{marca} {modelo}".strip() or "Equipo Desconocido"
             
             serial = str(row.get('N. SERIE', 'N/A')).replace('/', '-').strip()
-            ubicacion = str(row.get('UBICACION', 'N/A'))
+            ubicacion = str(row.get('UBICACIÓN', row.get('UBICACION', 'N/A')))
             usuario = str(row.get('USUARIO', 'N/A'))
             
             # Buscar Workstation vinculada por Ubicación (ya que no hay código de puesto explícito)
@@ -72,13 +73,19 @@ def process_excel(file_path):
             ws_res = cur.fetchone()
             ws_id = ws_res[0] if ws_res else None
             
-            datos_dinamicos = json.dumps({
-                "modelo": modelo,
-                "usuario_original": usuario,
-                "ubicacion_excel": ubicacion,
-                "fecha_catastro": str(datetime.now().date()),
-                "responsabilidad_legal": "Fianza CESFAM"
-            })
+            # Capturar TODO el resto de columnas para datos_dinamicos
+            full_data = row.to_dict()
+            # Convertir fechas a string para JSON si existen
+            for k, v in full_data.items():
+                if pd.api.types.is_datetime64_any_dtype(v) or hasattr(v, 'isoformat'):
+                    full_data[k] = str(v)
+                elif pd.isna(v):
+                    full_data[k] = None
+
+            full_data["fecha_catastro"] = str(datetime.now().date())
+            full_data["responsabilidad_legal"] = "Fianza CESFAM"
+            
+            datos_dinamicos = json.dumps(full_data)
             
             sql = """
                 INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado)
@@ -97,11 +104,9 @@ def process_excel(file_path):
             qr_file = os.path.join(QR_OUTPUT_DIR, f"QR_{safe_serial}.png")
             
             generate_styled_qr(qr_link, qr_file, f"{nombre} | {serial}")
-
-
             
             summary["created"] += 1
-            print(f"✅ Procesado: {nombre} [{codigo_puesto}]")
+            print(f"✅ Procesado: {nombre} [{serial}] en {ubicacion}")
             
         except Exception as e:
             summary["errors"] += 1
@@ -113,7 +118,6 @@ def process_excel(file_path):
     print(f"\n✨ RESUMEN: {summary['created']} equipos procesados, {summary['errors']} errores.")
 
 if __name__ == "__main__":
-    from datetime import datetime
     init_process()
     print("🚀 Iniciando procesamiento automático de INVENTARIO_AN.xlsx...")
     process_excel('INVENTARIO_AN.xlsx')

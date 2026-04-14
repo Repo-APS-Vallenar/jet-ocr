@@ -1420,13 +1420,14 @@ def ver_equipo(id_equipo):
             "id": data[0],
             "nombre": data[1],
             "serial": data[2], # Mapeamos 'sn' a 'serial' para el template
-            "modelo": datos_extra.get('modelo', 'No especificado'),
+            "modelo": datos_extra.get('modelo', datos_extra.get('MODELO', 'No especificado')),
             "red": datos_extra.get('boca_red', 'No especificada'),
             "puesto": data[4] or "Sin Puesto Vinculado",
             "zona": data[5] or "Zona Desconocida",
             "estado": data[6] or "Indefinido",
             "categoria": data[7] or "Hardware",
-            "legal": datos_extra.get('responsabilidad_legal', 'No especificada')
+            "legal": datos_extra.get('responsabilidad_legal', 'No especificado'),
+            "datos_extra": datos_extra
         }
 
         return render_template('detalle_equipo.html', equipo=equipo_info)
