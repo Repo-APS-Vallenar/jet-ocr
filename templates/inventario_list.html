@@ -75,13 +75,21 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Gestor de Inventarios</h1>
-            <p>Organizado por Áreas Técnicas</p>
+        <div class="header" style="flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h1>Gestor de Inventarios</h1>
+                <p>Organizado por Áreas Técnicas</p>
+            </div>
+            <div style="flex-grow: 1; max-width: 400px; position: relative;">
+                <input type="text" id="globalSearch" placeholder="🔍 Buscar por S/N, Nombre, Proveedor o Área..." 
+                       onkeyup="globalSearch()"
+                       style="padding-left: 40px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); height: 45px;">
+                <span style="position: absolute; left: 15px; top: 12px; opacity: 0.5;"></span>
+            </div>
         </div>
 
         <!-- TABS DE NAVEGACIÓN -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
+        <div id="tabsContainer" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px;">
             <button class="tab-btn active" onclick="showInventory('ALL')">TODOS</button>
             {% for area in inventarios.keys()|sort %}
             <button class="tab-btn" onclick="showInventory('{{ area }}')">{{ area }}</button>
@@ -172,6 +180,32 @@
     </style>
 
     <script>
+        function globalSearch() {
+            const term = document.getElementById('globalSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.inventory-row');
+            const tabs = document.getElementById('tabsContainer');
+
+            // Si hay búsqueda, ocultamos las pestañas para no confundir
+            if (term.length > 0) {
+                tabs.style.opacity = '0.3';
+                tabs.style.pointerEvents = 'none';
+            } else {
+                tabs.style.opacity = '1';
+                tabs.style.pointerEvents = 'auto';
+                showInventory('ALL'); // Resetear a vista normal si borra la búsqueda
+                return;
+            }
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(term)) {
+                    row.style.display = 'table-row';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
         function showInventory(area) {
             // Actualizar botones
             document.querySelectorAll('.tab-btn').forEach(btn => {
