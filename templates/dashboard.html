@@ -1022,12 +1022,28 @@
                         <input type="datetime-local" id="max-datetime"
                             style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.88rem; color: #1e293b; background: white;">
                     </div>
-                    <button id="btn-clear-datetime"
-                        style="padding: 9px 15px; border-radius: 8px; border: 1px solid #fee2e2; background: white; color: #ef4444; font-size: 0.88rem; cursor: pointer; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 5px;"
-                        onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
-                        <i class="fa-solid fa-trash-can"></i> Limpiar
-                    </button>
                 </div>
+
+                <!-- 🏷️ FILTRO POR CATEGORÍA (TIPO DE INVENTARIO) -->
+                <div id="categoryTabs" style="display: flex; gap: 8px; margin: 15px 0; flex-wrap: wrap;">
+                    <button class="cat-tab active" data-cat="ALL" style="padding: 10px 18px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #475569; transition: all 0.2s;">TODOS</button>
+                    <button class="cat-tab" data-cat="AIO" style="padding: 10px 18px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #475569; transition: all 0.2s;"><i class="fa-solid fa-desktop" style="color: #3b82f6;"></i> AIO</button>
+                    <button class="cat-tab" data-cat="Notebook" style="padding: 10px 18px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #475569; transition: all 0.2s;"><i class="fa-solid fa-laptop" style="color: #8b5cf6;"></i> Notebooks</button>
+                    <button class="cat-tab" data-cat="TELEFONO" style="padding: 10px 18px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #475569; transition: all 0.2s;"><i class="fa-solid fa-phone" style="color: #10b981;"></i> Teléfonos</button>
+                    <button class="cat-tab" data-cat="Hardware" style="padding: 10px 18px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #475569; transition: all 0.2s;"><i class="fa-solid fa-server" style="color: #f59e0b;"></i> Hardware</button>
+                </div>
+
+                <style>
+                    .cat-tab.active {
+                        background: #1e293b !important;
+                        color: white !important;
+                        border-color: #1e293b !important;
+                    }
+                    .cat-tab:hover:not(.active) {
+                        background: #f1f5f9 !important;
+                        border-color: #94a3b8 !important;
+                    }
+                </style>
                 <table id="dt-inventario" class="display desktop-only" style="width:100%">
                     <thead>
                         <tr>
@@ -1037,35 +1053,32 @@
                             <th>Ubicación</th>
                             <th>Usuario</th>
                             <th>Estado</th>
-                            <th>Fecha Actualización</th>
+                            <th>Categoría</th>
+                            <th>Fecha</th>
                             <th style="width: 100px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for eq in equipos %}
-                        <tr>
+                        <tr data-categoria="{{ eq.categoria or 'ALL' }}">
                             <td><strong>{{ eq.sn }}</strong></td>
-                            <td>{% if eq.mac %}<span class="badge success">{{ eq.mac }}</span>{% else %}<span
-                                    class="badge danger"
-                                    style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">Falta
-                                    MAC</span>{% endif %}
-                            </td>
+                            <td>{% if eq.mac %}<span class="badge success">{{ eq.mac }}</span>{% else %}<span class="badge danger" style="background: #fee2e2; color: #b91c1c;">Falta MAC</span>{% endif %}</td>
                             <td>{{ eq.nombre or '-' }}</td>
                             <td>{{ eq.ubicacion or '-' }}</td>
                             <td>{{ eq.usuario or '-' }}</td>
                             <td>
-                                {% if eq.estado == 'Asignado' %}
-                                <span class="badge info">{{ eq.estado }}</span>
-                                {% elif eq.estado %}
-                                <span class="badge warning">{{ eq.estado }}</span>
-                                {% else %}
-                                -
-                                {% endif %}
+                                {% if eq.estado == 'Asignado' %}<span class="badge info">{{ eq.estado }}</span>
+                                {% elif eq.estado %}<span class="badge warning">{{ eq.estado }}</span>
+                                {% else %}-{% endif %}
                             </td>
-                            <td data-order="{{ eq.fecha_actualizacion.isoformat() if eq.fecha_actualizacion else '' }}"
-                                style="font-size: 0.88rem; color: #475569; font-weight: 500;">
-                                {{ eq.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') if eq.fecha_actualizacion else 'Sin
-                                fecha' }}
+                            <td>
+                                {% if eq.categoria == 'AIO' %}<span class="badge" style="background: #eff6ff; color: #3b82f6;"><i class="fa-solid fa-desktop"></i> AIO</span>
+                                {% elif eq.categoria == 'Notebook' %}<span class="badge" style="background: #f5f3ff; color: #8b5cf6;"><i class="fa-solid fa-laptop"></i> NOTEBOOK</span>
+                                {% elif eq.categoria == 'TELEFONO' %}<span class="badge" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-phone"></i> TELEFONO</span>
+                                {% else %}<span class="badge" style="background: #f1f5f9; color: #475569;">OTRO</span>{% endif %}
+                            </td>
+                            <td data-order="{{ eq.fecha_actualizacion.isoformat() if eq.fecha_actualizacion else '' }}">
+                                {{ eq.fecha_actualizacion.strftime('%d/%m %H:%M') if eq.fecha_actualizacion else '-' }}
                             </td>
                             <td>
                                 <div class="btn-actions">
@@ -2004,18 +2017,26 @@
                 $('#dt-inventario').DataTable().draw();
             });
 
-            $('#dt-inventario').DataTable({
+            const tableInventario = $('#dt-inventario').DataTable({
                 "pageLength": 100,
                 "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "Todos"]],
                 "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json",
-                    "lengthMenu": "Mostrar _MENU_ registros por página",
-                    "zeroRecords": "No se encontraron resultados",
-                    "info": "Mostrando página _PAGE_ de _PAGES_ (Total: _MAX_ registros)",
-                    "infoEmpty": "No hay registros disponibles",
-                    "infoFiltered": "(filtrado de _MAX_ registros totales)"
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
                 },
                 "order": []
+            });
+
+            // --- LÓGICA DE FILTRADO POR CATEGORÍA (BOTONES) ---
+            $('.cat-tab').on('click', function() {
+                $('.cat-tab').removeClass('active');
+                $(this).addClass('active');
+
+                const cat = $(this).data('cat');
+                if (cat === 'ALL') {
+                    tableInventario.column(6).search('').draw(); // Limpiar filtro en columna 6 (Categoría)
+                } else {
+                    tableInventario.column(6).search(cat).draw(); // Filtrar por categoría
+                }
             });
 
             $('#dt-log').DataTable({
