@@ -6,7 +6,7 @@
     <style>
         @media print {
             .no-print { display: none; }
-            body { margin: 0; padding: 0; border: none; box-shadow: none; width: 100%; }
+            body { margin: 0; padding: 0mm; width: 100%; border: none; }
         }
         @page {
             size: A4;
@@ -16,116 +16,110 @@
             font-family: 'Times New Roman', Times, serif;
             color: #1a1a1a;
             line-height: 1.4;
-            max-width: 750px; /* Reducido para evitar descuadre */
-            margin: 0 auto;
+            width: 100%;
+            margin: 0;
+            padding: 0;
             background: #fff;
-            padding: 10px;
         }
         .header-table {
             width: 100%;
-            border-bottom: 3px solid #000;
+            border-bottom: 2px solid #000;
             padding-bottom: 10px;
             margin-bottom: 30px;
+            table-layout: fixed; /* Forzar anchos exactos */
         }
         .institution-info {
             text-align: left;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
             color: #000;
             text-transform: uppercase;
+            width: 65%;
         }
         .doc-title {
             text-align: right;
             vertical-align: top;
+            width: 35%;
         }
         .doc-title h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 18px; /* Reducido para caber bien */
             color: #000;
-            text-decoration: underline;
+            text-transform: uppercase;
         }
         .doc-title p {
             margin: 5px 0 0 0;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-        }
-        .section {
-            margin-bottom: 20px;
         }
         .section-title {
-            background: #f1f1f1;
-            border: 1px solid #000;
-            color: #000;
-            padding: 4px 10px;
+            background: #eee;
+            border: 1px solid #999;
+            padding: 3px 10px;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             text-transform: uppercase;
+            font-size: 11px;
+        }
+        .grid-table, .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .grid-table td, .specs-table td {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
             font-size: 12px;
-        }
-        .grid-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .grid-table td {
-            border: 1px solid #ddd;
-            padding: 8px 12px;
-            font-size: 13px;
-        }
-        .specs-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #ddd;
-        }
-        .specs-table td {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            font-size: 13px;
         }
         .observations {
-            margin-top: 15px;
-            border: 1px solid #ddd;
-            padding: 12px;
-            min-height: 50px;
-            font-size: 12px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 40px;
+            font-size: 11px;
+            margin-top: 5px;
         }
         .statement {
-            font-size: 11px;
+            font-size: 10.5px;
             text-align: justify;
-            margin: 25px 0;
+            margin: 20px 0;
             font-style: italic;
         }
         .signatures {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            margin-top: 80px;
+            width: 100%;
+            margin-top: 60px;
+            table-layout: fixed;
+        }
+        .signatures td {
+            padding-top: 5px;
+            font-size: 11px;
             text-align: center;
         }
-        .sig-box {
+        .sig-line {
             border-top: 1px solid #000;
-            padding-top: 8px;
-            font-size: 12px;
+            width: 80%;
+            margin: 0 auto;
+            margin-bottom: 5px;
         }
         .btn-print {
             background: #000;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 15px;
             border: none;
             cursor: pointer;
             font-weight: bold;
-            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <button class="btn-print no-print" onclick="window.print()" style="float: right; margin-bottom: 20px;">🖨️ IMPRIMIR</button>
-    <div style="clear: both;"></div>
+    <div class="no-print" style="text-align: right; margin-bottom: 20px;">
+        <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR ACTA</button>
+    </div>
 
     <table class="header-table">
         <tr>
             <td class="institution-info">
                 TIC Altiplano Norte<br>
-                <span style="font-size: 11px; font-weight: normal; text-transform: none;">Departamento de Informática y Comunicaciones</span>
+                <span style="font-size: 10px; font-weight: normal; text-transform: none;">Departamento de Informática y Comunicaciones</span>
             </td>
             <td class="doc-title">
                 <h1>ACTA DE ENTREGA</h1>
@@ -134,77 +128,73 @@
         </tr>
     </table>
 
-    <div class="section">
-        <div class="section-title">I. Identificación del Receptor</div>
-        <table class="grid-table">
-            <tr>
-                <td style="width: 50%;"><strong>Usuario:</strong> {{ equipo.usuario or '________________' }}</td>
-                <td><strong>Ubicación:</strong> {{ equipo.ubicacion or equipo.area or '________________' }}</td>
-            </tr>
-            <tr>
-                <td><strong>Fecha Entrega:</strong> {{ today }}</td>
-                <td><strong>Hora Entrega:</strong> {{ now.split(' ')[1] }}</td>
-            </tr>
-        </table>
-    </div>
+    <div class="section-title">I. Identificación del Receptor</div>
+    <table class="grid-table">
+        <tr>
+            <td style="width: 50%;"><strong>Usuario:</strong> {{ equipo.usuario or '________________' }}</td>
+            <td><strong>Ubicación:</strong> {{ equipo.ubicacion or equipo.area or '________________' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Fecha Entrega:</strong> {{ today }}</td>
+            <td><strong>Hora Entrega:</strong> {{ now.split(' ')[1] }}</td>
+        </tr>
+    </table>
 
-    <div class="section">
-        <div class="section-title">II. Especificaciones del Equipamiento</div>
-        <table class="specs-table">
-            <tr style="background: #f9f9f9;">
-                <td style="width: 30%;"><strong>Tipo de Equipo:</strong></td>
-                <td>{{ equipo.categoria }}</td>
-            </tr>
+    <div class="section-title">II. Especificaciones del Equipamiento</div>
+    <table class="specs-table">
+        <tr style="background: #f5f5f5;">
+            <td style="width: 30%;"><strong>Tipo de Equipo:</strong></td>
+            <td>{{ equipo.categoria }}</td>
+        </tr>
+        <tr>
+            <td><strong>Nombre / Modelo:</strong></td>
+            <td>{{ equipo.nombre }}</td>
+        </tr>
+        <tr>
+            <td><strong>Número de Serie:</strong></td>
+            <td>{{ equipo.sn }}</td>
+        </tr>
+        <tr>
+            <td><strong>Dirección Física (MAC):</strong></td>
+            <td>{{ equipo.mac or 'N/A' }}</td>
+        </tr>
+        {% if equipo.datos_dinamicos %}
+            {% for key, val in equipo.datos_dinamicos.items() %}
             <tr>
-                <td><strong>Nombre / Modelo:</strong></td>
-                <td>{{ equipo.nombre }}</td>
+                <td><strong>{{ key }}:</strong></td>
+                <td>{{ val }}</td>
             </tr>
-            <tr>
-                <td><strong>Número de Serie:</strong></td>
-                <td>{{ equipo.sn }}</td>
-            </tr>
-            <tr>
-                <td><strong>Dirección Física (MAC):</strong></td>
-                <td>{{ equipo.mac or 'N/A' }}</td>
-            </tr>
-            {% if equipo.datos_dinamicos %}
-                {% for key, val in equipo.datos_dinamicos.items() %}
-                <tr>
-                    <td><strong>{{ key }}:</strong></td>
-                    <td>{{ val }}</td>
-                </tr>
-                {% endfor %}
-            {% endif %}
-        </table>
-    </div>
+            {% endfor %}
+        {% endif %}
+    </table>
 
-    <div class="section">
-        <div class="section-title">III. Observaciones Adicionales</div>
-        <div class="observations">
-            Se hace entrega del equipo en estado: <strong>{{ equipo.estado or 'NUEVO/OPERATIVO' }}</strong>. 
-            Detalles técnicos: _________________________________________________________________________________
-            __________________________________________________________________________________________________
-        </div>
+    <div class="section-title">III. Observaciones Adicionales</div>
+    <div class="observations">
+        Se hace entrega del equipo en estado: <strong>{{ equipo.estado or 'NUEVO/OPERATIVO' }}</strong>. 
+        Detalles: _________________________________________________________________________________________
+        __________________________________________________________________________________________________
     </div>
 
     <div class="statement">
         El receptor declara bajo su responsabilidad que ha recibido el equipamiento tecnológico detallado en este documento a entera satisfacción, 
-        quedando bajo su cuidado personal. Se compromete a devolverlo en las mismas condiciones (salvo desgaste natural) al finalizar su labor o contrato.
+        quedando bajo su cuidado personal. Se compromete a devolverlo en las mismas condiciones (salvo desgaste natural) del contrato corporativo.
     </div>
 
-    <div class="signatures" style="width: 100%;">
-        <div class="sig-box">
-            <br>
-            <strong>ENTREGUE CONFORME</strong><br>
-            Responsable TIC Altiplano Norte<br>
-            RUT: ____________________
-        </div>
-        <div class="sig-box">
-            <br>
-            <strong>RECIBÍ CONFORME</strong><br>
-            Nombre: {{ equipo.usuario or '________________' }}<br>
-            RUT: ____________________
-        </div>
-    </div>
+    <table class="signatures">
+        <tr>
+            <td>
+                <div class="sig-line"></div>
+                <strong>ENTREGUE CONFORME</strong><br>
+                Responsable TIC Altiplano Norte<br>
+                RUT: ____________________
+            </td>
+            <td>
+                <div class="sig-line"></div>
+                <strong>RECIBÍ CONFORME</strong><br>
+                Nombre: {{ equipo.usuario or '________________' }}<br>
+                RUT: ____________________
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
