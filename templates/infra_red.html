@@ -242,7 +242,7 @@
                         {% for i in range(1, element.total_puertos + 1, 2) %}
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
                             <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}" 
-                                 id="port-{{ port.id if port else 'null-' + i }}"
+                                 id="port-{{ port.id if port else 'null-' ~ i }}"
                                  onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}')"
                                  style="border-top-color: {{ port.color_hex if port else '#eee' }}">
                                 {{ i }}
@@ -259,7 +259,7 @@
                         {% for i in range(2, element.total_puertos + 1, 2) %}
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
                             <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}"
-                                 id="port-{{ port.id if port else 'null-' + i }}"
+                                 id="port-{{ port.id if port else 'null-' ~ i }}"
                                  onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}')"
                                  style="border-top-color: {{ port.color_hex if port else '#eee' }}">
                                 {{ i }}
@@ -277,7 +277,7 @@
                         {% for i in range(1, element.total_puertos + 1) %}
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
                             <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}"
-                                 id="port-{{ port.id if port else 'null-' + i }}"
+                                 id="port-{{ port.id if port else 'null-' ~ i }}"
                                  onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}')"
                                  style="border-top-color: {{ port.color_hex if port else '#eee' }}">
                                 {{ i }}
