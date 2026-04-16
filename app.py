@@ -124,6 +124,25 @@ class Incidencia(db.Model):
     reportado_por = db.Column(db.String(100), nullable=True)
     estado = db.Column(db.String(50), default='Pendiente') # Pendiente, Solucionado
 
+class InfraElement(db.Model):
+    __tablename__ = 'infra_elements'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False) # Ej: "Switch 1", "Patch Panel 3"
+    tipo = db.Column(db.String(50), nullable=False) # "SWITCH", "PATCH_PANEL"
+    piso = db.Column(db.String(20), default='1')
+    total_puertos = db.Column(db.Integer, default=24)
+    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+
+class InfraPort(db.Model):
+    __tablename__ = 'infra_ports'
+    id = db.Column(db.Integer, primary_key=True)
+    element_id = db.Column(db.Integer, db.ForeignKey('infra_elements.id'))
+    numero_puerto = db.Column(db.Integer, nullable=False)
+    tipo_servicio = db.Column(db.String(50), default='VAC') # AP, Fortinet, Voz, Datos, etc.
+    destino = db.Column(db.String(150), nullable=True) # Ej: "Box 4", "Switch 1 Port 5"
+    color_hex = db.Column(db.String(10), default='#ffffff')
+    conectado_a_id = db.Column(db.Integer, nullable=True) # ID de otro InfraPort (Cruce)
+
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True)
@@ -150,7 +169,7 @@ def inicializar_db():
         db.create_all()
         
         # Migración segura
-        tablas = ['equipos', 'registros_ocr', 'proyectos', 'usuarios', 'audit_logs', 'incidencias']
+        tablas = ['equipos', 'registros_ocr', 'proyectos', 'usuarios', 'audit_logs', 'incidencias', 'infra_elements', 'infra_ports']
         for t in tablas:
             try:
                 db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS company_id UUID;"))
@@ -1586,6 +1605,16 @@ def quick_view(id):
     if not equipo:
         return "Equipo no encontrado", 404
     return render_template('quick_view.html', equipo=equipo)
+
+@app.route('/infraestructura')
+def visualizar_infraestructura():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+        
+    company_id = session.get('company_id')
+    elementos = InfraElement.query.filter_by(company_id=company_id).all()
+    # Si no hay, podríamos crear los de la imagen automáticamente más adelante
+    return render_template('infra_red.html', elementos=elementos)
 
 @app.route('/api/reportar_falla', methods=['POST'])
 def reportar_falla():
