@@ -15,7 +15,11 @@ def importar_red():
             print("❌ No se encontró compañía.")
             return
 
-        with open('uploads/PUNTOS POR BOX.json', 'r', encoding='utf-8') as f:
+        # Calcular ruta absoluta del JSON
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(base_dir, 'uploads', 'PUNTOS POR BOX.json')
+        
+        with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
         print(f"📦 Cargando {len(data)} ubicaciones...")
