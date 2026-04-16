@@ -1617,6 +1617,31 @@ def visualizar_infraestructura():
     # Si no hay, podríamos crear los de la imagen automáticamente más adelante
     return render_template('infra_red.html', elementos=elementos)
 
+@app.route('/api/infra/editar_puerto', methods=['POST'])
+def editar_puerto():
+    data = request.json
+    p_id = data.get('id')
+    
+    puerto = InfraPort.query.get(p_id)
+    if not puerto:
+        return jsonify({"status": "error"}), 404
+        
+    puerto.destino = data.get('destino')
+    puerto.tipo_servicio = data.get('servicio')
+    
+    # Mapeo de colores segun servicio
+    colores = {
+        "Datos": "#ffa500",
+        "AP": "#00ffff",
+        "Voz": "#0000ff",
+        "Reloj": "#00ff00",
+        "VAC": "#ffffff"
+    }
+    puerto.color_hex = colores.get(puerto.tipo_servicio, "#ffffff")
+    
+    db.session.commit()
+    return jsonify({"status": "ok"})
+
 @app.route('/api/reportar_falla', methods=['POST'])
 def reportar_falla():
     data = request.json
