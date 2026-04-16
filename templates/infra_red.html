@@ -25,35 +25,49 @@
         .dot { width: 14px; height: 14px; border: 1px solid #ccc; border-radius: 3px; }
         
         .rack-container { display: flex; flex-direction: column; gap: 20px; }
-        .network-element { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 8px solid #3b82f6; }
-        .element-title { margin: 0 0 15px 0; font-size: 16px; color: var(--bg-dark); display: flex; justify-content: space-between; }
+        .network-element { 
+            background: #fff; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 8px solid #3b82f6;
+            overflow-x: auto; /* Evita que se desborde */
+        }
+        .element-title { margin: 0 0 15px 0; font-size: 16px; color: var(--bg-dark); display: flex; justify-content: space-between; position: sticky; left: 0; }
         
-        .port-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; }
+        .port-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; min-width: 900px; }
         .port { 
             aspect-ratio: 1; border: 1px solid #cbd5e1; display: flex; align-items: center; 
             justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; 
             transition: all 0.2s; position: relative; background: #f8fafc; 
         }
-        .port:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        .port:hover { transform: scale(1.05); z-index: 10; border-color: #3b82f6; }
         
+        .edit-btn {
+            position: absolute; bottom: 1px; right: 1px; font-size: 8px; 
+            background: rgba(255,255,255,0.9); padding: 2px; border-radius: 2px;
+            color: #64748b; opacity: 0; transition: opacity 0.2s;
+            border: 1px solid #e2e8f0;
+        }
+        .port:hover .edit-btn { opacity: 1; }
+        .edit-btn:hover { color: #0ea5e9; background: #fff; }
+
         .port.service-ap { border-top: 5px solid var(--color-ap); }
         .port.service-reloj { border-top: 5px solid var(--color-reloj); }
         .port.service-fortinet { border-top: 5px solid var(--color-fortinet); }
         .port.service-voice { border-top: 5px solid var(--color-voice); }
         .port.service-datos { border-top: 5px solid var(--color-datos); }
         
-        .port.highlight { border: 3px solid #f59e0b !important; box-shadow: 0 0 15px #f59e0b; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .port.highlight { border: 3px solid #f59e0b !important; box-shadow: 0 0 15px #f59e0b; animation: pulse 1s infinite; z-index: 100; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
         .tooltip {
             visibility: hidden; background: #333; color: #fff; text-align: center; padding: 5px;
             border-radius: 4px; position: absolute; z-index: 100; bottom: 125%; left: 50%;
-            transform: translateX(-50%); width: 100px; font-size: 10px; opacity: 0; transition: opacity 0.3s;
+            transform: translateX(-50%); width: 120px; font-size: 10px; opacity: 0; transition: opacity 0.3s;
+            pointer-events: none;
         }
         .port:hover .tooltip { visibility: visible; opacity: 1; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 450px; border-radius: 12px; }
+        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 450px; border-radius: 12px; position: relative;}
         input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         .floor-label { display: block; background: #cbd5e1; color: #475569; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; width: fit-content; }
     </style>
@@ -62,8 +76,8 @@
     <!-- MODAL -->
     <div id="modal-puerto" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title"><i class="fa-solid fa-gear"></i> Configuración de Puerto</h3>
-            <div id="info-conexion" style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:15px; font-size:13px; border:1px solid #e2e8f0;"></div>
+            <h3 id="modal-title"><i class="fa-solid fa-pen-to-square"></i> Editar Punto de Red</h3>
+            <div id="info-conexion-modal" style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:15px; font-size:13px; border:1px solid #e2e8f0;"></div>
             
             <label>Ubicación / Destino:</label>
             <input type="text" id="edit-destino">
@@ -86,8 +100,8 @@
             </div>
             
             <div style="margin-top:20px; display:flex; gap:10px;">
-                <button onclick="guardarPuerto()" style="flex:2; background:#0ea5e9; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar</button>
-                <button onclick="cerrarModal()" style="flex:1; background:#f1f5f9; border:none; padding:12px; border-radius:6px; cursor:pointer;">Cerrar</button>
+                <button onclick="guardarPuerto()" style="flex:2; background:#0ea5e9; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Cambios</button>
+                <button onclick="cerrarModal()" style="flex:1; background:#f1f5f9; border:none; padding:12px; border-radius:6px; cursor:pointer;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -95,16 +109,16 @@
     <div class="header">
         <div>
             <h1><i class="fa-solid fa-diagram-project"></i> Gestión de Infraestructura TIC</h1>
-            <p>Monitoreo físico de Rack y Conectividad</p>
+            <p>Usa <b>Click</b> para resaltar conexión | <b>Icono Lápiz</b> para editar</p>
         </div>
         <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Panel Principal</a>
     </div>
 
     <div class="legend">
-        <div class="legend-item"><div class="dot" style="background: var(--color-ap);"></div> AP</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-voice);"></div> Voz</div>
+        <div class="legend-item"><div class="dot" style="background: var(--color-ap);"></div> WAP</div>
+        <div class="legend-item"><div class="dot" style="background: var(--color-voice);"></div> Telefonía</div>
         <div class="legend-item"><div class="dot" style="background: var(--color-datos);"></div> Datos</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-reloj);"></div> Reloj</div>
+        <div class="legend-item"><div class="dot" style="background: var(--color-reloj);"></div> Biométrico</div>
         <div class="legend-item"><div class="dot" style="background: #fff;"></div> Libre</div>
     </div>
 
@@ -125,8 +139,13 @@
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
                             <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
                                  id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id if port else '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')">
+                                 onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
                                 {{ port.tag if port and port.tag else i }}
+                                {% if port %}
+                                <div class="edit-btn" onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </div>
+                                {% endif %}
                                 <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
                         {% endfor %}
@@ -137,8 +156,13 @@
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
                             <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
                                  id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id if port else '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')">
+                                 onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
                                 {{ port.tag if port and port.tag else i }}
+                                {% if port %}
+                                <div class="edit-btn" onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </div>
+                                {% endif %}
                                 <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
                         {% endfor %}
@@ -149,8 +173,13 @@
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
                             <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
                                  id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id if port else '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')">
+                                 onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
                                 {{ port.tag if port and port.tag else i }}
+                                {% if port %}
+                                <div class="edit-btn" onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </div>
+                                {% endif %}
                                 <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
                         {% endfor %}
@@ -164,25 +193,23 @@
     <script>
         let puertoSeleccionado = null;
 
-        function interactuarPuerto(id, conectadoA, destino, servicio, tag) {
+        function resaltarConexion(conectadoA) {
             document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
-            if (!id) return;
+            if (!conectadoA || conectadoA === 'None' || conectadoA === '') return;
 
-            if (conectadoA && conectadoA !== 'None' && conectadoA !== '') {
-                const target = document.getElementById('port-' + conectadoA);
-                if (target) {
-                    target.classList.add('highlight');
-                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    document.getElementById('info-conexion').innerHTML = "🔗 Vinculado a Puerto de Switch";
-                }
-            } else {
-                document.getElementById('info-conexion').innerHTML = "📍 Puerto Independiente";
+            const target = document.getElementById('port-' + conectadoA);
+            if (target) {
+                target.classList.add('highlight');
+                target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
             }
+        }
 
+        function abrirEditor(id, destino, servicio, tag) {
             puertoSeleccionado = id;
             document.getElementById('edit-destino').value = destino;
             document.getElementById('edit-servicio').value = servicio;
             document.getElementById('edit-tag').value = tag;
+            document.getElementById('info-conexion-modal').innerHTML = "📍 Editando Punto: " + (tag || 'Sin etiqueta');
             document.getElementById('modal-puerto').style.display = 'block';
         }
 
