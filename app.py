@@ -146,19 +146,22 @@ class AuditLog(db.Model):
 # Funciones de migración inicial
 from sqlalchemy import text, func
 def inicializar_db():
-    db.create_all()
-    
-    # Agregar columnas si no existen (Migración MVP para Postgres)
-    tablas = ['equipos', 'registros_ocr', 'proyectos', 'usuarios', 'audit_logs']
-    for t in tablas:
-        try:
-            db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS company_id UUID;"))
-            if t in ['equipos', 'registros_ocr']:
-                db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS datos_dinamicos JSONB;"))
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Bypass column ADD for {t}: {e}")
+    try:
+        db.create_all()
+        
+        # Migración segura
+        tablas = ['equipos', 'registros_ocr', 'proyectos', 'usuarios', 'audit_logs', 'incidencias']
+        for t in tablas:
+            try:
+                db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS company_id UUID;"))
+                if t in ['equipos', 'registros_ocr']:
+                    db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS datos_dinamicos JSONB;"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+    except Exception as e:
+        print(f"Error en inicio de DB: {e}")
+        db.session.rollback()
             
     # Crear Compañía por defecto si no existe
     default_company = Company.query.filter_by(name='Tu Empresa (Dashboard)').first()
