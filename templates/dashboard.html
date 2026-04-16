@@ -1000,11 +1000,15 @@
             <!-- TAB: Inventario Oficial -->
             <div id="tab-inventario" class="table-container" style="display: none;">
                 <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0;">Base de Datos: Equipos Oficiales (<span id="count-total">{{ total_equipos
-                            }}</span>)</h3>
-                    <button class="btn-export" style="background:#3b82f6;" onclick="abrirCrear()">
-                        <i class="fa-solid fa-plus"></i> Añadir Manual
-                    </button>
+                    <h3 style="margin: 0;">Base de Datos: Equipos Oficiales (<span id="count-total">{{ total_equipos }}</span>)</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="/imprimir_etiquetas" id="btn-print-qr-dashboard" target="_blank" class="btn-export" style="background:#0ea5e9; text-decoration: none; border: none; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-qrcode"></i> Imprimir Etiquetas QR
+                        </a>
+                        <button class="btn-export" style="background:#3b82f6;" onclick="abrirCrear()">
+                            <i class="fa-solid fa-plus"></i> Añadir Manual
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 📅 FILTRO POR FECHA Y HORA -->
@@ -2043,10 +2047,17 @@
                 $(this).addClass('active');
 
                 const cat = $(this).data('cat');
-                if (cat === 'ALL') {
-                    tableInventario.column(6).search('').draw(); // Limpiar filtro en columna 6 (Categoría)
-                } else {
-                    tableInventario.column(6).search(cat).draw(); // Filtrar por categoría
+                // Filtrar tabla
+                tableInventario.column(11).search(cat === 'ALL' ? '' : cat).draw();
+
+                // Actualizar link de impresión QR del Dashboard
+                const btnQR = document.getElementById('btn-print-qr-dashboard');
+                if (btnQR) {
+                    if (cat === 'ALL') {
+                        btnQR.href = '/imprimir_etiquetas';
+                    } else {
+                        btnQR.href = `/imprimir_etiquetas?categoria=${encodeURIComponent(cat)}`;
+                    }
                 }
             });
 
