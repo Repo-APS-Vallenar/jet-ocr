@@ -1051,6 +1051,7 @@
                 <table id="dt-inventario" class="display desktop-only" style="width:100%">
                     <thead>
                         <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="check-all-qr" style="cursor:pointer; transform: scale(1.2);"></th>
                             <th>S/N</th>
                             <th>MAC</th>
                             <th>Nombre</th>
@@ -1065,6 +1066,7 @@
                     <tbody>
                         {% for eq in equipos %}
                         <tr data-categoria="{{ eq.categoria or 'ALL' }}">
+                            <td style="text-align: center;"><input type="checkbox" class="qr-selector" value="{{ eq.id }}" onchange="controlarSeleccionQR()" style="cursor:pointer; transform: scale(1.2);"></td>
                             <td><strong>{{ eq.sn }}</strong></td>
                             <td>{% if eq.mac %}<span class="badge success">{{ eq.mac }}</span>{% else %}<span class="badge danger" style="background: #fee2e2; color: #b91c1c;">Falta MAC</span>{% endif %}</td>
                             <td>{{ eq.nombre or '-' }}</td>
@@ -2060,6 +2062,39 @@
                     }
                 }
             });
+
+            // --- LÓGICA DE SELECCIÓN QR ---
+            $('#check-all-qr').on('click', function() {
+                // Solo marcar los que están visibles actualmente (por si hay filtros de búsqueda o categoría)
+                $('#dt-inventario tbody tr:visible .qr-selector').prop('checked', this.checked);
+                controlarSeleccionQR();
+            });
+
+            window.controlarSeleccionQR = function() {
+                const seleccionados = [];
+                $('.qr-selector:checked').each(function() {
+                    seleccionados.push($(this).val());
+                });
+                
+                const btn = document.getElementById('btn-print-qr-dashboard');
+                if (seleccionados.length > 0) {
+                    btn.href = `/imprimir_etiquetas?ids=${seleccionados.join(',')}`;
+                    btn.style.background = '#F78104'; // Naranja para resaltar selección
+                    btn.style.boxShadow = '0 0 15px rgba(247, 129, 4, 0.4)';
+                    btn.innerHTML = `<i class="fa-solid fa-print"></i> Imprimir Selección (${seleccionados.length})`;
+                } else {
+                    // Volver al modo categoría
+                    const activeCat = $('.cat-tab.active').data('cat') || 'ALL';
+                    btn.style.background = '#0ea5e9';
+                    btn.style.boxShadow = 'none';
+                    btn.innerHTML = `<i class="fa-solid fa-qrcode"></i> Imprimir Etiquetas QR`;
+                    if (activeCat === 'ALL') {
+                        btn.href = '/imprimir_etiquetas';
+                    } else {
+                        btn.href = `/imprimir_etiquetas?categoria=${encodeURIComponent(activeCat)}`;
+                    }
+                }
+            }
 
             $('#dt-log').DataTable({
                 "pageLength": 100,

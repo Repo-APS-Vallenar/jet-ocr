@@ -1544,21 +1544,26 @@ def imprimir_etiquetas():
         return redirect(url_for('login'))
     
     categoria = request.args.get('categoria')
+    ids_param = request.args.get('ids') # Nuevo: lista de IDs separados por coma
     company_id = session.get('company_id')
     
-    # Intento de filtrar por empresa actual + datos legados (ID 1)
     try:
-        query = Equipo.query.filter(
-            (Equipo.company_id == company_id) | (text("CAST(company_id AS TEXT) = '1'"))
-        )
-        
-        if categoria:
-            query = query.filter_by(categoria=categoria)
+        if ids_param:
+            # Si el usuario seleccionó equipos específicos en la tabla
+            lista_ids = [int(i) for i in ids_param.split(',') if i.strip().isdigit()]
+            query = Equipo.query.filter(Equipo.id.in_(lista_ids))
+        else:
+            # Lógica tradicional por categoría o todos
+            query = Equipo.query.filter(
+                (Equipo.company_id == company_id) | (text("CAST(company_id AS TEXT) = '1'"))
+            )
+            if categoria and categoria != 'ALL':
+                query = query.filter_by(categoria=categoria)
             
         equipos = query.all()
     except Exception as e:
-        # Fallback si falla la consulta compleja
-        equipos = Equipo.query.all() # En el peor de los casos, mostramos todo para no dar error 500
+        equipos = []
+        flash(f"Error al cargar etiquetas: {e}", "danger")
         
     base_url = request.url_root.rstrip('/')
     return render_template('etiquetas_qr.html', equipos=equipos, base_url=base_url)
