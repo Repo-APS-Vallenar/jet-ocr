@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta Rápida - TIC Altiplano Norte</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 18px;
+            margin: 0;
+            color: #0A2647;
+            text-transform: uppercase;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+        .status-success { background: #e6fffa; color: #2c7a7b; }
+        .data-row {
+            margin-bottom: 15px;
+        }
+        .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #2D3748;
+        }
+        .btn-full {
+            display: block;
+            text-align: center;
+            background: #0A2647;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            margin-top: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <h1>TIC Altiplano Norte</h1>
+            <div class="status-badge status-success">
+                {% if equipo.estado == 'success' %}OPERATIVO{% else %}{{ equipo.estado or 'NUEVO' }}{% endif %}
+            </div>
+        </div>
+
+        <div class="data-row">
+            <div class="label">Equipo</div>
+            <div class="value">{{ equipo.nombre }}</div>
+        </div>
+
+        <div class="data-row">
+            <div class="label">S/N - Serie</div>
+            <div class="value">{{ equipo.sn }}</div>
+        </div>
+
+        <div class="data-row">
+            <div class="label">Ubicación / Área</div>
+            <div class="value">{{ equipo.ubicacion or equipo.area or 'Informática' }}</div>
+        </div>
+
+        <div class="data-row">
+            <div class="label">Asignado a:</div>
+            <div class="value">{{ equipo.usuario or 'Sin asignar' }}</div>
+        </div>
+
+        <div class="data-row">
+            <div class="label">Categoría</div>
+            <div class="value">{{ equipo.categoria }}</div>
+        </div>
+
+        <a href="/" class="btn-full">Ir al Sistema Central</a>
+    </div>
+</body>
+</html>

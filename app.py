@@ -1538,6 +1538,33 @@ def api_update_equipo(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/imprimir_etiquetas')
+def imprimir_etiquetas():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+    
+    categoria = request.args.get('categoria')
+    company_id = session.get('company_id')
+    
+    # query = Equipo.query.filter_by(company_id=company_id)
+    # Para asegurar que ve los 92, usamos la lógica de búsqueda global si es necesario
+    query = Equipo.query.filter(Equipo.company_id.in_([company_id, 1])) 
+    
+    if categoria:
+        query = query.filter_by(categoria=categoria)
+        
+    equipos = query.all()
+    base_url = request.url_root.rstrip('/')
+    
+    return render_template('etiquetas_qr.html', equipos=equipos, base_url=base_url)
+
+@app.route('/q/<int:id>')
+def quick_view(id):
+    equipo = Equipo.query.get(id)
+    if not equipo:
+        return "Equipo no encontrado", 404
+    return render_template('quick_view.html', equipo=equipo)
+
 @app.route('/inventario/eliminar/<int:id>')
 def inventario_eliminar(id):
     conn = db.engine.raw_connection()
