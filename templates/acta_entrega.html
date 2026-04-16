@@ -171,10 +171,10 @@
 
     <div class="section-title">III. Observaciones Adicionales</div>
     <div class="observations">
-        Se hace entrega del equipo en estado: <strong>{{ equipo.estado or 'NUEVO/OPERATIVO' }}</strong>. 
-        Detalles: _________________________________________________________________________________________
-        __________________________________________________________________________________________________
-    </div>
+            Se hace entrega del equipo en estado: <strong>{% if equipo.estado == 'success' %}OPERATIVO / BUEN ESTADO{% else %}{{ equipo.estado or 'NUEVO/OPERATIVO' }}{% endif %}</strong>. 
+            Detalles: _________________________________________________________________________________________
+            __________________________________________________________________________________________________
+        </div>
 
     <div class="statement">
         El receptor declara bajo su responsabilidad que ha recibido el equipamiento tecnológico detallado en este documento a entera satisfacción, 
