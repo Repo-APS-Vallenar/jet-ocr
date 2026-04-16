@@ -1450,7 +1450,7 @@ def inventario_list():
         SELECT e.id, e.nombre, e.sn, w.codigo_puesto, e.estado, e.categoria, e.datos_dinamicos, e.area
         FROM equipos e
         LEFT JOIN workstations w ON e.workstation_id = w.id
-        ORDER BY e.area ASC, e.id DESC
+        ORDER BY e.categoria ASC, e.id DESC
     """
     conn = db.engine.raw_connection()
     cur = conn.cursor()
@@ -1459,10 +1459,11 @@ def inventario_list():
     
     inventarios = {}
     for eq in equipos_raw:
-        area = eq[7] or 'GENERAL'
-        if area not in inventarios:
-            inventarios[area] = []
-        inventarios[area].append(eq)
+        # Priorizamos Categorización por Tipo para las pestañas
+        tipo = eq[5] or 'GENERAL'
+        if tipo not in inventarios:
+            inventarios[tipo] = []
+        inventarios[tipo].append(eq)
     
     # Obtener workstations para los selects de edición
     cur.execute("SELECT id, codigo_puesto FROM workstations ORDER BY codigo_puesto")
