@@ -6,147 +6,165 @@
     <style>
         @media print {
             .no-print { display: none; }
-            body { margin: 0; padding: 20px; }
+            body { margin: 0; padding: 0mm; border: none; box-shadow: none; width: 100%; }
+        }
+        @page {
+            margin: 1.5cm;
         }
         body {
-            font-family: 'Arial', sans-serif;
-            color: #333;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 40px auto;
-            border: 1px solid #eee;
-            padding: 50px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            font-family: 'Times New Roman', Times, serif; /* Fuente más formal */
+            color: #1a1a1a;
+            line-height: 1.5;
+            max-width: 850px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding: 60px;
+            background: #fff;
         }
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #0A2647;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            align-items: flex-start;
+            border-bottom: 3px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 40px;
         }
-        .logo-placeholder {
+        .institution-info {
             font-weight: bold;
-            font-size: 24px;
-            color: #0A2647;
+            font-size: 20px;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .doc-title {
             text-align: right;
         }
         .doc-title h1 {
             margin: 0;
-            font-size: 22px;
-            color: #0A2647;
+            font-size: 24px;
+            color: #000;
+            text-decoration: underline;
         }
         .doc-title p {
             margin: 5px 0 0 0;
-            font-size: 14px;
-            color: #666;
+            font-size: 13px;
+            font-weight: bold;
         }
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         .section-title {
-            background: #f8fafc;
-            padding: 8px 15px;
+            background: #000;
+            color: #fff;
+            padding: 5px 12px;
             font-weight: bold;
-            color: #1e293b;
-            border-left: 4px solid #3b82f6;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-transform: uppercase;
-            font-size: 14px;
+            font-size: 13px;
         }
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 10px;
+            border: 1px solid #ddd;
+            padding: 15px;
         }
         .data-item {
             font-size: 14px;
         }
         .data-item strong {
-            color: #475569;
-            width: 120px;
             display: inline-block;
+            width: 130px;
         }
         .specs-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            border: 1px solid #ddd;
         }
         .specs-table td {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+        }
+        .observations {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            min-height: 60px;
             font-size: 13px;
         }
         .statement {
-            font-size: 13px;
+            font-size: 12px;
             text-align: justify;
-            margin: 40px 0;
-            color: #444;
+            margin: 30px 0;
+            font-style: italic;
         }
         .signatures {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            margin-top: 80px;
+            gap: 70px;
+            margin-top: 100px;
             text-align: center;
         }
         .sig-box {
-            border-top: 1px solid #333;
+            border-top: 1px solid #000;
             padding-top: 10px;
-            font-size: 14px;
+            font-size: 13px;
         }
         .btn-print {
-            background: #0A2647;
+            background: #000;
             color: white;
-            padding: 10px 25px;
+            padding: 12px 30px;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            float: right;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
-    <button class="btn-print no-print" onclick="window.print()">Imprimir Acta</button>
-    
+    <button class="btn-print no-print" onclick="window.print()" style="float: right;">🖨️ IMPRIMIR DOCUMENTO</button>
+    <div style="clear: both;"></div>
+
     <div class="header">
-        <div class="logo-placeholder">JET OCR</div>
+        <div class="institution-info">
+            TIC Altiplano Norte<br>
+            <span style="font-size: 12px; font-weight: normal;">Departamento de Informática y Comunicaciones</span>
+        </div>
         <div class="doc-title">
             <h1>ACTA DE ENTREGA</h1>
-            <p>ID Documento: #{{ equipo.id }}-{{ today }}</p>
+            <p>FOLIO: #{{ equipo.id }}-{{ today|replace('/', '') }}</p>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Datos del Receptor</div>
+        <div class="section-title">I. Identificación del Receptor</div>
         <div class="grid">
-            <div class="data-item"><strong>Usuario:</strong> {{ equipo.usuario or 'Por asignar' }}</div>
-            <div class="data-item"><strong>Ubicación/Área:</strong> {{ equipo.ubicacion or equipo.area or 'Informática' }}</div>
+            <div class="data-item"><strong>Usuario:</strong> {{ equipo.usuario or '________________' }}</div>
+            <div class="data-item"><strong>Ubicación:</strong> {{ equipo.ubicacion or equipo.area or '________________' }}</div>
+            <div class="data-item"><strong>Fecha Entrega:</strong> {{ today }}</div>
+            <div class="data-item"><strong>Hora Entrega:</strong> {{ now.split(' ')[1] }}</div>
         </div>
     </div>
 
     <div class="section">
-        <div class="section-title">Detalle del Equipamiento</div>
+        <div class="section-title">II. Especificaciones del Equipamiento</div>
         <table class="specs-table">
+            <tr style="background: #f9f9f9;">
+                <td style="width: 30%;"><strong>Tipo de Equipo:</strong></td>
+                <td>{{ equipo.categoria }}</td>
+            </tr>
             <tr>
-                <td style="width: 30%;"><strong>Nombre Equipo:</strong></td>
+                <td><strong>Nombre / Modelo:</strong></td>
                 <td>{{ equipo.nombre }}</td>
             </tr>
             <tr>
-                <td><strong>N. Serie (S/N):</strong></td>
+                <td><strong>Número de Serie:</strong></td>
                 <td>{{ equipo.sn }}</td>
             </tr>
             <tr>
-                <td><strong>Dirección MAC:</strong></td>
-                <td>{{ equipo.mac or '-' }}</td>
-            </tr>
-            <tr>
-                <td><strong>Categoría:</strong></td>
-                <td>{{ equipo.categoria }}</td>
+                <td><strong>Dirección Física (MAC):</strong></td>
+                <td>{{ equipo.mac or 'N/A' }}</td>
             </tr>
             {% if equipo.datos_dinamicos %}
                 {% for key, val in equipo.datos_dinamicos.items() %}
@@ -159,25 +177,33 @@
         </table>
     </div>
 
+    <div class="section">
+        <div class="section-title">III. Observaciones Adicionales</div>
+        <div class="observations">
+            Se hace entrega del equipo en estado: <strong>{{ equipo.estado or 'NUEVO/OPERATIVO' }}</strong>. 
+            Detalles técnicos: _________________________________________________________________________________
+            __________________________________________________________________________________________________
+        </div>
+    </div>
+
     <div class="statement">
-        Por intermedio de la presente, se hace entrega del equipamiento tecnológico anteriormente descrito al usuario identificado en este documento. 
-        El receptor declara recibir el equipo en óptimas condiciones de funcionamiento y se compromete a hacer un uso adecuado del mismo, 
-        bajo las normativas de seguridad y cuidado establecidas por la institución.
+        El receptor declara bajo su responsabilidad que ha recibido el equipamiento tecnológico detallado en este documento a entera satisfacción, 
+        quedando bajo su cuidado personal. Se compromete a devolverlo en las mismas condiciones (salvo desgaste natural) al finalizar su labor o contrato.
     </div>
 
     <div class="signatures">
         <div class="sig-box">
-            <strong>Entregado por:</strong><br>
-            <span style="font-size: 12px; color: #666;">Firma y Timbre</span>
+            <br>
+            <strong>ENTREGUE CONFORME</strong><br>
+            Responsable TIC Altiplano Norte<br>
+            RUT: ____________________
         </div>
         <div class="sig-box">
-            <strong>Recibido por:</strong><br>
-            <span style="font-size: 12px; color: #666;">Firma Usuario</span>
+            <br>
+            <strong>RECIBÍ CONFORME</strong><br>
+            Nombre: {{ equipo.usuario or '________________' }}<br>
+            RUT: ____________________
         </div>
-    </div>
-
-    <div style="margin-top: 50px; font-size: 10px; color: #999; text-align: center;">
-        Generado automáticamente por JET OCR Inventory System - {{ now }}
     </div>
 </body>
 </html>
