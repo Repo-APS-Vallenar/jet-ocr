@@ -1,0 +1,1581 @@
+[
+    {
+        "pagina": 1,
+        "ubicacion": "SOME SAR",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 30",
+                "etiqueta_sugerida": "P30-30-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 31",
+                "etiqueta_sugerida": "P31-32-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 32",
+                "etiqueta_sugerida": "P32-34-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 33",
+                "etiqueta_sugerida": "P33-36-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 34",
+                "etiqueta_sugerida": "P34-38-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 35",
+                "etiqueta_sugerida": "P35-40-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 42",
+                "etiqueta_sugerida": "P42-5-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 2,
+        "ubicacion": "Estacion de enfermeria",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 23",
+                "etiqueta_sugerida": "P23-16-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 24",
+                "etiqueta_sugerida": "P24-18-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 25",
+                "etiqueta_sugerida": "P25-20-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 26",
+                "etiqueta_sugerida": "P26-22-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 43",
+                "etiqueta_sugerida": "P43-7-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 3,
+        "ubicacion": "Sala espera Some Proced.",
+        "uso": [
+            "WAP/WIFI"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 22",
+                "etiqueta_sugerida": "P22-1-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 4,
+        "ubicacion": "Box Acogida",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 11",
+                "etiqueta_sugerida": "P11-39-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 5,
+        "ubicacion": "Depacho Farmacia",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 16",
+                "etiqueta_sugerida": "P16-31-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 17",
+                "etiqueta_sugerida": "P17-33-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 18",
+                "etiqueta_sugerida": "P18-35-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 19",
+                "etiqueta_sugerida": "P19-37-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 21",
+                "etiqueta_sugerida": "P21-41-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 6,
+        "ubicacion": "Area Sucia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 12",
+                "etiqueta_sugerida": "P12-46-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 13",
+                "etiqueta_sugerida": "P13-44-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 7,
+        "ubicacion": "Categorización",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 28",
+                "etiqueta_sugerida": "P28-26-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 29",
+                "etiqueta_sugerida": "P29-28-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 8,
+        "ubicacion": "Oficina Carabineros",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 37",
+                "etiqueta_sugerida": "P37-42-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 9,
+        "ubicacion": "Bodega PNAC",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 08",
+                "etiqueta_sugerida": "P08-15-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 07",
+                "etiqueta_sugerida": "P07-13-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 22",
+                "etiqueta_sugerida": "P22-45-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 10,
+        "ubicacion": "Some Area Procedimiento",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 01",
+                "etiqueta_sugerida": "P01-8-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 02",
+                "etiqueta_sugerida": "P02-10-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 03",
+                "etiqueta_sugerida": "P03-12-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 04",
+                "etiqueta_sugerida": "P04-14-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 11,
+        "ubicacion": "Vacunatorio",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 07",
+                "etiqueta_sugerida": "P07-20-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 05",
+                "etiqueta_sugerida": "P05-16-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 06",
+                "etiqueta_sugerida": "P06-18-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 12,
+        "ubicacion": "Despacho PNAC",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 03",
+                "etiqueta_sugerida": "P03-5-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 04",
+                "etiqueta_sugerida": "P04-7-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 05",
+                "etiqueta_sugerida": "P05-9-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 06",
+                "etiqueta_sugerida": "P06-11-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 13,
+        "ubicacion": "Box urgencia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 40",
+                "etiqueta_sugerida": "P40-1-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 41",
+                "etiqueta_sugerida": "P41-3-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 14,
+        "ubicacion": "Toma de muestra",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 08",
+                "etiqueta_sugerida": "P08-22-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 09",
+                "etiqueta_sugerida": "P09-24-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 10",
+                "etiqueta_sugerida": "P10-26-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 15,
+        "ubicacion": "Bodega Farmacia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 14",
+                "etiqueta_sugerida": "P14-27-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 15",
+                "etiqueta_sugerida": "P15-29-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 13",
+                "etiqueta_sugerida": "P13-25-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 16,
+        "ubicacion": "Estar Personal",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 19",
+                "etiqueta_sugerida": "P19-8-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 17,
+        "ubicacion": "Box Osteo Pulmonar",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 16",
+                "etiqueta_sugerida": "P16-2-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 17",
+                "etiqueta_sugerida": "P17-4-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 18",
+                "etiqueta_sugerida": "P18-6-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 18,
+        "ubicacion": "Sala de servicios externos",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 27",
+                "etiqueta_sugerida": "P27-11-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 28",
+                "etiqueta_sugerida": "P28-13-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 19,
+        "ubicacion": "Procedimiento Cirugia Menor",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 13",
+                "etiqueta_sugerida": "P13-32-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 14",
+                "etiqueta_sugerida": "P14-34-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 20,
+        "ubicacion": "Curacion y tratamiento",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 15",
+                "etiqueta_sugerida": "P15-36-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 16",
+                "etiqueta_sugerida": "P16-38-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 21,
+        "ubicacion": "Sala de rehabilitación",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 10",
+                "etiqueta_sugerida": "P10-19-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 09",
+                "etiqueta_sugerida": "P09-17-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 22,
+        "ubicacion": "Sala de observacion",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 20",
+                "etiqueta_sugerida": "P20-10-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 21",
+                "etiqueta_sugerida": "P21-12-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 22",
+                "etiqueta_sugerida": "P22-14-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 23,
+        "ubicacion": "Mantencion e instalaciones",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 25",
+                "etiqueta_sugerida": "P25-7-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 26",
+                "etiqueta_sugerida": "P26-9-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 24*",
+                "etiqueta_sugerida": "P24*-5-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 24,
+        "ubicacion": "Examenes de lab. y alcoholemias",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 38",
+                "etiqueta_sugerida": "P38-46-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 39",
+                "etiqueta_sugerida": "P39-44-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 25,
+        "ubicacion": "OIRS",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 01",
+                "etiqueta_sugerida": "P01-19-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 02",
+                "etiqueta_sugerida": "P02-21-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 26,
+        "ubicacion": "IRA",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 06",
+                "etiqueta_sugerida": "P06-29-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 07",
+                "etiqueta_sugerida": "P07-31-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 27,
+        "ubicacion": "Bodega General",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 29",
+                "etiqueta_sugerida": "P29-15-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 30",
+                "etiqueta_sugerida": "P30-17-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 28,
+        "ubicacion": "ERA",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 04",
+                "etiqueta_sugerida": "P04-25-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 05",
+                "etiqueta_sugerida": "P05-27-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 29,
+        "ubicacion": "Ecografia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 11",
+                "etiqueta_sugerida": "P11-28-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 12",
+                "etiqueta_sugerida": "P12-30-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 30,
+        "ubicacion": "Sala Multiuso",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 02",
+                "etiqueta_sugerida": "P02-3-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 01",
+                "etiqueta_sugerida": "P01-1-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 31,
+        "ubicacion": "Sala de estimulacion temprana con bodega",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 11",
+                "etiqueta_sugerida": "P11-21-SW1"
+            }
+        ]
+    },
+    {
+        "pagina": 32,
+        "ubicacion": "Sala de guardias y choferes",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 36",
+                "etiqueta_sugerida": "P36-42-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 33,
+        "ubicacion": "Estimulación de lactancia materna",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 20",
+                "etiqueta_sugerida": "P20-43-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 21",
+                "etiqueta_sugerida": "P21-44-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 34,
+        "ubicacion": "Sala de Podologia",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 17",
+                "etiqueta_sugerida": "P17-40-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 18",
+                "etiqueta_sugerida": "P18-42-SW1"
+            },
+            {
+                "patch_panel_puerto": "Puerto 23",
+                "etiqueta_sugerida": "P23-3-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 35,
+        "ubicacion": "Box Atencion Diagnostico",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 08",
+                "etiqueta_sugerida": "P08-33-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 09",
+                "etiqueta_sugerida": "P09-35-SW2"
+            },
+            {
+                "patch_panel_puerto": "Puerto 10",
+                "etiqueta_sugerida": "P10-37-SW2"
+            }
+        ]
+    },
+    {
+        "pagina": 36,
+        "ubicacion": "Oficina tecnica SIGGES Y REM",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 09",
+                "etiqueta_sugerida": "P09-41-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 10",
+                "etiqueta_sugerida": "P10-37-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 11",
+                "etiqueta_sugerida": "P11-38-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 12",
+                "etiqueta_sugerida": "P12-39-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 13",
+                "etiqueta_sugerida": "P13-1-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 37,
+        "ubicacion": "Box dental 2",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 44",
+                "etiqueta_sugerida": "P44-3-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 43",
+                "etiqueta_sugerida": "P43-1-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 58",
+                "etiqueta_sugerida": "P58-31-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 38,
+        "ubicacion": "Trabajo clinico grupal 3",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 28",
+                "etiqueta_sugerida": "P28-31-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 29",
+                "etiqueta_sugerida": "P29-33-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 39,
+        "ubicacion": "Linea 800 & Agenda Hora",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 01",
+                "etiqueta_sugerida": "P01-26-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 02",
+                "etiqueta_sugerida": "P02-28-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 40,
+        "ubicacion": "Bacteriologia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 39",
+                "etiqueta_sugerida": "P39-42-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 38",
+                "etiqueta_sugerida": "P38-40-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 41,
+        "ubicacion": "Box dental 1",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 46",
+                "etiqueta_sugerida": "P46-7-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 45",
+                "etiqueta_sugerida": "P45-5-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 42,
+        "ubicacion": "Descont. y lavado",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 07",
+                "etiqueta_sugerida": "P07-25-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 43,
+        "ubicacion": "Trabajo clinico grupal",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 49",
+                "etiqueta_sugerida": "P49-13-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 50",
+                "etiqueta_sugerida": "P50-15-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 44,
+        "ubicacion": "Box multi 6",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 48",
+                "etiqueta_sugerida": "P48-11-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 45,
+        "ubicacion": "Bioquimica",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 15",
+                "etiqueta_sugerida": "P15-41-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 16",
+                "etiqueta_sugerida": "P16-44-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 17",
+                "etiqueta_sugerida": "P17-42-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 18",
+                "etiqueta_sugerida": "P18-46-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 19",
+                "etiqueta_sugerida": "P19-2-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 46,
+        "ubicacion": "Sala espera Some",
+        "uso": [
+            "WAP/WIFI"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 14",
+                "etiqueta_sugerida": "P14-16-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 47,
+        "ubicacion": "Sala de TBC",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 41",
+                "etiqueta_sugerida": "P41-40-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 42",
+                "etiqueta_sugerida": "P42-45-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 48,
+        "ubicacion": "Box multi 14",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 07",
+                "etiqueta_sugerida": "P07-2-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 49,
+        "ubicacion": "Box multi 12",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 05",
+                "etiqueta_sugerida": "P05-43-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 50,
+        "ubicacion": "Tranajo clinico grupal 2",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 54",
+                "etiqueta_sugerida": "P54-23-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 53",
+                "etiqueta_sugerida": "P53-21-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 51,
+        "ubicacion": "Encargado Lab",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 33",
+                "etiqueta_sugerida": "P33-30-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 52,
+        "ubicacion": "Tecnologos",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 30",
+                "etiqueta_sugerida": "P30-24-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 31",
+                "etiqueta_sugerida": "P31-26-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 32",
+                "etiqueta_sugerida": "P32-28-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 53,
+        "ubicacion": "Parasitologia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 37",
+                "etiqueta_sugerida": "P37-38-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 54,
+        "ubicacion": "Hematologia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 29",
+                "etiqueta_sugerida": "P29-22-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 28",
+                "etiqueta_sugerida": "P28-20-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 27",
+                "etiqueta_sugerida": "P27-18-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 26",
+                "etiqueta_sugerida": "P26-16-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 25",
+                "etiqueta_sugerida": "P25-14-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 24",
+                "etiqueta_sugerida": "P24-12-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 23",
+                "etiqueta_sugerida": "P23-10-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 22",
+                "etiqueta_sugerida": "P22-8-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 21",
+                "etiqueta_sugerida": "P21-6-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 20",
+                "etiqueta_sugerida": "P20-4-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 55,
+        "ubicacion": "Prep. Med. de cultivo",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 08",
+                "etiqueta_sugerida": "P08-27-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 09",
+                "etiqueta_sugerida": "P09-29-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 10*",
+                "etiqueta_sugerida": "P10-31-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 56,
+        "ubicacion": "Recepción",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 35",
+                "etiqueta_sugerida": "P35-34-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 36",
+                "etiqueta_sugerida": "P36-36-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 57,
+        "ubicacion": "Unidad Some Azul",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 55",
+                "etiqueta_sugerida": "P55-25-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 56",
+                "etiqueta_sugerida": "P56-27-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 57",
+                "etiqueta_sugerida": "P57-29-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 58,
+        "ubicacion": "Box Ginecologico",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 06",
+                "etiqueta_sugerida": "P06-23-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 59,
+        "ubicacion": "Box tipo 2/3",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 08 SN",
+                "etiqueta_sugerida": "P08-4-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 60,
+        "ubicacion": "Comedor",
+        "uso": [
+            "WAP/WIFI"
+        ],
+        "puntos_red": []
+    },
+    {
+        "pagina": 61,
+        "ubicacion": "Jefe Some",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 03",
+                "etiqueta_sugerida": "P03-30-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 04",
+                "etiqueta_sugerida": "P04-32-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 62,
+        "ubicacion": "Pasillo escalera",
+        "uso": [
+            "WAP/WIFI"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 16",
+                "etiqueta_sugerida": "P16-20-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 63,
+        "ubicacion": "Secretaria direccion bod. adm.",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 14",
+                "etiqueta_sugerida": "P14-3-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 15",
+                "etiqueta_sugerida": "P15-5-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 26",
+                "etiqueta_sugerida": "P26-27-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 64,
+        "ubicacion": "Box multi 8",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 01",
+                "etiqueta_sugerida": "P01-35-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 65,
+        "ubicacion": "Box multi 9",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 02",
+                "etiqueta_sugerida": "P02-37-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 66,
+        "ubicacion": "Sala de informes Prof. y Tес.",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 05",
+                "etiqueta_sugerida": "P05-34-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 07",
+                "etiqueta_sugerida": "P07-38-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 06",
+                "etiqueta_sugerida": "P06-36-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 08",
+                "etiqueta_sugerida": "P08-40-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 67,
+        "ubicacion": "Box multi 13",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 06",
+                "etiqueta_sugerida": "P06-45-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 68,
+        "ubicacion": "Box multi 2",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 02",
+                "etiqueta_sugerida": "P02-15-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 69,
+        "ubicacion": "Rx dental",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto desconocido (15?)",
+                "etiqueta_sugerida": "P#-P#-P00-SW#"
+            },
+            {
+                "patch_panel_puerto": "Puerto desconocido (16?)",
+                "etiqueta_sugerida": "P#-P#-P00-SW#"
+            }
+        ]
+    },
+    {
+        "pagina": 70,
+        "ubicacion": "Box multi 5",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 05",
+                "etiqueta_sugerida": "P05-21-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 71,
+        "ubicacion": "Box multi 1",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 01",
+                "etiqueta_sugerida": "P01-13-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 72,
+        "ubicacion": "Box multi 3",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 03",
+                "etiqueta_sugerida": "P03-17-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 73,
+        "ubicacion": "Box multi 7",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 47",
+                "etiqueta_sugerida": "P47-9-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 74,
+        "ubicacion": "Oficina Subdirector",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 16",
+                "etiqueta_sugerida": "P16-7-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 17",
+                "etiqueta_sugerida": "P17-9-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 75,
+        "ubicacion": "Box tipo 2",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 51",
+                "etiqueta_sugerida": "P51-17-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 76,
+        "ubicacion": "Box multi 11",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 04",
+                "etiqueta_sugerida": "P04-41-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 77,
+        "ubicacion": "Box dental 3",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 13",
+                "etiqueta_sugerida": "P13-14-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 78,
+        "ubicacion": "Box tipo 2/2",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 10",
+                "etiqueta_sugerida": "P10-08-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 79,
+        "ubicacion": "Secretaria lab",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 34",
+                "etiqueta_sugerida": "P34-32-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 80,
+        "ubicacion": "Unidad Some Calipso",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 22",
+                "etiqueta_sugerida": "P22-19-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 23",
+                "etiqueta_sugerida": "P23-21-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 24",
+                "etiqueta_sugerida": "P24-23-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 25",
+                "etiqueta_sugerida": "P25-25-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 81,
+        "ubicacion": "Sala TIC",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 20",
+                "etiqueta_sugerida": "P20-15-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 21",
+                "etiqueta_sugerida": "P21-17-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 82,
+        "ubicacion": "Box psicologo",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 52",
+                "etiqueta_sugerida": "P52-19-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 83,
+        "ubicacion": "Box multi 10",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 03",
+                "etiqueta_sugerida": "P03-39-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 84,
+        "ubicacion": "Box Ginecologico 2",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 09",
+                "etiqueta_sugerida": "P09-6-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 85,
+        "ubicacion": "Sala de orina y microscopia",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 14",
+                "etiqueta_sugerida": "P14-39-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 13",
+                "etiqueta_sugerida": "P13-37-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 11",
+                "etiqueta_sugerida": "P11-33-SW3"
+            },
+            {
+                "patch_panel_puerto": "Puerto 12",
+                "etiqueta_sugerida": "P12-35-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 86,
+        "ubicacion": "Oficina Direccion",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 18",
+                "etiqueta_sugerida": "P18-11-SW5"
+            },
+            {
+                "patch_panel_puerto": "Puerto 19",
+                "etiqueta_sugerida": "P19-13-SW5"
+            }
+        ]
+    },
+    {
+        "pagina": 87,
+        "ubicacion": "Box multi 4",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 04",
+                "etiqueta_sugerida": "P04-19-SW3"
+            }
+        ]
+    },
+    {
+        "pagina": 88,
+        "ubicacion": "Box dental 4",
+        "uso": [
+            "WAP/WIFI",
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 12",
+                "etiqueta_sugerida": "P12-12-SW4"
+            },
+            {
+                "patch_panel_puerto": "Puerto 15",
+                "etiqueta_sugerida": "P15-10-SW4"
+            }
+        ]
+    },
+    {
+        "pagina": 89,
+        "ubicacion": "Box psicologo 2",
+        "uso": [
+            "Voz/Datos"
+        ],
+        "puntos_red": [
+            {
+                "patch_panel_puerto": "Puerto 11",
+                "etiqueta_sugerida": "P11-10-SW4"
+            }
+        ]
+    }
+]
