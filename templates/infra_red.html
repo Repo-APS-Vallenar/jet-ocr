@@ -10,341 +10,148 @@
             --card-bg: #ffffff;
             --text-main: #1e293b;
             --border-color: #e2e8f0;
-            
-            /* Colores de Servicio según Diagrama */
             --color-ap: #00ffff;
             --color-reloj: #00ff00;
             --color-fortinet: #ff0000;
             --color-voice: #0000ff;
-            --color-fw: #006400;
-            --color-disponible: #add8e6;
-            --color-vac: #ffffff;
-            --color-voz-datos: #ffff00;
             --color-datos: #ffa500;
+            --color-vac: #ffffff;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f1f5f9;
-            margin: 20px;
-            color: var(--text-main);
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; margin: 20px; color: var(--text-main); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px; background: var(--bg-dark); color: white; border-radius: 15px; }
+        .legend { display: flex; flex-wrap: wrap; gap: 15px; background: white; padding: 15px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+        .dot { width: 14px; height: 14px; border: 1px solid #ccc; border-radius: 3px; }
+        
+        .rack-container { display: flex; flex-direction: column; gap: 20px; }
+        .network-element { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 8px solid #3b82f6; }
+        .element-title { margin: 0 0 15px 0; font-size: 16px; color: var(--bg-dark); display: flex; justify-content: space-between; }
+        
+        .port-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; }
+        .port { 
+            aspect-ratio: 1; border: 1px solid #cbd5e1; display: flex; align-items: center; 
+            justify-content: center; font-size: 10px; font-weight: bold; cursor: pointer; 
+            transition: all 0.2s; position: relative; background: #f8fafc; 
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--bg-dark);
-            color: white;
-            border-radius: 15px;
-        }
-
-        .legend {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 10px;
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .dot {
-            width: 14px;
-            height: 14px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-
-        .rack-container {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .network-element {
-            background: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 8px solid #3b82f6;
-        }
-
-        .element-title {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            color: var(--bg-dark);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .port-grid {
-            display: grid;
-            grid-template-columns: repeat(24, 1fr);
-            gap: 4px;
-        }
-
-        .port {
-            aspect-ratio: 1;
-            border: 1px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            background: #f8fafc;
-        }
-
-        .port:hover {
-            transform: scale(1.1);
-            z-index: 10;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
-
+        .port:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        
         .port.service-ap { border-top: 5px solid var(--color-ap); }
         .port.service-reloj { border-top: 5px solid var(--color-reloj); }
         .port.service-fortinet { border-top: 5px solid var(--color-fortinet); }
         .port.service-voice { border-top: 5px solid var(--color-voice); }
         .port.service-datos { border-top: 5px solid var(--color-datos); }
-        .port.service-vac { border-top: 5px solid #eee; }
+        
+        .port.highlight { border: 3px solid #f59e0b !important; box-shadow: 0 0 15px #f59e0b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
         .tooltip {
-            visibility: hidden;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
-            width: 120px;
-            font-size: 11px;
-            opacity: 0;
-            transition: opacity 0.3s;
+            visibility: hidden; background: #333; color: #fff; text-align: center; padding: 5px;
+            border-radius: 4px; position: absolute; z-index: 100; bottom: 125%; left: 50%;
+            transform: translateX(-50%); width: 100px; font-size: 10px; opacity: 0; transition: opacity 0.3s;
         }
+        .port:hover .tooltip { visibility: visible; opacity: 1; }
 
-        .port.highlight {
-            border: 3px solid #f59e0b !important;
-            box-shadow: 0 0 15px #f59e0b;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        /* Modal Simple */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 10% auto;
-            padding: 20px;
-            width: 350px;
-            border-radius: 12px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 450px; border-radius: 12px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .floor-label { display: block; background: #cbd5e1; color: #475569; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; width: fit-content; }
     </style>
 </head>
-<body>    <!-- MODAL DE EDICIÓN PROFUNDA -->
+<body>
+    <!-- MODAL -->
     <div id="modal-puerto" class="modal">
-        <div class="modal-content" style="width: 450px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 id="modal-title" style="margin: 0;"><i class="fa-solid fa-gear"></i> Configuración de Punto</h3>
-                <span id="port-tag" style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"></span>
-            </div>
+        <div class="modal-content">
+            <h3 id="modal-title"><i class="fa-solid fa-gear"></i> Configuración de Puerto</h3>
+            <div id="info-conexion" style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:15px; font-size:13px; border:1px solid #e2e8f0;"></div>
             
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
-                <p style="margin: 0; font-size: 13px; color: #64748b;">Conexión Actual:</p>
-                <strong id="info-conexion" style="color: #0f172a; font-size: 14px;">Directo al Switch</strong>
-            </div>
-
-            <label>Ubicación / Destino (Box):</label>
-            <input type="text" id="edit-destino" placeholder="Ej: Box 10 - Piso 1">
+            <label>Ubicación / Destino:</label>
+            <input type="text" id="edit-destino">
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div>
-                    <label>Tipo de Servicio:</label>
+                    <label>Servicio:</label>
                     <select id="edit-servicio">
-                        <option value="Datos">Datos (Naranja)</option>
-                        <option value="AP">WAP/WIFI (Cian)</option>
-                        <option value="Voz">Voz (Azul)</option>
-                        <option value="Reloj">Reloj (Verde)</option>
-                        <option value="VAC">Libre (Gris)</option>
+                        <option value="Datos">Datos</option>
+                        <option value="AP">AP/WIFI</option>
+                        <option value="Voz">Voz</option>
+                        <option value="Reloj">Reloj</option>
+                        <option value="VAC">Libre</option>
                     </select>
                 </div>
                 <div>
-                    <label>ID del Punto (Etiqueta):</label>
-                    <input type="text" id="edit-tag" placeholder="Ej: P30">
+                    <label>Etiqueta (PXX):</label>
+                    <input type="text" id="edit-tag">
                 </div>
             </div>
-
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button onclick="guardarPuerto()" style="flex: 2; background: #0ea5e9; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">
-                    <i class="fa-solid fa-save"></i> Guardar Configuración
-                </button>
-                <button onclick="cerrarModal()" style="flex: 1; background: #f1f5f9; border: none; padding: 12px; border-radius: 6px; cursor: pointer;">Cerrar</button>
+            
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button onclick="guardarPuerto()" style="flex:2; background:#0ea5e9; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar</button>
+                <button onclick="cerrarModal()" style="flex:1; background:#f1f5f9; border:none; padding:12px; border-radius:6px; cursor:pointer;">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let puertoSeleccionado = null;
-
-        function interactuarPuerto(id, conectadoA, destino, servicio, tag) {
-            // 1. Limpiar resaltados previos
-            document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
-
-            if (!id) return;
-
-            // 2. Lógica de resaltado (Aseguramos String para IDs de Supabase)
-            if (conectadoA && String(conectadoA) !== 'None' && String(conectadoA) !== '') {
-                const target = document.getElementById('port-' + conectadoA);
-                if (target) {
-                    target.classList.add('highlight');
-                    // Scroll suave si el equipo está lejos en el rack
-                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    document.getElementById('info-conexion').innerHTML = `<i class="fa-solid fa-link" style="color: #10b981;"></i> Vinculado a Puerto de Switch`;
-                }
-            } else {
-                document.getElementById('info-conexion').innerHTML = `<i class="fa-solid fa-microchip"></i> Puerto de Switch Independiente`;
-            }
-
-            // 3. Cargar datos en el Modal
-            puertoSeleccionado = id;
-            document.getElementById('edit-destino').value = destino;
-            document.getElementById('edit-servicio').value = servicio;
-            document.getElementById('edit-tag').value = tag || '';
-            document.getElementById('port-tag').innerText = "PORT_UUID: " + String(id).substring(0,8);
-            
-            document.getElementById('modal-puerto').style.display = 'block';
-        }
-
     <div class="header">
         <div>
-            <h1><i class="fa-solid fa-diagram-project"></i> Mapa de Red e Infraestructura</h1>
-            <p>Control de Switches, Patch Panels y Puntos de Red</p>
+            <h1><i class="fa-solid fa-diagram-project"></i> Gestión de Infraestructura TIC</h1>
+            <p>Monitoreo físico de Rack y Conectividad</p>
         </div>
-        <a href="/" style="color: white; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-arrow-left"></i> Volver al Panel</a>
+        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Panel Principal</a>
     </div>
 
     <div class="legend">
         <div class="legend-item"><div class="dot" style="background: var(--color-ap);"></div> AP</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-reloj);"></div> Reloj Control</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-fortinet);"></div> Puntos Red Fortinet</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-voice);"></div> FortiVoice</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-datos);"></div> Punto de Datos</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-disponible);"></div> Disponible</div>
-        <div class="legend-item"><div class="dot" style="background: #ffffff;"></div> VAC (Puntos vacíos)</div>
+        <div class="legend-item"><div class="dot" style="background: var(--color-voice);"></div> Voz</div>
+        <div class="legend-item"><div class="dot" style="background: var(--color-datos);"></div> Datos</div>
+        <div class="legend-item"><div class="dot" style="background: var(--color-reloj);"></div> Reloj</div>
+        <div class="legend-item"><div class="dot" style="background: #fff;"></div> Libre</div>
     </div>
 
     <div class="rack-container">
-        {% if not elementos %}
-        <div style="text-align: center; padding: 50px; background: white; border-radius: 15px;">
-            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 50px; color: #cbd5e1;"></i>
-            <h3>No hay elementos de red registrados</h3>
-            <p>Ejecuta el script de importación para cargar los Switches y Patch Panels desde tu JSON.</p>
-        </div>
-        {% endif %}
-
         {% for element in elementos %}
-        <div>
-            <span class="floor-label">PISO {{ element.piso }}</span>
-            
-            <div class="network-element" style="border-left-color: {{ '#3b82f6' if element.tipo == 'SWITCH' else '#10b981' }};">
+        <div class="floor-group">
+            <span class="floor-label">{{ element.nombre }}</span>
+            <div class="network-element" style="border-left-color: {{ '#3b82f6' if element.tipo == 'SWITCH' else '#10b981' }}">
                 <div class="element-title">
-                    <strong>{{ element.nombre }}</strong>
-                    <span>{{ element.total_puertos }} Puertos ({{ element.tipo }})</span>
+                    <strong>{{ element.nombre }} ({{ element.tipo }})</strong>
+                    <span>{{ element.total_puertos }} Puertos</span>
                 </div>
 
+                <!-- Renderizado de Puertos -->
                 {% if element.tipo == 'SWITCH' %}
-                    <!-- Layout Doble para Switches: Impares Arriba, Pares Abajo -->
                     <div class="port-grid">
                         {% for i in range(1, element.total_puertos + 1, 2) %}
-                            {% set ports_matches = element.puertos | selectattr('numero_puerto', 'equalto', i) | list %}
-                            {% set port = ports_matches[0] if ports_matches else None %}
-                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}" 
-                                 id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')"
-                                 style="border-top-color: {{ port.color_hex if port else '#eee' }}">
+                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else '' }}" 
+                                 id="port-{{ port.id if port else 'null' }}"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
                                 {{ port.tag if port and port.tag else i }}
-{% if port and port.tag %}
-                                <div style="position: absolute; top: -12px; left: 0; right: 0; font-size: 8px; font-weight: bold; color: #1e293b;">{{ i }}</div>
-{% endif %}
-                                <div class="tooltip">
-                                    <strong>Puerto {{ i }}</strong><br>
-                                    {{ port.destino if port else 'Disponible' }}<br>
-                                    <span style="font-size: 9px; opacity: 0.8;">{{ port.tipo_servicio if port else '-' }}</span>
-                                </div>
+                                <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
                         {% endfor %}
                     </div>
-                    <div style="height: 4px;"></div>
+                    <div style="height:4px"></div>
                     <div class="port-grid">
                         {% for i in range(2, element.total_puertos + 1, 2) %}
-                            {% set ports_matches = element.puertos | selectattr('numero_puerto', 'equalto', i) | list %}
-                            {% set port = ports_matches[0] if ports_matches else None %}
-                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}"
-                                 id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}')"
-                                 style="border-top-color: {{ port.color_hex if port else '#eee' }}">
-                                {{ i }}
-                                <div class="tooltip">
-                                    <strong>Puerto {{ i }}</strong><br>
-                                    {{ port.destino if port else 'Disponible' }}<br>
-                                    <span style="font-size: 9px; opacity: 0.8;">{{ port.tipo_servicio if port else '-' }}</span>
-                                </div>
+                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else '' }}" 
+                                 id="port-{{ port.id if port else 'null' }}"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                                {{ port.tag if port and port.tag else i }}
+                                <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <!-- Layout Single para Patch Panels -->
                     <div class="port-grid">
                         {% for i in range(1, element.total_puertos + 1) %}
-                            {% set ports_matches = element.puertos | selectattr('numero_puerto', 'equalto', i) | list %}
-                            {% set port = ports_matches[0] if ports_matches else None %}
-                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}"
-                                 id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}')"
-                                 style="border-top-color: {{ port.color_hex if port else '#eee' }}">
-                                {{ i }}
-                                <div class="tooltip">
-                                    <strong>P. Panel {{ i }}</strong><br>
-                                    {{ port.destino if port else 'Libre' }}
-                                </div>
+                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else '' }}" 
+                                 id="port-{{ port.id if port else 'null' }}"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                                {{ port.tag if port and port.tag else i }}
+                                <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
                         {% endfor %}
                     </div>
@@ -357,54 +164,46 @@
     <script>
         let puertoSeleccionado = null;
 
-        function interactuarPuerto(id, conectadoA, destino, servicio) {
-            // 1. Limpiar resaltados previos
+        function interactuarPuerto(id, conectadoA, destino, servicio, tag) {
             document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
+            if (!id) return;
 
-            if (!id) return; // Puerto vacío
-
-            // 2. Si está conectado a algo, resaltar el otro extremo
-            if (conectadoA) {
+            if (conectadoA && conectadoA !== 'None' && conectadoA !== '') {
                 const target = document.getElementById('port-' + conectadoA);
                 if (target) {
                     target.classList.add('highlight');
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('info-conexion').innerHTML = "🔗 Vinculado a Puerto de Switch";
                 }
+            } else {
+                document.getElementById('info-conexion').innerHTML = "📍 Puerto Independiente";
             }
 
-            // 3. Abrir Modal de Edición
             puertoSeleccionado = id;
             document.getElementById('edit-destino').value = destino;
             document.getElementById('edit-servicio').value = servicio;
+            document.getElementById('edit-tag').value = tag;
             document.getElementById('modal-puerto').style.display = 'block';
         }
 
-        function cerrarModal() {
-            document.getElementById('modal-puerto').style.display = 'none';
-        }
+        function cerrarModal() { document.getElementById('modal-puerto').style.display = 'none'; }
 
         async function guardarPuerto() {
-            const destino = document.getElementById('edit-destino').value;
-            const servicio = document.getElementById('edit-servicio').value;
-            const tag = document.getElementById('edit-tag').value;
+            const data = {
+                id: puertoSeleccionado,
+                destino: document.getElementById('edit-destino').value,
+                servicio: document.getElementById('edit-servicio').value,
+                tag: document.getElementById('edit-tag').value
+            };
 
             const response = await fetch('/api/infra/editar_puerto', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: puertoSeleccionado,
-                    destino: destino,
-                    servicio: servicio,
-                    tag: tag
-                })
+                body: JSON.stringify(data)
             });
 
-            if (response.ok) {
-                alert("Puerto actualizado correctamente");
-                location.reload();
-            } else {
-                alert("Error al guardar cambios");
-            }
+            if (response.ok) location.reload();
+            else alert("Error al guardar");
         }
     </script>
 </body>
