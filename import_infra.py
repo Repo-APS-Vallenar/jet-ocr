@@ -4,12 +4,8 @@ import uuid
 from flask import Flask
 from app import db, InfraElement, InfraPort, Company
 
-# Configuración básica para acceder a la DB
-app = Flask(__name__)
-# Usamos la misma DB que la app principal
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres.vwyisquflltijicpglrt:Antigravity2026_@aws-0-us-west-1.pooler.supabase.com:6543/postgres'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
+# Usamos la misma DB que la app principal importándola de app.py
+from app import app, db, InfraElement, InfraPort, Company
 
 def importar_red():
     with app.app_context():
