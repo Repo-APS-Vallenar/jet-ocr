@@ -101,6 +101,7 @@ def importar_red():
                             
                         print(f"🔗 Conectado: Box {ubicacion} -> {sw_key}:{p_switch_num}")
                     except Exception as e:
+                        db.session.rollback()
                         print(f"⚠️ Error procesando {etiqueta}: {e}")
 
         db.session.commit()
