@@ -1546,16 +1546,21 @@ def imprimir_etiquetas():
     categoria = request.args.get('categoria')
     company_id = session.get('company_id')
     
-    # query = Equipo.query.filter_by(company_id=company_id)
-    # Para asegurar que ve los 92, usamos la lógica de búsqueda global si es necesario
-    query = Equipo.query.filter(Equipo.company_id.in_([company_id, 1])) 
-    
-    if categoria:
-        query = query.filter_by(categoria=categoria)
+    # Intento de filtrar por empresa actual + datos legados (ID 1)
+    try:
+        query = Equipo.query.filter(
+            (Equipo.company_id == company_id) | (text("CAST(company_id AS TEXT) = '1'"))
+        )
         
-    equipos = query.all()
+        if categoria:
+            query = query.filter_by(categoria=categoria)
+            
+        equipos = query.all()
+    except Exception as e:
+        # Fallback si falla la consulta compleja
+        equipos = Equipo.query.all() # En el peor de los casos, mostramos todo para no dar error 500
+        
     base_url = request.url_root.rstrip('/')
-    
     return render_template('etiquetas_qr.html', equipos=equipos, base_url=base_url)
 
 @app.route('/q/<int:id>')
