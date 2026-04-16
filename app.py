@@ -132,6 +132,7 @@ class InfraElement(db.Model):
     piso = db.Column(db.String(20), default='1')
     total_puertos = db.Column(db.Integer, default=24)
     company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+    puertos = db.relationship('InfraPort', backref='elemento', lazy=True)
 
 class InfraPort(db.Model):
     __tablename__ = 'infra_ports'

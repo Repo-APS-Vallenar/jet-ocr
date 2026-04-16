@@ -176,57 +176,74 @@
     </div>
 
     <div class="rack-container">
-        <!-- PISO 1 -->
+        {% if not elementos %}
+        <div style="text-align: center; padding: 50px; background: white; border-radius: 15px;">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 50px; color: #cbd5e1;"></i>
+            <h3>No hay elementos de red registrados</h3>
+            <p>Ejecuta el script de importación para cargar los Switches y Patch Panels desde tu JSON.</p>
+        </div>
+        {% endif %}
+
+        {% for element in elementos %}
         <div>
-            <span class="floor-label">PISO 1 / PASILLO 1</span>
+            <span class="floor-label">PISO {{ element.piso }}</span>
             
-            <!-- Patch Panel 1 -->
-            <div class="network-element" style="border-left-color: #10b981;">
+            <div class="network-element" style="border-left-color: {{ '#3b82f6' if element.tipo == 'SWITCH' else '#10b981' }};">
                 <div class="element-title">
-                    <strong>Patch Panel 1</strong>
-                    <span>24 Puertos</span>
+                    <strong>{{ element.nombre }}</strong>
+                    <span>{{ element.total_puertos }} Puertos ({{ element.tipo }})</span>
                 </div>
-                <div class="port-grid">
-                    {% for i in range(1, 25) %}
-                    <div class="port service-vac">
-                        {{ i }}
-                        <div class="tooltip">Puerto {{ i }}<br>Disponible</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
 
-            <div style="height: 10px;"></div>
-
-            <!-- Switch 1 (Diseño de 48 puertos: Impares arriba, pares abajo) -->
-            <div class="network-element" style="border-left-color: #3b82f6;">
-                <div class="element-title">
-                    <strong>Switch 1 (Cisco/HP 48P)</strong>
-                    <span>48 Puertos</span>
-                </div>
-                <!-- Fila Superior (Impares) -->
-                <div class="port-grid">
-                    {% for i in range(1, 48, 2) %}
-                    <div class="port service-datos">
-                        {{ i }}
-                        <div class="tooltip">Puerto {{ i }}<br>Vía Switch 1</div>
+                {% if element.tipo == 'SWITCH' %}
+                    <!-- Layout Doble para Switches: Impares Arriba, Pares Abajo -->
+                    <div class="port-grid">
+                        {% for i in range(1, element.total_puertos + 1, 2) %}
+                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}" 
+                                 style="border-top-color: {{ port.color_hex if port else '#eee' }}">
+                                {{ i }}
+                                <div class="tooltip">
+                                    <strong>Puerto {{ i }}</strong><br>
+                                    {{ port.destino if port else 'Disponible' }}<br>
+                                    <span style="font-size: 9px; opacity: 0.8;">{{ port.tipo_servicio if port else '-' }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-                <div style="height: 4px;"></div>
-                <!-- Fila Inferior (Pares) -->
-                <div class="port-grid">
-                    {% for i in range(2, 49, 2) %}
-                    <div class="port service-vac">
-                        {{ i }}
-                        <div class="tooltip">Puerto {{ i }}<br>Libre</div>
+                    <div style="height: 4px;"></div>
+                    <div class="port-grid">
+                        {% for i in range(2, element.total_puertos + 1, 2) %}
+                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}"
+                                 style="border-top-color: {{ port.color_hex if port else '#eee' }}">
+                                {{ i }}
+                                <div class="tooltip">
+                                    <strong>Puerto {{ i }}</strong><br>
+                                    {{ port.destino if port else 'Disponible' }}<br>
+                                    <span style="font-size: 9px; opacity: 0.8;">{{ port.tipo_servicio if port else '-' }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
+                {% else %}
+                    <!-- Layout Single para Patch Panels -->
+                    <div class="port-grid">
+                        {% for i in range(1, element.total_puertos + 1) %}
+                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}"
+                                 style="border-top-color: {{ port.color_hex if port else '#eee' }}">
+                                {{ i }}
+                                <div class="tooltip">
+                                    <strong>P. Panel {{ i }}</strong><br>
+                                    {{ port.destino if port else 'Libre' }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
         </div>
-
-        <!-- MÁS ELEMENTOS SE IRÁN CARGANDO DINÁMICAMENTE DE LA BD -->
+        {% endfor %}
     </div>
 </body>
 </html>
