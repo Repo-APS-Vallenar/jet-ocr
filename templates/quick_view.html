@@ -103,7 +103,48 @@
             <div class="value">{{ equipo.categoria }}</div>
         </div>
 
+        <a href="javascript:void(0)" onclick="mostrarReporte()" id="btn-reporte" class="btn-full" style="background: #e53e3e; margin-top: 15px;">⚠️ Reportar Falla / Problema</a>
+
+        <div id="form-reporte" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <label class="label">Cuéntanos el problema:</label>
+            <textarea id="desc-falla" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-top: 5px; font-family: inherit; font-size: 14px;" rows="3" placeholder="Ej: No enciende, teclado fallando..."></textarea>
+            <button onclick="enviarReporte()" class="btn-full" style="background: #2d3748; width: 100%; border: none; cursor: pointer;">Enviar Reporte</button>
+        </div>
+
         <a href="/" class="btn-full">Ir al Sistema Central</a>
     </div>
+
+    <script>
+        function mostrarReporte() {
+            document.getElementById('form-reporte').style.display = 'block';
+            document.getElementById('btn-reporte').style.display = 'none';
+        }
+
+        async function enviarReporte() {
+            const desc = document.getElementById('desc-falla').value;
+            if (!desc) {
+                alert("Por favor, describe la falla.");
+                return;
+            }
+
+            const response = await fetch('/api/reportar_falla', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    equipo_id: {{ equipo.id }},
+                    descripcion: desc,
+                    usuario: "Usuario Clínico (QR)"
+                })
+            });
+
+            const result = await response.json();
+            if (result.status === 'ok') {
+                alert("¡Reporte enviado con éxito! El equipo ha sido marcado para revisión.");
+                location.reload();
+            } else {
+                alert("Error al enviar el reporte.");
+            }
+        }
+    </script>
 </body>
 </html>

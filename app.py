@@ -32,7 +32,7 @@ def verificar_autenticacion():
     # Rutas exentas de autenticación
     rutas_publicas = ['/', '/login', '/logout', '/signup', '/terminos']
     
-    if ruta in rutas_publicas or ruta.startswith('/static/'):
+    if ruta in rutas_publicas or ruta.startswith('/static/') or ruta.startswith('/q/'):
         return None # Permitir el paso
         
     if 'usuario_id' not in session:
@@ -114,6 +114,15 @@ class Proyecto(db.Model):
     campos_ocr = db.Column(db.String(255), default='S/N,MAC') # Para OCR Dinámico
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+
+class Incidencia(db.Model):
+    __tablename__ = 'incidencias'
+    id = db.Column(db.Integer, primary_key=True)
+    equipo_id = db.Column(db.Integer, db.ForeignKey('equipos.id'))
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    descripcion = db.Column(db.Text, nullable=False)
+    reportado_por = db.Column(db.String(100), nullable=True)
+    estado = db.Column(db.String(50), default='Pendiente') # Pendiente, Solucionado
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -1574,6 +1583,27 @@ def quick_view(id):
     if not equipo:
         return "Equipo no encontrado", 404
     return render_template('quick_view.html', equipo=equipo)
+
+@app.route('/api/reportar_falla', methods=['POST'])
+def reportar_falla():
+    data = request.json
+    equipo_id = data.get('equipo_id')
+    descripcion = data.get('descripcion')
+    usuario = data.get('usuario')
+    
+    if not equipo_id or not descripcion:
+        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
+        
+    nueva = Incidencia(equipo_id=equipo_id, descripcion=descripcion, reportado_por=usuario)
+    db.session.add(nueva)
+    
+    # Opcional: Cambiar estado del equipo a "EN REVISION"
+    equipo = Equipo.query.get(equipo_id)
+    if equipo:
+        equipo.estado = 'CON FALLA (Reportado)'
+        
+    db.session.commit()
+    return jsonify({"status": "ok", "message": "Falla reportada con éxito"})
 
 @app.route('/inventario/eliminar/<int:id>')
 def inventario_eliminar(id):
