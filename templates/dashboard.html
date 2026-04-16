@@ -2049,8 +2049,8 @@
                 $(this).addClass('active');
 
                 const cat = $(this).data('cat');
-                // Filtrar tabla
-                tableInventario.column(11).search(cat === 'ALL' ? '' : cat).draw();
+                // Filtrar tabla (La columna Categoría es ahora la 7 tras añadir los checkboxes)
+                tableInventario.column(7).search(cat === 'ALL' ? '' : cat).draw();
 
                 // Actualizar link de impresión QR del Dashboard
                 const btnQR = document.getElementById('btn-print-qr-dashboard');
