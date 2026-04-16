@@ -158,16 +158,29 @@ def process_excel(file_path):
                 ws_res = cur.fetchone()
                 ws_id = ws_res[0] if ws_res else None
                 
+                # Inteligencia de Categorización (AIO vs Notebook)
+                lower_nombre = nombre.lower()
+                lower_prov = str(row.get('PROVEEDOR', '')).lower()
+                
+                categoria = 'Hardware'
+                if 'aio' in lower_nombre or 'all-in-one' in lower_nombre or 'ideacentre' in lower_nombre:
+                    categoria = 'AIO'
+                elif 'notebook' in lower_nombre or 'laptop' in lower_nombre or 'thinkpad' in lower_nombre or 'notebook' in lower_prov:
+                    categoria = 'Notebook'
+                elif 'router' in lower_nombre or 'wifi' in lower_nombre or 'switch' in lower_nombre:
+                    categoria = 'Redes'
+
                 sql = """
                     INSERT INTO equipos (nombre, sn, workstation_id, datos_dinamicos, categoria, estado, area)
-                    VALUES (%s, %s, %s, %s, 'Hardware', 'Operativo', %s)
+                    VALUES (%s, %s, %s, %s, %s, 'Operativo', %s)
                     ON CONFLICT (sn) DO UPDATE SET 
                     nombre = EXCLUDED.nombre,
+                    categoria = EXCLUDED.categoria,
                     workstation_id = COALESCE(EXCLUDED.workstation_id, equipos.workstation_id),
                     datos_dinamicos = EXCLUDED.datos_dinamicos
                     RETURNING id
                 """
-                cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos, sheet_name))
+                cur.execute(sql, (nombre, serial, ws_id, datos_dinamicos, categoria, sheet_name))
                 final_id = cur.fetchone()[0]
                 
                 # Generar QR
