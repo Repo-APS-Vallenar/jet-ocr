@@ -6,21 +6,24 @@
     <style>
         @media print {
             .no-print { display: none; }
-            body { margin: 0; padding: 0mm; width: 100%; border: none; }
+            body { margin: 0; padding: 1.5cm; width: 100%; border: none; box-shadow: none; }
         }
         @page {
             size: A4;
-            margin: 0mm; /* Forzar margen cero para ocultar URL del navegador */
+            margin: 0mm; 
         }
         body {
             font-family: 'Times New Roman', Times, serif;
             color: #1a1a1a;
             line-height: 1.4;
             width: 100%;
-            margin: 0;
-            padding: 1.5cm; /* El margen real lo damos aqu para que no queden textos pegados */
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 1.5cm;
             background: #fff;
             box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
         }
         .header-table {
             width: 100%;
