@@ -91,6 +91,7 @@ class Equipo(db.Model):
     proyecto_id = db.Column(db.Integer, nullable=True) # Legado, mantenido por compatibilidad
     company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
     datos_dinamicos = db.Column(db.JSON, nullable=True) # Campos Flexibles por empresa
+    area = db.Column(db.String(100), nullable=True) # Carpeta o área técnica
 
 class RegistroOCR(db.Model):
     __tablename__ = 'registros_ocr'
@@ -594,7 +595,14 @@ def admin():
     porcentaje_verificado = int((total_completos / total_equipos) * 100) if total_equipos > 0 else 0
     
     # Obtener todas las listas para las tablas
-    equipos = Equipo.query.filter_by(company_id=company_id).order_by(Equipo.fecha_actualizacion.desc()).all()
+    # Si eres el admin maestro, vemos todo, si no, filtramos por tu compañia
+    if session.get('usuario_correo') == 'businesswolsmart@gmail.com':
+        equipos = Equipo.query.order_by(Equipo.fecha_actualizacion.desc()).all()
+        total_equipos = Equipo.query.count()
+    else:
+        equipos = Equipo.query.filter_by(company_id=company_id).order_by(Equipo.fecha_actualizacion.desc()).all()
+        total_equipos = Equipo.query.filter_by(company_id=company_id).count()
+
     registros = RegistroOCR.query.filter_by(company_id=company_id).order_by(RegistroOCR.fecha_hora.desc()).all()
     proyectos = Proyecto.query.filter_by(company_id=company_id).all()
     usuarios = Usuario.query.filter_by(company_id=company_id).all()
