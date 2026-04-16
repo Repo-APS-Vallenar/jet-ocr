@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Acta de Entrega de Equipamiento Tecnológico</title>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; padding: 20px; }
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 40px auto;
+            border: 1px solid #eee;
+            padding: 50px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #0A2647;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo-placeholder {
+            font-weight: bold;
+            font-size: 24px;
+            color: #0A2647;
+        }
+        .doc-title {
+            text-align: right;
+        }
+        .doc-title h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #0A2647;
+        }
+        .doc-title p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            background: #f8fafc;
+            padding: 8px 15px;
+            font-weight: bold;
+            color: #1e293b;
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .data-item {
+            font-size: 14px;
+        }
+        .data-item strong {
+            color: #475569;
+            width: 120px;
+            display: inline-block;
+        }
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .specs-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        .statement {
+            font-size: 13px;
+            text-align: justify;
+            margin: 40px 0;
+            color: #444;
+        }
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            margin-top: 80px;
+            text-align: center;
+        }
+        .sig-box {
+            border-top: 1px solid #333;
+            padding-top: 10px;
+            font-size: 14px;
+        }
+        .btn-print {
+            background: #0A2647;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">Imprimir Acta</button>
+    
+    <div class="header">
+        <div class="logo-placeholder">JET OCR</div>
+        <div class="doc-title">
+            <h1>ACTA DE ENTREGA</h1>
+            <p>ID Documento: #{{ equipo.id }}-{{ today }}</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Datos del Receptor</div>
+        <div class="grid">
+            <div class="data-item"><strong>Usuario:</strong> {{ equipo.usuario or 'Por asignar' }}</div>
+            <div class="data-item"><strong>Ubicación/Área:</strong> {{ equipo.ubicacion or equipo.area or 'Informática' }}</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Detalle del Equipamiento</div>
+        <table class="specs-table">
+            <tr>
+                <td style="width: 30%;"><strong>Nombre Equipo:</strong></td>
+                <td>{{ equipo.nombre }}</td>
+            </tr>
+            <tr>
+                <td><strong>N. Serie (S/N):</strong></td>
+                <td>{{ equipo.sn }}</td>
+            </tr>
+            <tr>
+                <td><strong>Dirección MAC:</strong></td>
+                <td>{{ equipo.mac or '-' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Categoría:</strong></td>
+                <td>{{ equipo.categoria }}</td>
+            </tr>
+            {% if equipo.datos_dinamicos %}
+                {% for key, val in equipo.datos_dinamicos.items() %}
+                <tr>
+                    <td><strong>{{ key }}:</strong></td>
+                    <td>{{ val }}</td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="statement">
+        Por intermedio de la presente, se hace entrega del equipamiento tecnológico anteriormente descrito al usuario identificado en este documento. 
+        El receptor declara recibir el equipo en óptimas condiciones de funcionamiento y se compromete a hacer un uso adecuado del mismo, 
+        bajo las normativas de seguridad y cuidado establecidas por la institución.
+    </div>
+
+    <div class="signatures">
+        <div class="sig-box">
+            <strong>Entregado por:</strong><br>
+            <span style="font-size: 12px; color: #666;">Firma y Timbre</span>
+        </div>
+        <div class="sig-box">
+            <strong>Recibido por:</strong><br>
+            <span style="font-size: 12px; color: #666;">Firma Usuario</span>
+        </div>
+    </div>
+
+    <div style="margin-top: 50px; font-size: 10px; color: #999; text-align: center;">
+        Generado automáticamente por JET OCR Inventory System - {{ now }}
+    </div>
+</body>
+</html>

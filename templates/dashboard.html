@@ -1497,8 +1497,13 @@
     <div id="viewModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Detalle del Equipo</h2>
-                <span class="close" onclick="cerrarVer()">&times;</span>
+                <h2 id="view-title">Detalle del Equipo</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="#" id="btn-imprimir-acta" target="_blank" class="btn-export" style="background: #1e293b; padding: 5px 12px; font-size: 0.8rem; text-decoration: none;">
+                        <i class="fa-solid fa-file-pdf"></i> Acta Entrega
+                    </a>
+                    <span class="close" onclick="cerrarVer()">&times;</span>
+                </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
@@ -1828,6 +1833,12 @@
             document.getElementById('view-usuario').textContent = (usuario === 'None' || !usuario) ? '-' : usuario;
             const estadoEl = document.getElementById('view-estado');
             estadoEl.textContent = (estado === 'None' || !estado) ? 'Operativo' : estado;
+
+            // Actualizar el enlace del acta de entrega
+            const btnActa = document.getElementById('btn-imprimir-acta');
+            if (btnActa) {
+                btnActa.href = `/acta/${id}`;
+            }
 
             // Adjust badge color based on status
             estadoEl.className = 'badge'; // Reset

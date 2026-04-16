@@ -1399,6 +1399,20 @@ def pago_exitoso():
         
     return redirect(url_for('admin'))
 
+@app.route('/acta/<int:id_equipo>')
+def generar_acta(id_equipo):
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+        
+    equipo = Equipo.query.get(id_equipo)
+    if not equipo:
+        return "Equipo no encontrado", 404
+        
+    today = datetime.now().strftime('%d/%m/%Y')
+    now = datetime.now().strftime('%d/%m/%Y %H:%M')
+    
+    return render_template('acta_entrega.html', equipo=equipo, today=today, now=now)
+
 
 # --- MÓDULO DE INVENTARIO Y QR ---
 
