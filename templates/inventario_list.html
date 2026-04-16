@@ -80,11 +80,15 @@
                 <h1>Gestor de Inventarios</h1>
                 <p>Organizado por Áreas Técnicas</p>
             </div>
-            <div style="flex-grow: 1; max-width: 400px; position: relative;">
-                <input type="text" id="globalSearch" placeholder="🔍 Buscar por S/N, Nombre, Proveedor o Área..." 
-                       onkeyup="globalSearch()"
-                       style="padding-left: 40px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); height: 45px;">
-                <span style="position: absolute; left: 15px; top: 12px; opacity: 0.5;"></span>
+            <div style="display: flex; gap: 10px; align-items: center; flex-grow: 1; justify-content: flex-end;">
+                <a href="/imprimir_etiquetas" id="btn-print-labels" target="_blank" class="tab-btn" style="background: #3b82f6; color: white; border: none; text-decoration: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-qrcode"></i> Imprimir Etiquetas QR
+                </a>
+                <div style="flex-grow: 1; max-width: 300px; position: relative;">
+                    <input type="text" id="globalSearch" placeholder="🔍 Buscar equipo..." 
+                           onkeyup="globalSearch()"
+                           style="padding-left: 40px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); height: 45px;">
+                </div>
             </div>
         </div>
 
@@ -215,6 +219,16 @@
                     btn.classList.remove('active');
                 }
             });
+
+            // Actualizar link de impresión de etiquetas QR
+            const btnQR = document.getElementById('btn-print-labels');
+            if (btnQR) {
+                if (area === 'ALL') {
+                    btnQR.href = '/imprimir_etiquetas';
+                } else {
+                    btnQR.href = `/imprimir_etiquetas?categoria=${encodeURIComponent(area)}`;
+                }
+            }
 
             // Filtrar filas
             document.querySelectorAll('.inventory-row').forEach(row => {
