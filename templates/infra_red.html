@@ -123,9 +123,9 @@
                     <div class="port-grid">
                         {% for i in range(1, element.total_puertos + 1, 2) %}
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else '' }}" 
-                                 id="port-{{ port.id if port else 'null' }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                            <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
+                                 id="port-{{ port.id if port else 'null-' ~ i }}"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id if port else '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')">
                                 {{ port.tag if port and port.tag else i }}
                                 <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
@@ -135,9 +135,9 @@
                     <div class="port-grid">
                         {% for i in range(2, element.total_puertos + 1, 2) %}
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else '' }}" 
-                                 id="port-{{ port.id if port else 'null' }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                            <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
+                                 id="port-{{ port.id if port else 'null-' ~ i }}"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id if port else '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')">
                                 {{ port.tag if port and port.tag else i }}
                                 <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
@@ -147,9 +147,9 @@
                     <div class="port-grid">
                         {% for i in range(1, element.total_puertos + 1) %}
                             {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                            <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else '' }}" 
-                                 id="port-{{ port.id if port else 'null' }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
+                            <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
+                                 id="port-{{ port.id if port else 'null-' ~ i }}"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id if port else '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')">
                                 {{ port.tag if port and port.tag else i }}
                                 <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
                             </div>
