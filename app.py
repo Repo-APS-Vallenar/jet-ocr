@@ -142,6 +142,7 @@ class InfraPort(db.Model):
     tipo_servicio = db.Column(db.String(50), default='VAC') # AP, Fortinet, Voz, Datos, etc.
     destino = db.Column(db.String(150), nullable=True) # Ej: "Box 4", "Switch 1 Port 5"
     color_hex = db.Column(db.String(10), default='#ffffff')
+    tag = db.Column(db.String(20), nullable=True)
     conectado_a_id = db.Column(db.Integer, nullable=True) # ID de otro InfraPort (Cruce)
 
 class Usuario(db.Model):
@@ -1614,8 +1615,23 @@ def visualizar_infraestructura():
         
     company_id = session.get('company_id')
     elementos = InfraElement.query.filter_by(company_id=company_id).all()
-    # Si no hay, podríamos crear los de la imagen automáticamente más adelante
-    return render_template('infra_red.html', elementos=elementos)
+    
+    # Definir el orden físico del Rack solicitado
+    orden_rack = [
+        "Patch Panel 1", "Switch 1", "Patch Panel 2",
+        "Patch Panel 3", "Switch 2", "Patch Panel 4",
+        "Patch Panel 5", "Switch 3", "Patch Panel 6",
+        "Patch Panel 7", "Switch 4", "Patch Panel 8",
+        "Patch Panel 9", "Switch 5"
+    ]
+    
+    # Ordenar la lista según el índice en el array definido arriba
+    elementos_ordenados = sorted(
+        elementos, 
+        key=lambda x: orden_rack.index(x.nombre) if x.nombre in orden_rack else 99
+    )
+    
+    return render_template('infra_red.html', elementos=elementos_ordenados)
 
 @app.route('/api/infra/editar_puerto', methods=['POST'])
 def editar_puerto():
@@ -1628,6 +1644,7 @@ def editar_puerto():
         
     puerto.destino = data.get('destino')
     puerto.tipo_servicio = data.get('servicio')
+    puerto.tag = data.get('tag')
     
     # Mapeo de colores segun servicio
     colores = {

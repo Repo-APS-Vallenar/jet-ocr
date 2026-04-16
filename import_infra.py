@@ -94,6 +94,7 @@ def importar_red():
                                     tipo_servicio=serv, 
                                     destino=ubicacion, 
                                     color_hex=color,
+                                    tag=f"P{p_patch_num}",
                                     conectado_a_id=p_sw.id
                                 )
                                 db.session.add(p_pp)

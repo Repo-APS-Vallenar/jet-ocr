@@ -179,25 +179,79 @@
         }
     </style>
 </head>
-<body>
-    <!-- MODAL DE EDICIÓN -->
+<body>    <!-- MODAL DE EDICIÓN PROFUNDA -->
     <div id="modal-puerto" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title">Editar Puerto</h3>
-            <label>Destino / Ubicación:</label>
-            <input type="text" id="edit-destino" placeholder="Ej: Box 4">
-            <label>Servicio:</label>
-            <select id="edit-servicio">
-                <option value="Datos">Datos (Naranja)</option>
-                <option value="AP">WAP/WIFI (Cian)</option>
-                <option value="Voz">Voz (Azul)</option>
-                <option value="Reloj">Reloj (Verde)</option>
-                <option value="VAC">Libre (Gris)</option>
-            </select>
-            <button onclick="guardarPuerto()" style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Guardar Cambios</button>
-            <button onclick="cerrarModal()" style="width: 100%; background: #f1f5f9; border: none; margin-top: 10px; padding: 10px; border-radius: 6px; cursor: pointer;">Cancelar</button>
+        <div class="modal-content" style="width: 450px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 id="modal-title" style="margin: 0;"><i class="fa-solid fa-gear"></i> Configuración de Punto</h3>
+                <span id="port-tag" style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"></span>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+                <p style="margin: 0; font-size: 13px; color: #64748b;">Conexión Actual:</p>
+                <strong id="info-conexion" style="color: #0f172a; font-size: 14px;">Directo al Switch</strong>
+            </div>
+
+            <label>Ubicación / Destino (Box):</label>
+            <input type="text" id="edit-destino" placeholder="Ej: Box 10 - Piso 1">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label>Tipo de Servicio:</label>
+                    <select id="edit-servicio">
+                        <option value="Datos">Datos (Naranja)</option>
+                        <option value="AP">WAP/WIFI (Cian)</option>
+                        <option value="Voz">Voz (Azul)</option>
+                        <option value="Reloj">Reloj (Verde)</option>
+                        <option value="VAC">Libre (Gris)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>ID del Punto (Etiqueta):</label>
+                    <input type="text" id="edit-tag" placeholder="Ej: P30">
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button onclick="guardarPuerto()" style="flex: 2; background: #0ea5e9; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    <i class="fa-solid fa-save"></i> Guardar Configuración
+                </button>
+                <button onclick="cerrarModal()" style="flex: 1; background: #f1f5f9; border: none; padding: 12px; border-radius: 6px; cursor: pointer;">Cerrar</button>
+            </div>
         </div>
     </div>
+
+    <script>
+        let puertoSeleccionado = null;
+
+        function interactuarPuerto(id, conectadoA, destino, servicio, tag) {
+            // 1. Limpiar resaltados previos
+            document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
+
+            if (!id) return;
+
+            // 2. Lógica de resaltado (Aseguramos String para IDs de Supabase)
+            if (conectadoA && String(conectadoA) !== 'None' && String(conectadoA) !== '') {
+                const target = document.getElementById('port-' + conectadoA);
+                if (target) {
+                    target.classList.add('highlight');
+                    // Scroll suave si el equipo está lejos en el rack
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('info-conexion').innerHTML = `<i class="fa-solid fa-link" style="color: #10b981;"></i> Vinculado a Puerto de Switch`;
+                }
+            } else {
+                document.getElementById('info-conexion').innerHTML = `<i class="fa-solid fa-microchip"></i> Puerto de Switch Independiente`;
+            }
+
+            // 3. Cargar datos en el Modal
+            puertoSeleccionado = id;
+            document.getElementById('edit-destino').value = destino;
+            document.getElementById('edit-servicio').value = servicio;
+            document.getElementById('edit-tag').value = tag || '';
+            document.getElementById('port-tag').innerText = "PORT_UUID: " + String(id).substring(0,8);
+            
+            document.getElementById('modal-puerto').style.display = 'block';
+        }
 
     <div class="header">
         <div>
@@ -244,9 +298,12 @@
                             {% set port = ports_matches[0] if ports_matches else None %}
                             <div class="port {{ 'service-' + port.tipo_servicio.lower() if port else 'service-vac' }}" 
                                  id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}')"
+                                 onclick="interactuarPuerto('{{ port.id if port else '' }}', '{{ port.conectado_a_id or '' }}', '{{ port.destino if port else '' }}', '{{ port.tipo_servicio if port else 'VAC' }}', '{{ port.tag if port else '' }}')"
                                  style="border-top-color: {{ port.color_hex if port else '#eee' }}">
-                                {{ i }}
+                                {{ port.tag if port and port.tag else i }}
+{% if port and port.tag %}
+                                <div style="position: absolute; top: -12px; left: 0; right: 0; font-size: 8px; font-weight: bold; color: #1e293b;">{{ i }}</div>
+{% endif %}
                                 <div class="tooltip">
                                     <strong>Puerto {{ i }}</strong><br>
                                     {{ port.destino if port else 'Disponible' }}<br>
@@ -329,6 +386,7 @@
         async function guardarPuerto() {
             const destino = document.getElementById('edit-destino').value;
             const servicio = document.getElementById('edit-servicio').value;
+            const tag = document.getElementById('edit-tag').value;
 
             const response = await fetch('/api/infra/editar_puerto', {
                 method: 'POST',
@@ -336,7 +394,8 @@
                 body: JSON.stringify({
                     id: puertoSeleccionado,
                     destino: destino,
-                    servicio: servicio
+                    servicio: servicio,
+                    tag: tag
                 })
             });
 
