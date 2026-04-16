@@ -27,9 +27,12 @@
 
             <!-- MENÚ DE ADMINISTRACIÓN GLOBAL -->
             {% if session.get('usuario_rol') == 'Admin' %}
-            <nav class="admin-nav" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+            <nav class="admin-nav" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
                 <a href="{{ url_for('admin') }}" class="nav-btn" style="background: #3b82f6; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: none; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                     <i class="fa-solid fa-gauge-high"></i> Panel Admin
+                </a>
+                <a href="{{ url_for('inventario_list') }}" class="nav-btn" style="background: #10b981; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: none; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <i class="fa-solid fa-box-open"></i> Inventario
                 </a>
                 <a href="{{ url_for('audit') }}" class="nav-btn" style="background: rgba(255,255,255,0.1); color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s;">
                     <i class="fa-solid fa-clipboard-list"></i> Historial
