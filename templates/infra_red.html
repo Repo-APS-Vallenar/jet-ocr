@@ -886,9 +886,30 @@
         </div>
     </div>
 
+    <!-- MODAL CONFIRMACIÓN ELIMINAR -->
+    <div id="modal-confirm-del" class="modal-overlay" style="display:none;">
+        <div class="modal-box" style="max-width:400px; text-align:center;">
+            <div style="font-size:55px; color:#ef4444; margin-bottom:16px;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 style="margin-bottom:8px;">¿Estás seguro?</h3>
+            <p style="color:#64748b; font-size:14px; margin-bottom:24px; line-height:1.5;">
+                Vas a eliminar <b id="del-el-name" style="color:#0f172a;">---</b> y todos sus puertos asociados. <br>
+                <span style="color:#ef4444; font-weight:600;">Esta acción no se puede deshacer.</span>
+            </p>
+            <div class="modal-actions" style="justify-content:center; gap:12px;">
+                <button id="btn-confirm-del" class="btn-save" style="background:#ef4444;"
+                    onclick="confirmDeleteEl()">Eliminar</button>
+                <button class="btn-cancel"
+                    onclick="document.getElementById('modal-confirm-del').style.display='none'">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Variables del CRUD de elementos
         let editElId = null;
+        let deleteElId = null;
 
         function openCreateEl() {
             editElId = null;
@@ -965,20 +986,31 @@
             else { alert('Error al guardar'); btn.disabled = false; btn.textContent = 'Guardar Equipo'; }
         }
 
-        async function deleteEl(btn) {
-            const id = btn.dataset.id;
-            const nombre = btn.dataset.nombre;
-
-            if (!confirm(`¿Eliminar "${nombre}" y todos sus puertos? Esta acción no se puede deshacer.`)) return;
-            const res = await fetch('/api/infra/eliminar_elemento', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
-            });
-            if (res.ok) location.reload();
-            else alert('Error al eliminar');
+        function deleteEl(btn) {
+            deleteElId = btn.dataset.id;
+            document.getElementById('del-el-name').innerText = btn.dataset.nombre;
+            document.getElementById('modal-confirm-del').style.display = 'flex';
         }
 
-        // Cerrar modal-el al clicar el fondo
+        async function confirmDeleteEl() {
+            const btn = document.getElementById('btn-confirm-del');
+            btn.disabled = true; btn.textContent = 'Eliminando...';
+            const res = await fetch('/api/infra/eliminar_elemento', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: deleteElId })
+            });
+            if (res.ok) location.reload();
+            else {
+                alert('Error al eliminar');
+                btn.disabled = false;
+                btn.textContent = 'Eliminar';
+            }
+        }
+
+        // Cerrar modales al clicar el fondo
         document.getElementById('modal-el').addEventListener('click', function (e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+        document.getElementById('modal-confirm-del').addEventListener('click', function (e) {
             if (e.target === this) this.style.display = 'none';
         });
     </script>
