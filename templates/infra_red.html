@@ -189,9 +189,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(4px);
-            z-index: 1000;
+            z-index: 9999;
             align-items: center;
             justify-content: center;
         }
@@ -320,7 +320,7 @@
                         {{ port.tag if port and port.tag else i }}
                         {% if port %}
                         <div class="edit-btn"
-                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}', '{{ port.conectado_a_id or '' }}')">
+                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ (port.destino or '') | forceescape }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ (port.tag or '') | forceescape }}', '{{ port.conectado_a_id or '' }}')">
                             <i class="fa-solid fa-pencil"></i>
                         </div>
                         {% endif %}
@@ -338,7 +338,7 @@
                         {{ port.tag if port and port.tag else i }}
                         {% if port %}
                         <div class="edit-btn"
-                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}', '{{ port.conectado_a_id or '' }}')">
+                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ (port.destino or '') | forceescape }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ (port.tag or '') | forceescape }}', '{{ port.conectado_a_id or '' }}')">
                             <i class="fa-solid fa-pencil"></i>
                         </div>
                         {% endif %}
@@ -356,7 +356,7 @@
                         {{ port.tag if port and port.tag else i }}
                         {% if port %}
                         <div class="edit-btn"
-                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}', '{{ port.conectado_a_id or '' }}')">
+                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ (port.destino or '') | forceescape }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ (port.tag or '') | forceescape }}', '{{ port.conectado_a_id or '' }}')">
                             <i class="fa-solid fa-pencil"></i>
                         </div>
                         {% endif %}
@@ -438,7 +438,7 @@
             const pSel = document.getElementById('select-puerto');
             pSel.innerHTML = '<option value="">Port</option>';
             if (elId && DB[elId]) {
-                DB[elId].sort((a, b) => a.n - b.n).forEach(p => {
+                [...DB[elId]].sort((a, b) => a.n - b.n).forEach(p => {
                     const o = document.createElement('option');
                     o.value = p.id;
                     o.text = `P${p.n} ${p.t ? '[' + p.t + ']' : ''}`;
@@ -450,7 +450,7 @@
 
         function resaltarConexion(targetId) {
             document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
-            if (!targetId || targetId === 'None') return;
+            if (!targetId || targetId === 'None' || targetId === '') return;
             const target = document.getElementById('port-' + targetId);
             if (target) {
                 target.classList.add('highlight');
@@ -463,9 +463,9 @@
             document.getElementById('edit-destino').value = dest;
             document.getElementById('edit-servicio').value = serv;
             document.getElementById('edit-tag').value = tag;
-            document.getElementById('info-modal').innerHTML = `<b>Punto:</b> ${tag || 'Sin Tag'} (Sistema: ${id})`;
+            document.getElementById('info-modal').innerHTML = `<b>📍 Editando:</b> ${tag || 'Sin Tag'} (ID: ${id})`;
 
-            if (connId && connId !== 'None') {
+            if (connId && connId !== 'None' && connId !== '') {
                 for (let elId in DB) {
                     if (DB[elId].some(p => p.id == connId)) {
                         document.getElementById('select-equipo').value = elId;
@@ -482,6 +482,11 @@
 
         function closeModal() { document.getElementById('modal-puerto').style.display = 'none'; }
 
+        window.onclick = function (event) {
+            const modal = document.getElementById('modal-puerto');
+            if (event.target == modal) closeModal();
+        }
+
         async function save() {
             const data = {
                 id: selectedPort,
@@ -490,12 +495,17 @@
                 tag: document.getElementById('edit-tag').value,
                 conectado_a_id: document.getElementById('select-puerto').value
             };
-            const res = await fetch('/api/infra/editar_puerto', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (res.ok) location.reload();
+            try {
+                const res = await fetch('/api/infra/editar_puerto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) location.reload();
+                else alert("Error al guardar");
+            } catch (e) {
+                console.error(e);
+            }
         }
     </script>
 </body>
