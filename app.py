@@ -134,10 +134,12 @@ class Incidencia(db.Model):
 class InfraElement(db.Model):
     __tablename__ = 'infra_elements'
     id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(100), nullable=False) # Ej: "Switch 1", "Patch Panel 3"
-    tipo = db.Column(db.String(50), nullable=False) # "SWITCH", "PATCH_PANEL"
+    nombre = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # "SWITCH", "PATCH_PANEL", "ROUTER"...
     piso = db.Column(db.String(20), default='1')
     total_puertos = db.Column(db.Integer, default=24)
+    prefijo = db.Column(db.String(10), nullable=True)
+    posicion = db.Column(db.Integer, default=999)    # Orden físico en el rack
     company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
     puertos = db.relationship('InfraPort', backref='elemento', lazy=True)
 
@@ -1619,52 +1621,59 @@ def quick_view(id):
 def visualizar_infraestructura():
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
-        
+
     company_id = session.get('company_id')
-    elementos = InfraElement.query.filter_by(company_id=company_id).all()
-    
-    # Definir el orden físico del Rack solicitado
-    orden_rack = [
-        "Patch Panel 1", "Switch 1", "Patch Panel 2",
-        "Patch Panel 3", "Switch 2", "Patch Panel 4",
-        "Patch Panel 5", "Switch 3", "Patch Panel 6",
-        "Patch Panel 7", "Switch 4", "Patch Panel 8",
-        "Patch Panel 9", "Switch 5"
-    ]
-    
-    elementos_ordenados = sorted(
-        elementos, 
-        key=lambda x: orden_rack.index(x.nombre) if x.nombre in orden_rack else 99
-    )
-    
-    return render_template('infra_red.html', elementos=elementos_ordenados, todos_elementos=elementos)
+    # Ordenar por posición física en el rack
+    elementos = InfraElement.query.filter_by(company_id=company_id)\
+                    .order_by(InfraElement.posicion).all()
+
+    return render_template('infra_red.html', elementos=elementos, todos_elementos=elementos)
 
 # ─── CRUD ELEMENTOS DE INFRAESTRUCTURA ──────────────────────────────────────
 
 @app.route('/api/infra/crear_elemento', methods=['POST'])
 def crear_elemento():
-    data = request.json
+    data       = request.json
     company_id = session.get('company_id')
     nombre     = data.get('nombre', '').strip()
     tipo       = data.get('tipo', 'SWITCH').upper()
     prefijo    = data.get('prefijo', '').strip().upper()
     puertos_n  = int(data.get('total_puertos', 24))
+    # after_id = ID del elemento DESPUÉS del cual insertar (None = al principio)
+    after_id   = data.get('after_id')
 
     if not nombre:
         return jsonify({"status": "error", "message": "Nombre requerido"}), 400
 
+    todos = InfraElement.query.filter_by(company_id=company_id)\
+                .order_by(InfraElement.posicion).all()
+
+    # Calcular posición de inserción
+    if after_id is None:
+        nueva_pos = 1
+        # Desplazar todos +1
+        for e in todos:
+            e.posicion += 1
+    else:
+        after_id = int(after_id)
+        ref = next((e for e in todos if e.id == after_id), None)
+        nueva_pos = (ref.posicion + 1) if ref else (len(todos) + 1)
+        # Desplazar los que van después
+        for e in todos:
+            if e.posicion >= nueva_pos:
+                e.posicion += 1
+
     el = InfraElement(
         nombre=nombre, tipo=tipo, prefijo=prefijo,
-        total_puertos=puertos_n, company_id=company_id
+        total_puertos=puertos_n, posicion=nueva_pos,
+        company_id=company_id
     )
     db.session.add(el)
-    db.session.flush()  # Obtener el ID antes de commit
+    db.session.flush()
 
-    # Generar puertos automáticamente con formato correcto
     for n in range(1, puertos_n + 1):
         auto_tag = f"P{n:02d}" if tipo == 'PATCH_PANEL' else f"P{n}"
-        p = InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC')
-        db.session.add(p)
+        db.session.add(InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC'))
 
     db.session.commit()
     return jsonify({"status": "ok", "id": el.id, "nombre": el.nombre})
@@ -1673,7 +1682,7 @@ def crear_elemento():
 @app.route('/api/infra/editar_elemento', methods=['POST'])
 def editar_elemento():
     data    = request.json
-    el_id   = data.get('id')
+    el_id   = int(data.get('id'))
     el      = InfraElement.query.get(el_id)
     if not el:
         return jsonify({"status": "error", "message": "Elemento no encontrado"}), 404
@@ -1682,17 +1691,36 @@ def editar_elemento():
     el.prefijo = data.get('prefijo', el.prefijo or '').strip().upper()
     el.tipo    = data.get('tipo', el.tipo).upper()
 
+    # Reposicionamiento si se proporcionó after_id
+    after_id = data.get('after_id')
+    if after_id is not None:
+        company_id = session.get('company_id')
+        todos = InfraElement.query.filter_by(company_id=company_id)\
+                    .filter(InfraElement.id != el_id)\
+                    .order_by(InfraElement.posicion).all()
+        if after_id == '':  # Al principio
+            nueva_pos = 1
+            for e in todos:
+                e.posicion += 1
+        else:
+            after_id_int = int(after_id)
+            ref = next((e for e in todos if e.id == after_id_int), None)
+            nueva_pos = (ref.posicion + 1) if ref else (len(todos) + 1)
+            for e in todos:
+                if e.posicion >= nueva_pos:
+                    e.posicion += 1
+        el.posicion = nueva_pos
+
+    # Ajuste de puertos
     nuevo_total = int(data.get('total_puertos', el.total_puertos))
     actual_max  = db.session.query(db.func.max(InfraPort.numero_puerto))\
                     .filter_by(element_id=el.id).scalar() or 0
 
     if nuevo_total > actual_max:
-        # Añadir puertos nuevos
         for n in range(actual_max + 1, nuevo_total + 1):
             auto_tag = f"P{n:02d}" if el.tipo == 'PATCH_PANEL' else f"P{n}"
             db.session.add(InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC'))
     elif nuevo_total < actual_max:
-        # Eliminar puertos sobrantes (limpiar sus conexiones primero)
         sobrantes = InfraPort.query.filter_by(element_id=el.id)\
                         .filter(InfraPort.numero_puerto > nuevo_total).all()
         for p in sobrantes:
@@ -1714,7 +1742,6 @@ def eliminar_elemento():
     if not el:
         return jsonify({"status": "error", "message": "Elemento no encontrado"}), 404
 
-    # Limpiar conexiones bidireccionales antes de eliminar
     for p in el.puertos:
         if p.conectado_a_id:
             otro = InfraPort.query.get(p.conectado_a_id)

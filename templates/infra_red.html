@@ -828,7 +828,7 @@
     </script>
     <!-- MODAL CREAR / EDITAR EQUIPO -->
     <div id="modal-el" class="modal-overlay" style="display:none;">
-        <div class="modal-box" style="max-width:420px;">
+        <div class="modal-box" style="max-width:440px;">
             <h3 id="el-modal-title"><i class="fa-solid fa-server"></i> Añadir Equipo</h3>
 
             <label class="form-lbl">Nombre descriptivo:</label>
@@ -860,6 +860,20 @@
                 <option value="96">96</option>
             </select>
 
+            <!-- Posición en el rack -->
+            <div
+                style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:14px; margin-top:16px;">
+                <span class="form-lbl" style="color:#166534; margin-top:0;">
+                    <i class="fa-solid fa-layer-group"></i> Posición en el Rack:
+                </span>
+                <select class="form-ctrl" id="el-after" style="margin-top:8px;">
+                    <option value="">⬆ Al principio del rack</option>
+                    {% for el in elementos %}
+                    <option value="{{ el.id }}">Después de: {{ el.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="modal-actions">
                 <button id="el-btn-save" class="btn-save" onclick="saveEl()">Guardar Equipo</button>
                 <button class="btn-cancel"
@@ -879,6 +893,7 @@
             document.getElementById('el-tipo').value = 'SWITCH';
             document.getElementById('el-prefijo').value = '';
             document.getElementById('el-puertos').value = '24';
+            document.getElementById('el-after').value = '';
             document.getElementById('modal-el').style.display = 'flex';
         }
 
@@ -888,28 +903,35 @@
             document.getElementById('el-nombre').value = nombre;
             document.getElementById('el-tipo').value = tipo;
             document.getElementById('el-prefijo').value = prefijo;
-            // Seleccionar la opción más cercana
+
+            // Seleccionar puertos: buscar el valor o usar el más cercano superior
             const sel = document.getElementById('el-puertos');
-            let best = sel.options[0];
-            for (let o of sel.options) { if (parseInt(o.value) >= puertos) { best = o; break; } }
-            sel.value = best.value;
-            // Añadir el valor exacto si no existe
-            if (!Array.from(sel.options).find(o => parseInt(o.value) === puertos)) {
-                const o = new Option(puertos, puertos, false, true);
-                sel.appendChild(o); sel.value = puertos;
-            } else { sel.value = puertos; }
+            const opts = Array.from(sel.options);
+            const exact = opts.find(o => parseInt(o.value) === parseInt(puertos));
+            if (exact) {
+                sel.value = exact.value;
+            } else {
+                // Añadir opción si no existe (puertos personalizados)
+                const newOpt = new Option(`${puertos}`, `${puertos}`, false, true);
+                sel.add(newOpt);
+                sel.value = `${puertos}`;
+            }
+
+            // La posición no se toca al editar por defecto (se puede cambiar manualmente)
             document.getElementById('modal-el').style.display = 'flex';
         }
 
         async function saveEl() {
             const btn = document.getElementById('el-btn-save');
             btn.disabled = true; btn.textContent = 'Guardando...';
+            const afterVal = document.getElementById('el-after').value;
             const payload = {
                 id: editElId,
                 nombre: document.getElementById('el-nombre').value,
                 tipo: document.getElementById('el-tipo').value,
                 prefijo: document.getElementById('el-prefijo').value,
-                total_puertos: document.getElementById('el-puertos').value
+                total_puertos: document.getElementById('el-puertos').value,
+                after_id: afterVal === '' ? null : afterVal
             };
             const url = editElId ? '/api/infra/editar_elemento' : '/api/infra/crear_elemento';
             const res = await fetch(url, {
@@ -927,6 +949,11 @@
             if (res.ok) location.reload();
             else alert('Error al eliminar');
         }
+
+        // Cerrar modal-el al clicar el fondo
+        document.getElementById('modal-el').addEventListener('click', function (e) {
+            if (e.target === this) this.style.display = 'none';
+        });
     </script>
 
 </body>
