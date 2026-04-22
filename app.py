@@ -1657,8 +1657,8 @@ def editar_puerto():
             viejo_destino.conectado_a_id = None
 
     # 2. Si el nuevo destino es VÁLIDO y distinto de "None"
-    if nuevo_conectado_a and str(nuevo_conectado_a).isdigit():
-        target_id = int(nuevo_conectado_a)
+    if nuevo_conectado_a and str(nuevo_conectado_a).strip() != "":
+        target_id = nuevo_conectado_a
         # Limpiar lo que el puerto destino tenía conectado antes (si existía)
         target_port = InfraPort.query.get(target_id)
         if target_port:

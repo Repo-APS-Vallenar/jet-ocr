@@ -11,6 +11,7 @@
             --text-main: #1e293b;
             --color-ap: #00ffff;
             --color-reloj: #22c55e;
+            --color-fortinet: #eab308;
             --color-voice: #3b82f6;
             --color-datos: #f97316;
             --color-vac: #f1f5f9;
@@ -170,7 +171,7 @@
             background: white;
             padding: 30px;
             border-radius: 15px;
-            width: 400px;
+            width: 450px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
@@ -178,19 +179,31 @@
             margin-top: 0;
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
+            color: var(--bg-dark);
+        }
+
+        .modal-content label {
+            display: block;
+            margin-top: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
         }
 
         .modal-content input,
         .modal-content select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 5px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #f8fafc;
         }
 
         .modal-actions {
-            margin-top: 20px;
+            margin-top: 30px;
             display: flex;
             gap: 10px;
         }
@@ -200,19 +213,31 @@
             background: #0ea5e9;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #0284c7;
+        }
+
+        .btn-save:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
         }
 
         .btn-cancel {
             flex: 1;
             background: #f1f5f9;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
         }
     </style>
 </head>
@@ -220,10 +245,11 @@
 <body>
     <div class="header">
         <h1><i class="fa-solid fa-network-wired"></i> Infraestructura de Red</h1>
-        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-house"></i> Home</a>
     </div>
 
     <div class="page-wrapper">
+        <!-- LEYENDA -->
         <div class="legend">
             <div class="legend-item">
                 <div class="dot" style="background: var(--color-ap);"></div> AP
@@ -246,8 +272,10 @@
             {% for element in elementos %}
             <div class="network-element">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <strong>{{ element.nombre }}</strong>
-                    <span style="font-size:12px; color:#64748b;">{{ element.total_puertos }} Puertos</span>
+                    <strong><i class="fa-solid fa-microchip"></i> {{ element.nombre }}</strong>
+                    <span
+                        style="font-size:12px; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:10px;">{{
+                        element.total_puertos }} Puertos</span>
                 </div>
                 <div class="port-grid">
                     {% for p in element.puertos | sort(attribute='numero_puerto') %}
@@ -257,7 +285,7 @@
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}" onclick="p_click(this)">
                         {{ p.tag or p.numero_puerto }}
                         <div class="edit-btn" onclick="p_edit(event, this.parentElement)">
-                            <i class="fa-solid fa-pen"></i>
+                            <i class="fa-solid fa-pencil"></i>
                         </div>
                     </div>
                     {% endfor %}
@@ -267,30 +295,35 @@
         </div>
     </div>
 
+    <!-- MODAL DE EDICIÓN PROFESIONAL -->
     <div id="modal-puerto" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title">Editar Puerto</h3>
-            <label>Ubicación / Destino:</label>
-            <input type="text" id="edit-destino">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <h3 id="modal-title">Configuración de Punto</h3>
+
+            <label><i class="fa-solid fa-map-marker-alt"></i> Destino del Cable (Ubicación Física):</label>
+            <input type="text" id="edit-destino" placeholder="Ej: Box 10, Pasillo Norte, etc.">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                 <div>
-                    <label>Servicio:</label>
+                    <label><i class="fa-solid fa-info-circle"></i> Tipo Servicio:</label>
                     <select id="edit-servicio">
-                        <option value="Datos">Datos</option>
-                        <option value="AP">AP</option>
-                        <option value="Voz">Voz</option>
-                        <option value="Reloj">Reloj</option>
-                        <option value="VAC">Libre</option>
+                        <option value="Datos">Datos (PC)</option>
+                        <option value="AP">Access Point</option>
+                        <option value="Voz">Telefonía IP</option>
+                        <option value="Reloj">Control Asistencia</option>
+                        <option value="VAC">Sin Uso (Vacío)</option>
                     </select>
                 </div>
                 <div>
-                    <label>Etiqueta:</label>
-                    <input type="text" id="edit-tag">
+                    <label><i class="fa-solid fa-tag"></i> Etiqueta:</label>
+                    <input type="text" id="edit-tag" placeholder="Nombre visible">
                 </div>
             </div>
-            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
-                <label>Parcheo Físico:</label>
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:5px;">
+
+            <div
+                style="margin-top:20px; border-top:2px solid #f8fafc; padding-top:15px; background: #fffcf0; padding: 15px; border-radius: 10px;">
+                <label style="color: #854d0e;"><i class="fa-solid fa-link"></i> Parcheo (Link Físico):</label>
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; margin-top:8px;">
                     <select id="select-equipo" onchange="updatePorts()">
                         <option value="">-- Sin Conexión --</option>
                         {% for el in todos_elementos %}<option value="{{ el.id | string }}">{{ el.nombre }}</option>{%
@@ -300,14 +333,18 @@
                         <option value="">Puerto</option>
                     </select>
                 </div>
+                <p style="font-size:10px; color:#a16207; margin-top:5px; margin-bottom:0;">Selecciona el equipo y puerto
+                    donde llega el otro extremo del cable.</p>
             </div>
+
             <div class="modal-actions">
-                <button onclick="save()" class="btn-save">Guardar</button>
-                <button onclick="closeModal()" class="btn-cancel">Cerrar</button>
+                <button id="btn-save" onclick="save()" class="btn-save">Guardar Cambios</button>
+                <button onclick="closeModal()" class="btn-cancel">Cancelar</button>
             </div>
         </div>
     </div>
 
+    <!-- DB OCULTA PARA JS -->
     <div id="db-raw" style="display:none;">
         {% for el in todos_elementos %}
         <div id="db-el-{{ el.id | string }}">
@@ -324,7 +361,7 @@
         function p_click(el) {
             document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
             const connId = el.getAttribute('data-conn');
-            if (connId) {
+            if (connId && connId !== 'None' && connId !== '') {
                 const target = document.getElementById('port-' + connId);
                 if (target) {
                     target.classList.add('highlight');
@@ -339,10 +376,11 @@
             document.getElementById('edit-destino').value = portEl.getAttribute('data-dest');
             document.getElementById('edit-servicio').value = portEl.getAttribute('data-serv');
             document.getElementById('edit-tag').value = portEl.getAttribute('data-tag');
-            document.getElementById('modal-title').innerText = "Puerto " + (portEl.getAttribute('data-tag') || "Nave");
+            document.getElementById('modal-title').innerText = "Editando " + (portEl.getAttribute('data-tag') || "Puerto");
 
             const connId = portEl.getAttribute('data-conn');
-            if (connId) {
+            if (connId && connId !== 'None' && connId !== '') {
+                // Buscar a qué equipo pertenece el puerto conectado
                 const elParent = document.querySelector(`#db-raw div:has(span[data-id="${connId}"])`);
                 if (elParent) {
                     const elId = elParent.id.replace('db-el-', '');
@@ -376,11 +414,41 @@
         }
 
         function closeModal() { document.getElementById('modal-puerto').style.display = 'none'; }
+
         async function save() {
-            const data = { id: selectedPortId, destino: document.getElementById('edit-destino').value, servicio: document.getElementById('edit-servicio').value, tag: document.getElementById('edit-tag').value, conectado_a_id: document.getElementById('select-puerto').value };
-            const res = await fetch('/api/infra/editar_puerto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) location.reload();
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            const data = {
+                id: selectedPortId,
+                destino: document.getElementById('edit-destino').value,
+                servicio: document.getElementById('edit-servicio').value,
+                tag: document.getElementById('edit-tag').value,
+                conectado_a_id: document.getElementById('select-puerto').value
+            };
+
+            try {
+                const res = await fetch('/api/infra/editar_puerto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert("Error al guardar cambios");
+                    btn.disabled = false;
+                    btn.innerText = "Guardar Cambios";
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error de conexión");
+                btn.disabled = false;
+                btn.innerText = "Guardar Cambios";
+            }
         }
+
         window.onclick = function (e) { if (e.target == document.getElementById('modal-puerto')) closeModal(); }
     </script>
 </body>
