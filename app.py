@@ -1617,13 +1617,22 @@ def quick_view(id):
         return "Equipo no encontrado", 404
     return render_template('quick_view.html', equipo=equipo)
 
+def normalizar_posiciones(company_id):
+    # Garantiza orden 1, 2, 3... sin saltos ni duplicados
+    elementos = InfraElement.query.filter_by(company_id=company_id).order_by(InfraElement.posicion, InfraElement.id).all()
+    for i, el in enumerate(elementos, 1):
+        el.posicion = i
+    db.session.commit()
+
 @app.route('/infraestructura')
 def visualizar_infraestructura():
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
 
     company_id = session.get('company_id')
-    # Ordenar por posición física en el rack
+    # Siempre normalizar antes de mostrar para corregir cualquier desorden previo
+    normalizar_posiciones(company_id)
+    
     elementos = InfraElement.query.filter_by(company_id=company_id)\
                     .order_by(InfraElement.posicion).all()
 
@@ -1639,29 +1648,24 @@ def crear_elemento():
     tipo       = data.get('tipo', 'SWITCH').upper()
     prefijo    = data.get('prefijo', '').strip().upper()
     puertos_n  = int(data.get('total_puertos', 24))
-    # after_id = ID del elemento DESPUÉS del cual insertar (None = al principio)
-    after_id   = data.get('after_id')
+    after_id   = data.get('after_id') # "TOP", ID o null
 
     if not nombre:
         return jsonify({"status": "error", "message": "Nombre requerido"}), 400
 
-    todos = InfraElement.query.filter_by(company_id=company_id)\
-                .order_by(InfraElement.posicion).all()
-
-    # Calcular posición de inserción
-    if after_id is None:
-        nueva_pos = 1
-        # Desplazar todos +1
-        for e in todos:
-            e.posicion += 1
+    # Lógica de posición: insertar temporalmente y luego normalizar
+    if after_id == "TOP":
+        nueva_pos = 0 
+    elif not after_id or after_id == "__END__":
+        nueva_pos = 9999
     else:
-        after_id = int(after_id)
-        ref = next((e for e in todos if e.id == after_id), None)
-        nueva_pos = (ref.posicion + 1) if ref else (len(todos) + 1)
-        # Desplazar los que van después
-        for e in todos:
-            if e.posicion >= nueva_pos:
-                e.posicion += 1
+        ref = InfraElement.query.get(int(after_id))
+        if ref:
+            # Desplazar hueco
+            db.session.execute(text("UPDATE infra_elements SET posicion = posicion + 1 WHERE company_id = :cid AND posicion > :p"), {"cid": company_id, "p": ref.posicion})
+            nueva_pos = ref.posicion + 1
+        else:
+            nueva_pos = 9999
 
     el = InfraElement(
         nombre=nombre, tipo=tipo, prefijo=prefijo,
@@ -1676,6 +1680,7 @@ def crear_elemento():
         db.session.add(InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC'))
 
     db.session.commit()
+    normalizar_posiciones(company_id)
     return jsonify({"status": "ok", "id": el.id, "nombre": el.nombre})
 
 
@@ -1684,6 +1689,7 @@ def editar_elemento():
     data    = request.json
     el_id   = int(data.get('id'))
     el      = InfraElement.query.get(el_id)
+    company_id = session.get('company_id')
     if not el:
         return jsonify({"status": "error", "message": "Elemento no encontrado"}), 404
 
@@ -1691,25 +1697,19 @@ def editar_elemento():
     el.prefijo = data.get('prefijo', el.prefijo or '').strip().upper()
     el.tipo    = data.get('tipo', el.tipo).upper()
 
-    # Reposicionamiento si se proporcionó after_id
-    after_id = data.get('after_id')
-    if after_id is not None:
-        company_id = session.get('company_id')
-        todos = InfraElement.query.filter_by(company_id=company_id)\
-                    .filter(InfraElement.id != el_id)\
-                    .order_by(InfraElement.posicion).all()
-        if after_id == '':  # Al principio
-            nueva_pos = 1
-            for e in todos:
-                e.posicion += 1
+    after_id = data.get('after_id') # "__NO_CHANGE__", "TOP", "__END__" o ID
+    if after_id and after_id != "__NO_CHANGE__":
+        if after_id == "TOP":
+            el.posicion = 0
+        elif after_id == "__END__":
+            el.posicion = 9999
         else:
-            after_id_int = int(after_id)
-            ref = next((e for e in todos if e.id == after_id_int), None)
-            nueva_pos = (ref.posicion + 1) if ref else (len(todos) + 1)
-            for e in todos:
-                if e.posicion >= nueva_pos:
-                    e.posicion += 1
-        el.posicion = nueva_pos
+            ref = InfraElement.query.get(int(after_id))
+            if ref:
+                db.session.execute(text("UPDATE infra_elements SET posicion = posicion + 1 WHERE company_id = :cid AND posicion > :p"), {"cid": company_id, "p": ref.posicion})
+                el.posicion = ref.posicion + 1
+        db.session.commit()
+        normalizar_posiciones(company_id)
 
     # Ajuste de puertos
     nuevo_total = int(data.get('total_puertos', el.total_puertos))
@@ -1739,6 +1739,7 @@ def eliminar_elemento():
     data  = request.json
     el_id = data.get('id')
     el    = InfraElement.query.get(el_id)
+    company_id = session.get('company_id')
     if not el:
         return jsonify({"status": "error", "message": "Elemento no encontrado"}), 404
 
@@ -1750,6 +1751,7 @@ def eliminar_elemento():
 
     db.session.delete(el)
     db.session.commit()
+    normalizar_posiciones(company_id)
     return jsonify({"status": "ok"})
 
 @app.route('/api/infra/editar_puerto', methods=['POST'])

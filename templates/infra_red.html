@@ -869,10 +869,12 @@
                     <i class="fa-solid fa-layer-group"></i> Posición en el Rack:
                 </span>
                 <select class="form-ctrl" id="el-after" style="margin-top:8px;">
-                    <option value="">⬆ Al principio del rack</option>
+                    <option value="__NO_CHANGE__" id="el-opt-no-change">— Mantener posición actual —</option>
+                    <option value="TOP">⬆ Al principio del rack</option>
                     {% for el in elementos %}
-                    <option value="{{ el.id }}">Después de: {{ el.nombre }}</option>
+                    <option value="{{ el.id }}" class="el-opt-neighbor">Después de: {{ el.nombre }}</option>
                     {% endfor %}
+                    <option value="__END__">⬇ Al final del rack</option>
                 </select>
             </div>
 
@@ -895,7 +897,14 @@
             document.getElementById('el-tipo').value = 'SWITCH';
             document.getElementById('el-prefijo').value = '';
             document.getElementById('el-puertos').value = '24';
-            document.getElementById('el-after').value = '';
+
+            // Configurar posición para creación: por defecto al final
+            document.getElementById('el-opt-no-change').style.display = 'none';
+            document.getElementById('el-after').value = '__END__';
+
+            // Mostrar todos los vecinos
+            document.querySelectorAll('.el-opt-neighbor').forEach(o => o.style.display = 'block');
+
             document.getElementById('modal-el').style.display = 'flex';
         }
 
@@ -925,21 +934,28 @@
                 sel.value = `${puertos}`;
             }
 
-            // La posición no se toca al editar por defecto (se puede cambiar manualmente)
+            // Configurar posición para edición: por defecto no cambiar
+            document.getElementById('el-opt-no-change').style.display = 'block';
+            document.getElementById('el-after').value = '__NO_CHANGE__';
+
+            // Ocultar el propio equipo de la lista de vecinos (no puedes moverte después de ti mismo)
+            document.querySelectorAll('.el-opt-neighbor').forEach(o => {
+                o.style.display = (o.value == id) ? 'none' : 'block';
+            });
+
             document.getElementById('modal-el').style.display = 'flex';
         }
 
         async function saveEl() {
             const btn = document.getElementById('el-btn-save');
             btn.disabled = true; btn.textContent = 'Guardando...';
-            const afterVal = document.getElementById('el-after').value;
             const payload = {
                 id: editElId,
                 nombre: document.getElementById('el-nombre').value,
                 tipo: document.getElementById('el-tipo').value,
                 prefijo: document.getElementById('el-prefijo').value,
                 total_puertos: document.getElementById('el-puertos').value,
-                after_id: afterVal === '' ? null : afterVal
+                after_id: document.getElementById('el-after').value
             };
             const url = editElId ? '/api/infra/editar_elemento' : '/api/infra/crear_elemento';
             const res = await fetch(url, {
