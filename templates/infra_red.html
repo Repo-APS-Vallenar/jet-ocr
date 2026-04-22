@@ -417,6 +417,60 @@
             color: #64748b;
             cursor: pointer;
         }
+
+        /* ── CRUD Elementos ── */
+        .btn-add-el {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-add-el:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .el-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .el-actions button {
+            border: none;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .btn-edit-el {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .btn-edit-el:hover {
+            background: #bfdbfe;
+        }
+
+        .btn-del-el {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-del-el:hover {
+            background: #fecaca;
+        }
     </style>
 </head>
 
@@ -427,10 +481,15 @@
             <h1 style="margin:0; font-size:20px;"><i class="fa-solid fa-network-wired"></i> DCIM — Infraestructura</h1>
             <p style="margin:0; font-size:12px; color:#64748b;">Topología Física Interactiva</p>
         </div>
-        <a href="/"
-            style="color:white; text-decoration:none; background:rgba(255,255,255,.1); padding:8px 18px; border-radius:10px; font-size:14px;">
-            <i class="fa-solid fa-house"></i> Inicio
-        </a>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <button class="btn-add-el" onclick="openCreateEl()">
+                <i class="fa-solid fa-plus"></i> Añadir Equipo
+            </button>
+            <a href="/"
+                style="color:white; text-decoration:none; background:rgba(255,255,255,.1); padding:8px 18px; border-radius:10px; font-size:14px;">
+                <i class="fa-solid fa-house"></i> Inicio
+            </a>
+        </div>
     </div>
 
     <div class="page-wrapper">
@@ -478,6 +537,16 @@
                         <span class="badge prefix">{{ element.prefijo or element.nombre[:3].upper() }}</span>
                         <span class="badge {{ tipo_badge }}">{{ element.tipo }}</span>
                         <span class="badge">{{ element.total_puertos }}P</span>
+                        <div class="el-actions">
+                            <button class="btn-edit-el"
+                                onclick="openEditEl({{ element.id }}, {{ element.nombre | tojson }}, {{ element.tipo | tojson }}, {{ (element.prefijo or '') | tojson }}, {{ element.total_puertos }})">
+                                <i class="fa-solid fa-pen"></i> Editar
+                            </button>
+                            <button class="btn-del-el"
+                                onclick="deleteEl({{ element.id }}, {{ element.nombre | tojson }})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -757,6 +826,109 @@
 
         window.onclick = e => { if (e.target === document.getElementById('modal-overlay')) closeModal(); };
     </script>
+    <!-- MODAL CREAR / EDITAR EQUIPO -->
+    <div id="modal-el" class="modal-overlay" style="display:none;">
+        <div class="modal-box" style="max-width:420px;">
+            <h3 id="el-modal-title"><i class="fa-solid fa-server"></i> Añadir Equipo</h3>
+
+            <label class="form-lbl">Nombre descriptivo:</label>
+            <input class="form-ctrl" type="text" id="el-nombre" placeholder="Ej: Fortinet 60F, Switch Core 1...">
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                    <label class="form-lbl">Tipo:</label>
+                    <select class="form-ctrl" id="el-tipo">
+                        <option value="SWITCH">Switch</option>
+                        <option value="PATCH_PANEL">Patch Panel</option>
+                        <option value="ROUTER">Router / Firewall</option>
+                        <option value="UPS">UPS</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-lbl">Prefijo (Tag):</label>
+                    <input class="form-ctrl" type="text" id="el-prefijo" maxlength="6" placeholder="SW1, PP2...">
+                </div>
+            </div>
+
+            <label class="form-lbl">Número de puertos:</label>
+            <select class="form-ctrl" id="el-puertos">
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="24" selected>24</option>
+                <option value="48">48</option>
+                <option value="96">96</option>
+            </select>
+
+            <div class="modal-actions">
+                <button id="el-btn-save" class="btn-save" onclick="saveEl()">Guardar Equipo</button>
+                <button class="btn-cancel"
+                    onclick="document.getElementById('modal-el').style.display='none'">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables del CRUD de elementos
+        let editElId = null;
+
+        function openCreateEl() {
+            editElId = null;
+            document.getElementById('el-modal-title').innerHTML = '<i class="fa-solid fa-plus-circle"></i> Añadir Equipo';
+            document.getElementById('el-nombre').value = '';
+            document.getElementById('el-tipo').value = 'SWITCH';
+            document.getElementById('el-prefijo').value = '';
+            document.getElementById('el-puertos').value = '24';
+            document.getElementById('modal-el').style.display = 'flex';
+        }
+
+        function openEditEl(id, nombre, tipo, prefijo, puertos) {
+            editElId = id;
+            document.getElementById('el-modal-title').innerHTML = '<i class="fa-solid fa-pen"></i> Editar Equipo';
+            document.getElementById('el-nombre').value = nombre;
+            document.getElementById('el-tipo').value = tipo;
+            document.getElementById('el-prefijo').value = prefijo;
+            // Seleccionar la opción más cercana
+            const sel = document.getElementById('el-puertos');
+            let best = sel.options[0];
+            for (let o of sel.options) { if (parseInt(o.value) >= puertos) { best = o; break; } }
+            sel.value = best.value;
+            // Añadir el valor exacto si no existe
+            if (!Array.from(sel.options).find(o => parseInt(o.value) === puertos)) {
+                const o = new Option(puertos, puertos, false, true);
+                sel.appendChild(o); sel.value = puertos;
+            } else { sel.value = puertos; }
+            document.getElementById('modal-el').style.display = 'flex';
+        }
+
+        async function saveEl() {
+            const btn = document.getElementById('el-btn-save');
+            btn.disabled = true; btn.textContent = 'Guardando...';
+            const payload = {
+                id: editElId,
+                nombre: document.getElementById('el-nombre').value,
+                tipo: document.getElementById('el-tipo').value,
+                prefijo: document.getElementById('el-prefijo').value,
+                total_puertos: document.getElementById('el-puertos').value
+            };
+            const url = editElId ? '/api/infra/editar_elemento' : '/api/infra/crear_elemento';
+            const res = await fetch(url, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            if (res.ok) location.reload();
+            else { alert('Error al guardar'); btn.disabled = false; btn.textContent = 'Guardar Equipo'; }
+        }
+
+        async function deleteEl(id, nombre) {
+            if (!confirm(`¿Eliminar "${nombre}" y todos sus puertos? Esta acción no se puede deshacer.`)) return;
+            const res = await fetch('/api/infra/eliminar_elemento', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
+            });
+            if (res.ok) location.reload();
+            else alert('Error al eliminar');
+        }
+    </script>
+
 </body>
 
 </html>

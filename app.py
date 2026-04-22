@@ -1639,6 +1639,92 @@ def visualizar_infraestructura():
     
     return render_template('infra_red.html', elementos=elementos_ordenados, todos_elementos=elementos)
 
+# ─── CRUD ELEMENTOS DE INFRAESTRUCTURA ──────────────────────────────────────
+
+@app.route('/api/infra/crear_elemento', methods=['POST'])
+def crear_elemento():
+    data = request.json
+    company_id = session.get('company_id')
+    nombre     = data.get('nombre', '').strip()
+    tipo       = data.get('tipo', 'SWITCH').upper()
+    prefijo    = data.get('prefijo', '').strip().upper()
+    puertos_n  = int(data.get('total_puertos', 24))
+
+    if not nombre:
+        return jsonify({"status": "error", "message": "Nombre requerido"}), 400
+
+    el = InfraElement(
+        nombre=nombre, tipo=tipo, prefijo=prefijo,
+        total_puertos=puertos_n, company_id=company_id
+    )
+    db.session.add(el)
+    db.session.flush()  # Obtener el ID antes de commit
+
+    # Generar puertos automáticamente con formato correcto
+    for n in range(1, puertos_n + 1):
+        auto_tag = f"P{n:02d}" if tipo == 'PATCH_PANEL' else f"P{n}"
+        p = InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC')
+        db.session.add(p)
+
+    db.session.commit()
+    return jsonify({"status": "ok", "id": el.id, "nombre": el.nombre})
+
+
+@app.route('/api/infra/editar_elemento', methods=['POST'])
+def editar_elemento():
+    data    = request.json
+    el_id   = data.get('id')
+    el      = InfraElement.query.get(el_id)
+    if not el:
+        return jsonify({"status": "error", "message": "Elemento no encontrado"}), 404
+
+    el.nombre  = data.get('nombre', el.nombre).strip()
+    el.prefijo = data.get('prefijo', el.prefijo or '').strip().upper()
+    el.tipo    = data.get('tipo', el.tipo).upper()
+
+    nuevo_total = int(data.get('total_puertos', el.total_puertos))
+    actual_max  = db.session.query(db.func.max(InfraPort.numero_puerto))\
+                    .filter_by(element_id=el.id).scalar() or 0
+
+    if nuevo_total > actual_max:
+        # Añadir puertos nuevos
+        for n in range(actual_max + 1, nuevo_total + 1):
+            auto_tag = f"P{n:02d}" if el.tipo == 'PATCH_PANEL' else f"P{n}"
+            db.session.add(InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC'))
+    elif nuevo_total < actual_max:
+        # Eliminar puertos sobrantes (limpiar sus conexiones primero)
+        sobrantes = InfraPort.query.filter_by(element_id=el.id)\
+                        .filter(InfraPort.numero_puerto > nuevo_total).all()
+        for p in sobrantes:
+            if p.conectado_a_id:
+                otro = InfraPort.query.get(p.conectado_a_id)
+                if otro: otro.conectado_a_id = None
+            db.session.delete(p)
+
+    el.total_puertos = nuevo_total
+    db.session.commit()
+    return jsonify({"status": "ok"})
+
+
+@app.route('/api/infra/eliminar_elemento', methods=['POST'])
+def eliminar_elemento():
+    data  = request.json
+    el_id = data.get('id')
+    el    = InfraElement.query.get(el_id)
+    if not el:
+        return jsonify({"status": "error", "message": "Elemento no encontrado"}), 404
+
+    # Limpiar conexiones bidireccionales antes de eliminar
+    for p in el.puertos:
+        if p.conectado_a_id:
+            otro = InfraPort.query.get(p.conectado_a_id)
+            if otro: otro.conectado_a_id = None
+        db.session.delete(p)
+
+    db.session.delete(el)
+    db.session.commit()
+    return jsonify({"status": "ok"})
+
 @app.route('/api/infra/editar_puerto', methods=['POST'])
 def editar_puerto():
     data = request.json
