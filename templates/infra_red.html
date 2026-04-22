@@ -3,99 +3,148 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Mapa de Red e Infraestructura - TIC Altiplano Norte</title>
+    <title>Infraestructura Red - Altiplano Norte</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-dark: #0f172a;
-            --text-main: #1e293b;
             --color-ap: #00ffff;
             --color-reloj: #22c55e;
-            --color-fortinet: #eab308;
             --color-voice: #3b82f6;
             --color-datos: #f97316;
-            --color-vac: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background: #f1f5f9;
             margin: 0;
-            color: var(--text-main);
         }
 
         .header {
             background: var(--bg-dark);
             color: white;
-            padding: 20px 40px;
+            padding: 18px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
         .page-wrapper {
-            padding: 30px;
-            max-width: 1400px;
+            padding: 25px 30px;
+            max-width: 1440px;
             margin: 0 auto;
         }
 
         .legend {
             display: flex;
             gap: 20px;
+            flex-wrap: wrap;
             background: white;
-            padding: 15px 30px;
+            padding: 12px 25px;
             border-radius: 12px;
-            margin: 20px 0;
+            margin: 15px 0;
             border: 1px solid #e2e8f0;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
         }
 
         .dot {
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
-            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .rack-container {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 20px;
         }
 
         .network-element {
             background: white;
-            padding: 20px;
-            border-radius: 15px;
+            padding: 18px 20px;
+            border-radius: 14px;
             border: 1px solid #e2e8f0;
-            border-left: 6px solid #64748b;
+            border-left: 6px solid;
+            overflow-x: auto;
         }
 
-        .element-title {
-            margin-bottom: 15px;
+        .network-element.switch-type {
+            border-left-color: #3b82f6;
+        }
+
+        .network-element.patch-type {
+            border-left-color: #8b5cf6;
+        }
+
+        .network-element.other-type {
+            border-left-color: #64748b;
+        }
+
+        .element-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 10px;
+            margin-bottom: 14px;
         }
 
+        .element-header strong {
+            font-size: 15px;
+            color: var(--bg-dark);
+        }
+
+        .el-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .badge.sw {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.pp {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .badge.prefix {
+            background: #0f172a;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        /* GRILLA DE PUERTOS */
         .port-grid {
             display: grid;
             grid-template-columns: repeat(24, 1fr);
-            gap: 6px;
-            min-width: 900px;
+            gap: 5px;
+            min-width: 860px;
         }
 
         .port {
@@ -105,73 +154,106 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
-            font-weight: 800;
+            font-size: 9px;
+            font-weight: 900;
             cursor: pointer;
             position: relative;
             background: white;
             color: #64748b;
-            transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.15s ease;
+            font-family: 'Courier New', monospace;
         }
 
-        /* Colores */
         .port.service-ap {
             border-color: var(--color-ap);
-            background: rgba(0, 255, 255, 0.05);
+            background: #f0fffe;
+            color: #0e7490;
         }
 
         .port.service-reloj {
             border-color: var(--color-reloj);
-            background: rgba(34, 197, 94, 0.05);
+            background: #f0fdf4;
+            color: #166534;
         }
 
         .port.service-voice {
             border-color: var(--color-voice);
-            background: rgba(59, 130, 246, 0.05);
+            background: #eff6ff;
+            color: #1e40af;
         }
 
         .port.service-datos {
             border-color: var(--color-datos);
-            background: rgba(249, 115, 22, 0.05);
+            background: #fff7ed;
+            color: #9a3412;
         }
 
-        .port.has-conn::after {
-            content: "\f127";
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
+        .port.service-vac {
+            border-color: #e2e8f0;
+            color: #cbd5e1;
+        }
+
+        .port.has-conn::before {
+            content: '';
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 7px;
-            color: #94a3b8;
-            opacity: 0.6;
+            bottom: 3px;
+            right: 3px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #10b981;
         }
 
-        /* RESONANCE EXTREMA (PARA AMBOS) */
-        .port.highlight-active {
+        .port:hover {
+            transform: scale(1.12) translateY(-2px);
+            z-index: 30;
+        }
+
+        .port.hl-self {
             border-color: #f59e0b !important;
-            box-shadow: 0 0 25px #f59e0b !important;
-            z-index: 50 !important;
             background: #fffbeb !important;
-            transform: scale(1.1);
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.7);
+            z-index: 40;
+            transform: scale(1.15);
+        }
+
+        .port.hl-partner {
+            border-color: #0ea5e9 !important;
+            background: #eff6ff !important;
+            box-shadow: 0 0 18px rgba(14, 165, 233, 0.8);
+            z-index: 40;
+            transform: scale(1.15);
+            animation: partner-beat 1.2s ease-in-out infinite;
+        }
+
+        @keyframes partner-beat {
+
+            0%,
+            100% {
+                box-shadow: 0 0 14px rgba(14, 165, 233, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 28px rgba(14, 165, 233, 1);
+            }
         }
 
         .edit-btn {
             position: absolute;
             top: -8px;
             right: -8px;
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             background: var(--bg-dark);
             color: white;
             border-radius: 50%;
-            font-size: 10px;
+            font-size: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid white;
             cursor: pointer;
-            opacity: 0.3;
+            opacity: 0;
             transition: 0.2s;
         }
 
@@ -179,51 +261,144 @@
             opacity: 1;
         }
 
-        .modal {
+        /* BURBUJA */
+        .bubble {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.15s;
+            background: #0f172a;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            min-width: 180px;
+        }
+
+        .bubble .tag-label {
+            font-family: monospace;
+            font-size: 15px;
+            color: #f59e0b;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .bubble .link-line {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .bubble .link-line b {
+            color: #38bdf8;
+        }
+
+        /* MODAL */
+        .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
+            backdrop-filter: blur(6px);
+            z-index: 5000;
             align-items: center;
             justify-content: center;
         }
 
-        .modal-content {
+        .modal-box {
             background: white;
-            padding: 30px;
             border-radius: 20px;
-            width: 450px;
+            padding: 30px;
+            width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .modal-content label {
-            display: block;
-            margin-top: 15px;
+        .modal-box h3 {
+            margin: 0 0 20px;
+            font-size: 18px;
+            color: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-box h3 span.mono {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .form-lbl {
             font-size: 11px;
             font-weight: 800;
             color: #64748b;
             text-transform: uppercase;
+            letter-spacing: .5px;
+            display: block;
+            margin-top: 16px;
         }
 
-        .modal-content input,
-        .modal-content select {
+        .form-ctrl {
             width: 100%;
-            padding: 12px;
-            margin-top: 6px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            margin-top: 5px;
             font-size: 14px;
-            background: #f8fafc;
+        }
+
+        .form-ctrl:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, .1);
+        }
+
+        .tag-preview {
+            font-family: monospace;
+            font-size: 16px;
+            color: #f59e0b;
+            background: #0f172a;
+            padding: 8px 14px;
+            border-radius: 8px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .tag-help {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .parcheo-box {
+            margin-top: 18px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .parcheo-box .form-lbl {
+            color: #92400e;
+            margin-top: 0;
+        }
+
+        .parcheo-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
         }
 
         .modal-actions {
-            margin-top: 30px;
             display: flex;
             gap: 12px;
+            margin-top: 24px;
         }
 
         .btn-save {
@@ -231,135 +406,146 @@
             background: #0ea5e9;
             color: white;
             border: none;
-            padding: 15px;
+            padding: 14px;
             border-radius: 12px;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
+            font-size: 15px;
         }
 
         .btn-cancel {
             flex: 1;
             background: #f1f5f9;
             border: none;
-            padding: 15px;
+            padding: 14px;
             border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             color: #64748b;
-        }
-
-        .info-bubble {
-            position: fixed;
-            pointer-events: none;
-            background: #1e293b;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 10000;
-            opacity: 0;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
+
     <div class="header">
         <div>
-            <h1><i class="fa-solid fa-network-wired"></i> Gestión de Infraestructura</h1>
-            <p style="margin:0; font-size:12px; color:#94a3b8;">Topología Real / Nodos Críticos</p>
+            <h1 style="margin:0; font-size:20px;"><i class="fa-solid fa-network-wired"></i> DCIM — Infraestructura</h1>
+            <p style="margin:0; font-size:12px; color:#64748b;">Topología Física Interactiva</p>
         </div>
-        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-home"></i> Home</a>
+        <a href="/"
+            style="color:white; text-decoration:none; background:rgba(255,255,255,.1); padding:8px 18px; border-radius:10px; font-size:14px;">
+            <i class="fa-solid fa-house"></i> Inicio
+        </a>
     </div>
 
     <div class="page-wrapper">
         <div class="legend">
             <div class="legend-item">
-                <div class="dot" style="background: var(--color-ap);"></div> AP
+                <div class="dot" style="background:var(--color-ap);"></div> WAP
             </div>
             <div class="legend-item">
-                <div class="dot" style="background: var(--color-voice);"></div> VOZ IP
+                <div class="dot" style="background:var(--color-voice);"></div> VOZ IP
             </div>
             <div class="legend-item">
-                <div class="dot" style="background: var(--color-datos);"></div> DATOS
+                <div class="dot" style="background:var(--color-datos);"></div> DATOS
             </div>
             <div class="legend-item">
-                <div class="dot" style="background: var(--color-reloj);"></div> RELOJ
+                <div class="dot" style="background:var(--color-reloj);"></div> RELOJ
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:#e2e8f0; border:1px solid #cbd5e1;"></div> Libre
+            </div>
+            <div class="legend-item"
+                style="margin-left:auto; background:#f0fdf4; padding:4px 12px; border-radius:8px; border:1px solid #bbf7d0;">
+                <span
+                    style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+                Puerto parcheado
             </div>
         </div>
 
         <div class="rack-container">
             {% for element in elementos %}
-            <div class="network-element">
-                <div class="element-title">
-                    <strong><i class="fa-solid fa-microchip"></i> {{ element.nombre }} ({{ element.tipo }})</strong>
+            {% if element.tipo == 'SWITCH' %}
+            {% set tipo_class = 'switch-type' %}
+            {% set tipo_badge = 'sw' %}
+            {% elif element.tipo == 'PATCH_PANEL' or element.tipo == 'PATCH' %}
+            {% set tipo_class = 'patch-type' %}
+            {% set tipo_badge = 'pp' %}
+            {% else %}
+            {% set tipo_class = 'other-type' %}
+            {% set tipo_badge = '' %}
+            {% endif %}
+
+            <div class="network-element {{ tipo_class }}">
+                <div class="element-header">
+                    <strong><i class="fa-solid fa-microchip"></i> {{ element.nombre }}</strong>
+                    <div class="el-meta">
+                        <span class="badge prefix">{{ element.prefijo or element.nombre[:3].upper() }}</span>
+                        <span class="badge {{ tipo_badge }}">{{ element.tipo }}</span>
+                        <span class="badge">{{ element.total_puertos }}P</span>
+                    </div>
                 </div>
 
                 {% if element.tipo == 'SWITCH' %}
-                <!-- FILA SUPERIOR (IMPARES) -->
+                {# FILA SUPERIOR: IMPARES (1,3,5,7...) #}
                 <div class="port-grid">
-                    {% for i in range(1, element.total_puertos + 1) %}
-                    {% if i % 2 != 0 %}
-                    {% set p = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p and p.tipo_servicio else 'vac') }} {{ 'has-conn' if p and p.conectado_a_id else '' }}"
-                        id="port-{{ p.id if p else 'null-'~i }}" data-id="{{ p.id if p else '' }}"
-                        data-tag="{{ (p.tag or i) if p else i }}" data-dest="{{ p.destino or '' if p else '' }}"
-                        data-serv="{{ p.tipo_servicio or 'VAC' if p else 'VAC' }}"
-                        data-conn="{{ p.conectado_a_id | string if p and p.conectado_a_id else '' }}"
-                        data-pname="{{ element.nombre }}" data-pnum="{{ i }}" onmouseenter="p_enter(this)"
-                        onmouseleave="p_leave(this)">
-                        {{ p.tag or i if p else i }}
-                        {% if p %}
-                        <div class="edit-btn" onclick="p_edit(event, this.parentElement)"><i
-                                class="fa-solid fa-pencil"></i></div>
-                        {% endif %}
+                    {% for p in element.puertos | sort(attribute='numero_puerto') %}
+                    {% if p.numero_puerto % 2 != 0 %}
+                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p.tipo_servicio else 'vac') }} {{ 'has-conn' if p.conectado_a_id else '' }}"
+                        id="port-{{ p.id | string }}" data-id="{{ p.id | string }}"
+                        data-tag="{{ p.tag or ('P' ~ p.numero_puerto) }}" data-dest="{{ p.destino or '' }}"
+                        data-serv="{{ p.tipo_servicio or 'VAC' }}"
+                        data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
+                        data-pname="{{ element.nombre }}"
+                        data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
+                        data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
+                        onmouseleave="pLeave()">
+                        {{ p.tag or ('P' ~ p.numero_puerto) }}
+                        <div class="edit-btn" onclick="pEdit(event,this.parentElement)"><i class="fa-solid fa-pen"></i>
+                        </div>
                     </div>
                     {% endif %}
                     {% endfor %}
                 </div>
-                <div style="height:8px"></div>
-                <!-- FILA INFERIOR (PARES) -->
+                <div style="height:7px;"></div>
+                {# FILA INFERIOR: PARES (2,4,6,8...) #}
                 <div class="port-grid">
-                    {% for i in range(1, element.total_puertos + 1) %}
-                    {% if i % 2 == 0 %}
-                    {% set p = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p and p.tipo_servicio else 'vac') }} {{ 'has-conn' if p and p.conectado_a_id else '' }}"
-                        id="port-{{ p.id if p else 'null-'~i }}" data-id="{{ p.id if p else '' }}"
-                        data-tag="{{ (p.tag or i) if p else i }}" data-dest="{{ p.destino or '' if p else '' }}"
-                        data-serv="{{ p.tipo_servicio or 'VAC' if p else 'VAC' }}"
-                        data-conn="{{ p.conectado_a_id | string if p and p.conectado_a_id else '' }}"
-                        data-pname="{{ element.nombre }}" data-pnum="{{ i }}" onmouseenter="p_enter(this)"
-                        onmouseleave="p_leave(this)">
-                        {{ p.tag or i if p else i }}
-                        {% if p %}
-                        <div class="edit-btn" onclick="p_edit(event, this.parentElement)"><i
-                                class="fa-solid fa-pencil"></i></div>
-                        {% endif %}
+                    {% for p in element.puertos | sort(attribute='numero_puerto') %}
+                    {% if p.numero_puerto % 2 == 0 %}
+                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p.tipo_servicio else 'vac') }} {{ 'has-conn' if p.conectado_a_id else '' }}"
+                        id="port-{{ p.id | string }}" data-id="{{ p.id | string }}"
+                        data-tag="{{ p.tag or ('P' ~ p.numero_puerto) }}" data-dest="{{ p.destino or '' }}"
+                        data-serv="{{ p.tipo_servicio or 'VAC' }}"
+                        data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
+                        data-pname="{{ element.nombre }}"
+                        data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
+                        data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
+                        onmouseleave="pLeave()">
+                        {{ p.tag or ('P' ~ p.numero_puerto) }}
+                        <div class="edit-btn" onclick="pEdit(event,this.parentElement)"><i class="fa-solid fa-pen"></i>
+                        </div>
                     </div>
                     {% endif %}
                     {% endfor %}
                 </div>
+
                 {% else %}
-                <!-- PATCH PANEL (NORMAL) -->
+                {# PATCH PANEL (fila única, tags con cero: P01, P02...) #}
                 <div class="port-grid">
-                    {% for i in range(1, element.total_puertos + 1) %}
-                    {% set p = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p and p.tipo_servicio else 'vac') }} {{ 'has-conn' if p and p.conectado_a_id else '' }}"
-                        id="port-{{ p.id if p else 'null-'~i }}" data-id="{{ p.id if p else '' }}"
-                        data-tag="{{ (p.tag or i) if p else i }}" data-dest="{{ p.destino or '' if p else '' }}"
-                        data-serv="{{ p.tipo_servicio or 'VAC' if p else 'VAC' }}"
-                        data-conn="{{ p.conectado_a_id | string if p and p.conectado_a_id else '' }}"
-                        data-pname="{{ element.nombre }}" data-pnum="{{ i }}" onmouseenter="p_enter(this)"
-                        onmouseleave="p_leave(this)">
-                        {{ p.tag or i if p else i }}
-                        {% if p %}
-                        <div class="edit-btn" onclick="p_edit(event, this.parentElement)"><i
-                                class="fa-solid fa-pencil"></i></div>
-                        {% endif %}
+                    {% for p in element.puertos | sort(attribute='numero_puerto') %}
+                    {% set auto_tag = 'P%02d'|format(p.numero_puerto) %}
+                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p.tipo_servicio else 'vac') }} {{ 'has-conn' if p.conectado_a_id else '' }}"
+                        id="port-{{ p.id | string }}" data-id="{{ p.id | string }}" data-tag="{{ p.tag or auto_tag }}"
+                        data-dest="{{ p.destino or '' }}" data-serv="{{ p.tipo_servicio or 'VAC' }}"
+                        data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
+                        data-pname="{{ element.nombre }}"
+                        data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
+                        data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
+                        onmouseleave="pLeave()">
+                        {{ p.tag or auto_tag }}
+                        <div class="edit-btn" onclick="pEdit(event,this.parentElement)"><i class="fa-solid fa-pen"></i>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -369,54 +555,69 @@
         </div>
     </div>
 
-    <div id="bubble" class="info-bubble"></div>
+    <!-- Burbuja flotante -->
+    <div id="bubble" class="bubble"></div>
 
-    <div id="modal-puerto" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title">Editar Puerto</h3>
-            <label>Destino Físico:</label>
-            <input type="text" id="edit-destino">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                <div>
-                    <label>Servicio:</label>
-                    <select id="edit-servicio">
-                        <option value="Datos">Datos</option>
-                        <option value="AP">AP</option>
-                        <option value="Voz">Voz IP</option>
-                        <option value="Reloj">Reloj</option>
-                        <option value="VAC">Libre</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Tag/Etiqueta:</label>
-                    <input type="text" id="edit-tag">
-                </div>
+    <!-- MODAL EDICIÓN -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <h3><i class="fa-solid fa-wrench"></i> Editando <span class="mono" id="m-tag-show">---</span></h3>
+
+            <div style="background:#f8fafc; border-radius:10px; padding:12px; margin-bottom:4px;">
+                <span class="form-lbl" style="margin-top:0;">Vista Previa del Tag</span>
+                <div class="tag-preview" id="tag-preview">---</div>
+                <p class="tag-help">El tag se construye automáticamente. Puedes editarlo libremente.</p>
             </div>
-            <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
-                <label>Vincular a Puerto (Parcheo):</label>
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px;">
-                    <select id="select-equipo" onchange="updatePorts()">
-                        <option value="">-- Desconectado --</option>
+
+            <label class="form-lbl">Etiqueta (Tag) — editable:</label>
+            <input class="form-ctrl" type="text" id="edit-tag"
+                oninput="document.getElementById('tag-preview').innerText = this.value">
+
+            <label class="form-lbl">Destino Físico (Box / Sala / Oficina):</label>
+            <input class="form-ctrl" type="text" id="edit-destino" placeholder="Ej: Box 4, Sala de Reuniones...">
+
+            <label class="form-lbl">Tipo de Servicio:</label>
+            <select class="form-ctrl" id="edit-servicio">
+                <option value="Datos">Datos (PC)</option>
+                <option value="AP">AP / WiFi</option>
+                <option value="Voz">Voz IP</option>
+                <option value="Reloj">Reloj Biométrico</option>
+                <option value="VAC">Libre / Sin uso</option>
+            </select>
+
+            <div class="parcheo-box">
+                <span class="form-lbl"><i class="fa-solid fa-link"></i> Parcheo Físico (Link bidireccional):</span>
+                <div class="parcheo-grid">
+                    <select class="form-ctrl" id="select-equipo" onchange="updatePorts()" style="margin-top:0;">
+                        <option value="">-- Sin Conexión --</option>
                         {% for el in todos_elementos %}<option value="{{ el.id | string }}">{{ el.nombre }}</option>{%
                         endfor %}
                     </select>
-                    <select id="select-puerto">
+                    <select class="form-ctrl" id="select-puerto" style="margin-top:0;">
                         <option value="">Puerto</option>
                     </select>
                 </div>
             </div>
+
             <div class="modal-actions">
-                <button id="btn-save" onclick="save()" class="btn-save">Guardar</button>
-                <button onclick="closeModal()" class="btn-cancel">Cerrar</button>
+                <button id="btn-save" class="btn-save" onclick="save()">Guardar Cambios</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
             </div>
         </div>
     </div>
 
+    <!-- DB INTERNA -->
     <div id="db-raw" style="display:none;">
         {% for el in todos_elementos %}
-        <div id="db-el-{{ el.id | string }}">
+        <div id="db-el-{{ el.id | string }}" data-name="{{ el.nombre }}"
+            data-prefix="{{ el.prefijo or el.nombre[:3].upper() }}" data-tipo="{{ el.tipo }}">
             {% for p in el.puertos %}
-            <span data-id="{{ p.id | string }}" data-n="{{ p.numero_puerto }}" data-t="{{ p.tag or '' }}"></span>
+            {% if el.tipo == 'SWITCH' %}
+            {% set auto_tag = 'P' ~ p.numero_puerto %}
+            {% else %}
+            {% set auto_tag = 'P%02d'|format(p.numero_puerto) %}
+            {% endif %}
+            <span data-id="{{ p.id | string }}" data-n="{{ p.numero_puerto }}" data-t="{{ p.tag or auto_tag }}"></span>
             {% endfor %}
         </div>
         {% endfor %}
@@ -426,76 +627,117 @@
         let selectedId = null;
         const bubble = document.getElementById('bubble');
 
-        function p_enter(el) {
+        // ─── HOVER ───────────────────────────────────────────────
+        function pEnter(el) {
+            el.classList.add('hl-self');
             const connId = el.getAttribute('data-conn');
-            el.classList.add('highlight-active');
-
-            const rect = el.getBoundingClientRect();
-            bubble.style.opacity = "1";
-            bubble.style.top = (rect.top - 50) + "px";
-            bubble.style.left = rect.left + "px";
+            let html = '';
 
             if (connId && connId !== '') {
                 const partner = document.getElementById('port-' + connId);
                 if (partner) {
-                    partner.classList.add('highlight-active');
-                    bubble.innerHTML = `🔗 Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b>`;
+                    partner.classList.add('hl-partner');
+                    // Tag compuesto: propio-partner-prefijo
+                    const myTag = el.getAttribute('data-tag');
+                    const pTag = partner.getAttribute('data-tag');
+                    const pPrefix = partner.getAttribute('data-prefix') || '';
+                    const compound = `${myTag}-${pTag}-${pPrefix}`;
+                    html = `<span class="tag-label">${compound}</span>
+                    <span class="link-line"><i class="fa-solid fa-link"></i> Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b></span>`;
                 }
             } else {
-                bubble.innerHTML = `📍 Destino: ${el.getAttribute('data-dest') || 'No asignado'}`;
+                const dest = el.getAttribute('data-dest') || 'Sin destino asignado';
+                const tag = el.getAttribute('data-tag');
+                html = `<span class="tag-label">${tag}</span>
+                <span class="link-line"><i class="fa-solid fa-location-dot"></i> ${dest}</span>`;
             }
+
+            bubble.innerHTML = html;
+            bubble.style.opacity = '1';
+
+            const rect = el.getBoundingClientRect();
+            bubble.style.top = Math.max(10, rect.top - 80) + 'px';
+            bubble.style.left = rect.left + 'px';
         }
 
-        function p_leave() {
-            bubble.style.opacity = "0";
-            document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight-active'));
+        function pLeave() {
+            bubble.style.opacity = '0';
+            document.querySelectorAll('.port').forEach(p => p.classList.remove('hl-self', 'hl-partner'));
         }
 
-        function p_edit(event, portEl) {
+        // ─── EDITOR ─────────────────────────────────────────────
+        function pEdit(event, portEl) {
             event.stopPropagation();
             selectedId = portEl.getAttribute('data-id');
             if (!selectedId) return;
+
+            const tag = portEl.getAttribute('data-tag');
+            const tipo = portEl.getAttribute('data-tipo');
+            const pnum = portEl.getAttribute('data-pnum');
+
+            // Auto-sugerencia de tag según tipo
+            const autoTag = (tipo === 'SWITCH')
+                ? `P${pnum}`
+                : `P${String(pnum).padStart(2, '0')}`;
+
+            document.getElementById('edit-tag').value = tag || autoTag;
             document.getElementById('edit-destino').value = portEl.getAttribute('data-dest');
             document.getElementById('edit-servicio').value = portEl.getAttribute('data-serv');
-            document.getElementById('edit-tag').value = portEl.getAttribute('data-tag');
+            document.getElementById('tag-preview').innerText = tag || autoTag;
+            document.getElementById('m-tag-show').innerText = tag || autoTag;
 
             const connId = portEl.getAttribute('data-conn');
-            if (connId) {
+            if (connId && connId !== '') {
                 const elParent = document.querySelector(`#db-raw div:has(span[data-id="${connId}"])`);
                 if (elParent) {
                     document.getElementById('select-equipo').value = elParent.id.replace('db-el-', '');
                     updatePorts(connId);
                 }
+            } else {
+                document.getElementById('select-equipo').value = '';
+                document.getElementById('select-puerto').innerHTML = '<option value="">Puerto</option>';
             }
-            document.getElementById('modal-puerto').style.display = 'flex';
+            document.getElementById('modal-overlay').style.display = 'flex';
         }
 
         function updatePorts(preId = null) {
             const elId = document.getElementById('select-equipo').value;
             const pSel = document.getElementById('select-puerto');
             pSel.innerHTML = '<option value="">Puerto</option>';
-            if (elId) {
-                const container = document.getElementById('db-el-' + elId);
-                if (container) {
-                    const ports = Array.from(container.querySelectorAll('span')).map(s => ({
-                        id: s.getAttribute('data-id'), n: parseInt(s.getAttribute('data-n')), t: s.getAttribute('data-tag')
-                    })).sort((a, b) => a.n - b.n);
-                    ports.forEach(p => {
-                        const o = document.createElement('option'); o.value = p.id; o.text = `P${p.n} ${p.t ? '[' + p.t + ']' : ''}`;
-                        if (preId && p.id == preId) o.selected = true;
-                        pSel.appendChild(o);
-                    });
-                }
-            }
+            if (!elId) return;
+            const container = document.getElementById('db-el-' + elId);
+            if (!container) return;
+            Array.from(container.querySelectorAll('span'))
+                .map(s => ({ id: s.dataset.id, n: +s.dataset.n, t: s.dataset.t }))
+                .sort((a, b) => a.n - b.n)
+                .forEach(p => {
+                    const o = document.createElement('option');
+                    o.value = p.id; o.text = `${p.t || 'P' + p.n}`;
+                    if (preId && p.id == preId) o.selected = true;
+                    pSel.appendChild(o);
+                });
         }
 
-        function closeModal() { document.getElementById('modal-puerto').style.display = 'none'; }
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
         async function save() {
-            const btn = document.getElementById('btn-save'); btn.disabled = true;
-            const data = { id: selectedId, destino: document.getElementById('edit-destino').value, servicio: document.getElementById('edit-servicio').value, tag: document.getElementById('edit-tag').value, conectado_a_id: document.getElementById('select-puerto').value };
-            const res = await fetch('/api/infra/editar_puerto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) location.reload(); else btn.disabled = false;
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true; btn.textContent = 'Guardando...';
+            const payload = {
+                id: selectedId,
+                destino: document.getElementById('edit-destino').value,
+                servicio: document.getElementById('edit-servicio').value,
+                tag: document.getElementById('edit-tag').value,
+                conectado_a_id: document.getElementById('select-puerto').value
+            };
+            const res = await fetch('/api/infra/editar_puerto', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            });
+            if (res.ok) location.reload();
+            else { alert('Error al guardar'); btn.disabled = false; btn.textContent = 'Guardar Cambios'; }
         }
+
+        window.onclick = e => { if (e.target === document.getElementById('modal-overlay')) closeModal(); };
     </script>
 </body>
 
