@@ -954,6 +954,7 @@
                 tag: document.getElementById('edit-tag').value,
                 conectado_a_id: document.getElementById('select-puerto').value
             };
+            console.log("DEBUG IN_AN: Enviando payload:", payload);
             const res = await fetch('/api/infra/editar_puerto', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             });

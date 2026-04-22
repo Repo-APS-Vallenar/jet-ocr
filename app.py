@@ -153,6 +153,7 @@ class InfraPort(db.Model):
     color_hex = db.Column(db.String(10), default='#ffffff')
     tag = db.Column(db.String(20), nullable=True)
     conectado_a_id = db.Column(db.Integer, nullable=True) # ID de otro InfraPort (Cruce)
+    pasillo = db.Column(db.String(100), nullable=True)     # Ej: Pasillo 1 Piso 1
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -1205,8 +1206,8 @@ def procesar_batch():
                         detectados[0]["mac"] = mac_manual
                     else:
                         detectados = [{"sn": "DESCONOCIDO", "mac": mac_manual}]
-                        
                 for eq in detectados:
+                    print(f"Procesando equipo: {eq}")
                     res = ocr_script.actualizar_inventario_web(
                         eq["sn"], eq["mac"], ruta_excel_local,
                         ubicacion=meta.get('ubicacion'), 
@@ -1793,9 +1794,13 @@ def editar_puerto():
         puerto.conectado_a_id = None
         
     # --- ACTUALIZAR METADATOS (puerto editado) ---
+    print(f"DEBUG IN_AN: Editando puerto {p_id}")
+    print(f"DEBUG IN_AN: Payload recibido: {data}")
+    
     puerto.destino       = data.get('destino')
     puerto.tipo_servicio = data.get('servicio')
     puerto.tag           = data.get('tag')
+    puerto.pasillo       = data.get('pasillo')
 
     colores = {
         "Datos": "#f97316", "AP": "#00ffff",
@@ -1812,6 +1817,7 @@ def editar_puerto():
             partner.destino       = puerto.destino
             partner.tipo_servicio = puerto.tipo_servicio
             partner.color_hex     = puerto.color_hex
+            partner.pasillo       = puerto.pasillo
             # El tag del partner NO se copia: cada extremo mantiene su propio
             # formato (P01 para Patch Panel, P1 para Switch).
 
