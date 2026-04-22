@@ -77,7 +77,6 @@
             padding: 20px;
             border-radius: 15px;
             border: 1px solid #e2e8f0;
-            overflow-x: auto;
             border-left: 5px solid #64748b;
         }
 
@@ -141,46 +140,26 @@
         .port.highlight {
             border-color: #f59e0b !important;
             box-shadow: 0 0 15px #f59e0b;
-            animation: pulse 1.5s infinite;
             z-index: 20;
             background: #fffbeb !important;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1.05);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1.05);
-            }
         }
 
         .edit-btn {
             position: absolute;
             top: -5px;
             right: -5px;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             background: var(--bg-dark);
             color: white;
             border-radius: 50%;
-            font-size: 8px;
+            font-size: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.4;
-            transition: 0.2s;
-            border: 1px solid white;
-        }
-
-        .port:hover .edit-btn {
-            opacity: 1;
-            transform: scale(1.2);
+            border: 2px solid white;
+            cursor: pointer;
+            z-index: 50;
         }
 
         .modal {
@@ -190,35 +169,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(5px);
-            z-index: 99999;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
             align-items: center;
             justify-content: center;
         }
 
         .modal-content {
             background: white;
-            padding: 25px;
-            border-radius: 15px;
-            width: 420px;
+            padding: 30px;
+            border-radius: 20px;
+            width: 450px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            font-size: 18px;
-            color: var(--bg-dark);
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 10px;
-        }
-
-        .modal-content label {
-            display: block;
-            margin-top: 15px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #64748b;
         }
 
         .modal-content input,
@@ -228,7 +191,6 @@
             margin-top: 5px;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            font-size: 14px;
             background: #f8fafc;
         }
 
@@ -243,53 +205,28 @@
             background: #0ea5e9;
             color: white;
             border: none;
-            padding: 14px;
+            padding: 15px;
             border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.4);
         }
 
         .btn-cancel {
             flex: 1;
             background: #f1f5f9;
             border: none;
-            padding: 14px;
+            padding: 15px;
             border-radius: 10px;
             cursor: pointer;
             color: #64748b;
-        }
-
-        .tooltip {
-            visibility: hidden;
-            position: absolute;
-            bottom: 120%;
-            background: #1e293b;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            white-space: nowrap;
-            z-index: 100;
-            pointer-events: none;
-            opacity: 0;
-            transition: 0.2s;
-        }
-
-        .port:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
         }
     </style>
 </head>
 
 <body>
     <div class="header">
-        <div>
-            <h1><i class="fa-solid fa-network-wired"></i> Infraestructura de Red</h1>
-            <p style="margin:0; font-size: 13px; opacity: 0.8;">Centro de Mando - TIC Altiplano Norte</p>
-        </div>
-        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <h1><i class="fa-solid fa-server"></i> Infraestructura Red Altiplano Norte</h1>
+        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Volver</a>
     </div>
 
     <div class="page-wrapper">
@@ -313,90 +250,41 @@
 
         <div class="rack-container">
             {% for element in elementos %}
-            <div class="network-element"
-                style="border-left-color: {{ '#3b82f6' if element.tipo == 'SWITCH' else '#10b981' }}">
+            <div class="network-element">
                 <div class="element-title">
-                    <strong>{{ element.nombre }} ({{ element.tipo }})</strong>
-                    <span style="color:#64748b; font-weight: 600;">{{ element.total_puertos }} Puertos</span>
+                    <strong>{{ element.nombre }}</strong>
+                    <span>{{ element.total_puertos }} Puertos</span>
                 </div>
 
-                {% if element.tipo == 'SWITCH' %}
                 <div class="port-grid">
-                    {% for i in range(1, 49, 2) %}
-                    {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                    <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port else 'vac') }}"
-                        id="port-{{ port.id if port else 'null-'~i }}"
-                        onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
-                        {{ port.tag if port and port.tag else i }}
-                        {% if port %}
+                    {% for p in element.puertos | sort(attribute='numero_puerto') %}
+                    <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p.tipo_servicio else 'vac') }}"
+                        id="port-{{ p.id | string }}"
+                        onclick="resaltarConexion('{{ p.conectado_a_id | string if p.conectado_a_id else '' }}')">
+                        {{ p.tag or p.numero_puerto }}
                         <div class="edit-btn"
-                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ (port.destino or '') | forceescape }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ (port.tag or '') | forceescape }}', '{{ port.conectado_a_id or '' }}')">
-                            <i class="fa-solid fa-edit"></i>
+                            onclick="event.stopPropagation(); abrirEditor('{{ p.id | string }}', {{ (p.destino or '') | tojson }}, '{{ p.tipo_servicio or 'VAC' }}', {{ (p.tag or '') | tojson }}, '{{ p.conectado_a_id | string if p.conectado_a_id else '' }}')">
+                            <i class="fa-solid fa-pen"></i>
                         </div>
-                        {% endif %}
-                        <div class="tooltip">Port {{ i }}: {{ port.destino if port else 'N/A' }}</div>
                     </div>
                     {% endfor %}
                 </div>
-                <div style="height:8px"></div>
-                <div class="port-grid">
-                    {% for i in range(2, 49, 2) %}
-                    {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                    <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port else 'vac') }}"
-                        id="port-{{ port.id if port else 'null-'~i }}"
-                        onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
-                        {{ port.tag if port and port.tag else i }}
-                        {% if port %}
-                        <div class="edit-btn"
-                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ (port.destino or '') | forceescape }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ (port.tag or '') | forceescape }}', '{{ port.conectado_a_id or '' }}')">
-                            <i class="fa-solid fa-edit"></i>
-                        </div>
-                        {% endif %}
-                        <div class="tooltip">Port {{ i }}: {{ port.destino if port else 'N/A' }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="port-grid">
-                    {% for i in range(1, 25) %}
-                    {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                    <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port else 'vac') }}"
-                        id="port-{{ port.id if port else 'null-'~i }}"
-                        onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
-                        {{ port.tag if port and port.tag else i }}
-                        {% if port %}
-                        <div class="edit-btn"
-                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ (port.destino or '') | forceescape }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ (port.tag or '') | forceescape }}', '{{ port.conectado_a_id or '' }}')">
-                            <i class="fa-solid fa-edit"></i>
-                        </div>
-                        {% endif %}
-                        <div class="tooltip">Port {{ i }}: {{ port.destino if port else 'N/A' }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- MODAL DE PARCHEO -->
     <div id="modal-puerto" class="modal">
         <div class="modal-content">
-            <h3><i class="fa-solid fa-plug"></i> Configurar Conexión</h3>
-            <div id="info-modal"
-                style="background:#eff6ff; padding:12px; border-radius:10px; font-size:13px; margin-bottom:15px; color:#1e40af; border:1px solid #bfdbfe;">
-            </div>
-
-            <label>Ubicación / Destino:</label>
+            <h3 id="modal-title">Configurar Puerto</h3>
+            <label>Destino:</label>
             <input type="text" id="edit-destino">
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div>
                     <label>Servicio:</label>
                     <select id="edit-servicio">
                         <option value="Datos">Datos</option>
-                        <option value="AP">AP / WIFI</option>
+                        <option value="AP">AP</option>
                         <option value="Voz">Voz</option>
                         <option value="Reloj">Reloj</option>
                         <option value="VAC">Libre</option>
@@ -407,115 +295,78 @@
                     <input type="text" id="edit-tag">
                 </div>
             </div>
-
-            <div style="margin-top:20px; border-top:2px solid #f1f5f9; padding-top:15px;">
-                <label style="color:#0f172a;"><i class="fa-solid fa-link"></i> Parcheo a Destino:</label>
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; margin-top:8px;">
+            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+                <label>Parcheo Físico:</label>
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:5px;">
                     <select id="select-equipo" onchange="updatePorts()">
-                        <option value="">-- Sin Conexión --</option>
-                        {% for el in todos_elementos %}
-                        <option value="{{ el.id }}">{{ el.nombre }}</option>
-                        {% endfor %}
+                        <option value="">-- Desconectado --</option>
+                        {% for el in todos_elementos %} <option value="{{ el.id | string }}">{{ el.nombre }}</option> {%
+                        endfor %}
                     </select>
                     <select id="select-puerto">
                         <option value="">Puerto</option>
                     </select>
                 </div>
             </div>
-
             <div class="modal-actions">
-                <button onclick="save()" class="btn-save shadow">Guardar Cambios</button>
-                <button onclick="closeModal()" class="btn-cancel">Cancelar</button>
+                <button onclick="save()" class="btn-save">Guardar</button>
+                <button onclick="closeModal()" class="btn-cancel">Cerrar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CORRECCIÓN CRÍTICA: UUIDS ENTRE COMILLAS
         const DB = {
             {% for el in todos_elementos %}
-        "{{ el.id }}": [
+        "{{ el.id | string }}": [
             {% for p in el.puertos %}
-        { "id": "{{ p.id }}", "n": { { p.numero_puerto } }, "t": "{{ (p.tag or '') | forceescape }}" },
+        { "id": "{{ p.id | string }}", "n": { { p.numero_puerto } }, "t": { { (p.tag or '') | tojson } } },
         {% endfor %}
             ],
         {% endfor %}
         };
-
         let selectedPort = null;
-
-        function updatePorts(preselectId = null) {
+        function updatePorts(preId = null) {
             const elId = document.getElementById('select-equipo').value;
             const pSel = document.getElementById('select-puerto');
             pSel.innerHTML = '<option value="">Puerto</option>';
             if (elId && DB[elId]) {
-                [...DB[elId]].sort((a, b) => a.n - b.n).forEach(p => {
-                    const o = document.createElement('option');
-                    o.value = p.id;
-                    o.text = `P${p.n} ${p.t ? '[' + p.t + ']' : ''}`;
-                    if (preselectId && p.id == preselectId) o.selected = true;
+                DB[elId].sort((a, b) => a.n - b.n).forEach(p => {
+                    const o = document.createElement('option'); o.value = p.id; o.text = `P${p.n} ${p.t ? '[' + p.t + ']' : ''}`;
+                    if (preId && p.id == preId) o.selected = true;
                     pSel.appendChild(o);
                 });
             }
         }
-
         function resaltarConexion(targetId) {
             document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
-            if (!targetId || targetId === 'None' || targetId === '') return;
+            if (!targetId) return;
             const target = document.getElementById('port-' + targetId);
-            if (target) {
-                target.classList.add('highlight');
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (target) { target.classList.add('highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         }
-
         function abrirEditor(id, dest, serv, tag, connId) {
             selectedPort = id;
             document.getElementById('edit-destino').value = dest;
             document.getElementById('edit-servicio').value = serv;
             document.getElementById('edit-tag').value = tag;
-            document.getElementById('info-modal').innerHTML = `<strong>📍 Editando:</strong> ${tag || 'Sin Tag'} (ID: ${id})`;
-
-            if (connId && connId !== 'None' && connId !== '') {
+            document.getElementById('modal-title').innerText = "Puerto " + (tag || "Nave");
+            if (connId) {
                 for (let elId in DB) {
                     if (DB[elId].some(p => p.id == connId)) {
                         document.getElementById('select-equipo').value = elId;
-                        updatePorts(connId);
-                        break;
+                        updatePorts(connId); break;
                     }
                 }
             } else {
-                document.getElementById('select-equipo').value = "";
-                document.getElementById('select-puerto').innerHTML = '<option value="">Puerto</option>';
+                document.getElementById('select-equipo').value = ""; document.getElementById('select-puerto').innerHTML = '<option value="">Puerto</option>';
             }
             document.getElementById('modal-puerto').style.display = 'flex';
         }
-
         function closeModal() { document.getElementById('modal-puerto').style.display = 'none'; }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById('modal-puerto');
-            if (event.target == modal) closeModal();
-        }
-
         async function save() {
-            const data = {
-                id: selectedPort,
-                destino: document.getElementById('edit-destino').value,
-                servicio: document.getElementById('edit-servicio').value,
-                tag: document.getElementById('edit-tag').value,
-                conectado_a_id: document.getElementById('select-puerto').value
-            };
-            try {
-                const res = await fetch('/api/infra/editar_puerto', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) location.reload();
-            } catch (e) {
-                console.error(e);
-            }
+            const data = { id: selectedPort, destino: document.getElementById('edit-destino').value, servicio: document.getElementById('edit-servicio').value, tag: document.getElementById('edit-tag').value, conectado_a_id: document.getElementById('select-puerto').value };
+            const res = await fetch('/api/infra/editar_puerto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            if (res.ok) location.reload();
         }
     </script>
 </body>
