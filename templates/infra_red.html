@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Mapa de Red e Infraestructura - TIC Altiplano Norte</title>
@@ -13,255 +14,490 @@
             --color-fortinet: #eab308;
             --color-voice: #3b82f6;
             --color-datos: #f97316;
-            --color-trunk: #ef4444;
             --color-vac: #f1f5f9;
         }
 
-        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f8fafc; margin: 0; color: var(--text-main); }
-        
-        /* Layout */
-        .page-wrapper { padding: 30px; max-width: 1400px; margin: 0 auto; }
-        .header { background: var(--bg-dark); color: white; padding: 25px 40px; border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* Leyenda Estilizada */
-        .legend { display: flex; flex-wrap: wrap; gap: 20px; background: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #475569; }
-        .color-box { width: 18px; height: 18px; border-radius: 4px; border: 2px solid rgba(0,0,0,0.1); }
-
-        /* Rack & Elements */
-        .rack-container { display: flex; flex-direction: column; gap: 25px; }
-        .network-element { 
-            background: white; padding: 25px; border-radius: 18px; 
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
-            border: 1px solid #e2e8f0; overflow-x: auto; 
-            transition: transform 0.2s;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            color: var(--text-main);
         }
-        .network-element:hover { border-color: #3b82f6; }
-        .element-title { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; left: 0; }
-        .element-title h2 { margin: 0; font-size: 18px; color: var(--bg-dark); }
-        .floor-label { background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 8px; width: fit-content; text-transform: uppercase; }
 
-        /* Ports - Diagram Style */
-        .port-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 6px; min-width: 950px; }
-        .port { 
-            aspect-ratio: 1; border: 2px solid #e2e8f0; border-radius: 6px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 11px; font-weight: 700; cursor: pointer; 
-            position: relative; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #fff; color: #64748b;
+        .page-wrapper {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        
-        /* Colores dinámicos basados en la clase de servicio */
-        .port.service-ap { border-color: var(--color-ap); background: rgba(0, 255, 255, 0.05); color: #0891b2; }
-        .port.service-reloj { border-color: var(--color-reloj); background: rgba(34, 197, 94, 0.05); color: #166534; }
-        .port.service-fortinet { border-color: var(--color-fortinet); background: rgba(234, 179, 8, 0.05); color: #854d0e; }
-        .port.service-voice { border-color: var(--color-voice); background: rgba(59, 130, 246, 0.05); color: #1e40af; }
-        .port.service-datos { border-color: var(--color-datos); background: rgba(249, 115, 22, 0.05); color: #9a3412; }
-        .port.service-telefonia { border-color: var(--color-voice); background: rgba(59, 130, 246, 0.05); color: #1e40af; }
-        
-        .port:hover { transform: translateY(-3px) scale(1.1); z-index: 20; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); scale: 1.1; }
-        
-        /* Efecto de Resaltado Premium */
-        .port.highlight { 
-            border-color: #f59e0b !important; 
-            box-shadow: 0 0 20px #f59e0b, inset 0 0 10px #f59e0b; 
-            animation: pulse-glow 1.5s infinite;
-            z-index: 100;
-            color: #b45309 !important;
+
+        .header {
+            background: var(--bg-dark);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .rack-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .network-element {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+            border-left: 5px solid #64748b;
+        }
+
+        .element-title {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .port-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 5px;
+            min-width: 900px;
+        }
+
+        .port {
+            aspect-ratio: 1;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            background: white;
+            color: #64748b;
+            transition: 0.2s;
+        }
+
+        .port.service-ap {
+            border-color: var(--color-ap);
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .port.service-reloj {
+            border-color: var(--color-reloj);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .port.service-voice {
+            border-color: var(--color-voice);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .port.service-datos {
+            border-color: var(--color-datos);
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        .port:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .port.highlight {
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 15px #f59e0b;
+            animation: pulse 1.5s infinite;
+            z-index: 20;
             background: #fffbeb !important;
         }
-        @keyframes pulse-glow {
-            0% { transform: scale(1.1); filter: brightness(1.2); }
-            50% { transform: scale(1.2); filter: brightness(1.5); }
-            100% { transform: scale(1.1); filter: brightness(1.2); }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1.1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
         }
 
         .edit-btn {
-            position: absolute; -top-right: -4px; right: -4px; top: -4px;
-            width: 16px; height: 16px; background: var(--bg-dark); color: white;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 8px; opacity: 0; transition: 0.2s; border: 2px solid white;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 14px;
+            height: 14px;
+            background: var(--bg-dark);
+            color: white;
+            border-radius: 50%;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.2s;
         }
-        .port:hover .edit-btn { opacity: 1; transform: scale(1.2); }
 
-        /* Modal Moderno */
-        .modal-content { 
-            border: none; padding: 0; width: 480px; overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        .port:hover .edit-btn {
+            opacity: 1;
         }
-        .modal-header { background: var(--bg-dark); color: white; padding: 20px; }
-        .modal-body { padding: 25px; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: var(--bg-dark);
+        }
+
+        .modal-content label {
+            display: block;
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #64748b;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-save {
+            flex: 2;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #f1f5f9;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
 
         .tooltip {
-            visibility: hidden; background: #1e293b; color: white; padding: 8px 12px;
-            border-radius: 8px; position: absolute; z-index: 100; bottom: 130%; 
-            left: 50%; transform: translateX(-50%); width: 140px; font-size: 11px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); opacity: 0; transition: 0.3s;
-            pointer-events: none; border: 1px solid rgba(255,255,255,0.1);
+            visibility: hidden;
+            position: absolute;
+            bottom: 120%;
+            background: #1e293b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
         }
-        .port:hover .tooltip { visibility: visible; opacity: 1; bottom: 140%; }
+
+        .port:hover .tooltip {
+            visibility: visible;
+        }
     </style>
 </head>
+
 <body>
-    <!-- MODAL -->
+    <div class="header">
+        <div>
+            <h1><i class="fa-solid fa-server"></i> Gestión de Infraestructura TIC</h1>
+            <p style="margin:0; font-size: 13px; opacity: 0.8;">Mapa Interactivo de Red / Altiplano Norte</p>
+        </div>
+        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+    </div>
+
+    <div class="page-wrapper">
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background: var(--color-ap);"></div> WAP
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: var(--color-voice);"></div> Telefonía
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: var(--color-datos);"></div> Datos
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: var(--color-reloj);"></div> Biométrico
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background: #fff; border: 1px solid #ccc;"></div> Libre
+            </div>
+        </div>
+
+        <div class="rack-container">
+            {% for element in elementos %}
+            <div class="network-element"
+                style="border-left-color: {{ '#3b82f6' if element.tipo == 'SWITCH' else '#10b981' }}">
+                <div class="element-title">
+                    <strong>{{ element.nombre }} ({{ element.tipo }})</strong>
+                    <span style="color:#64748b">{{ element.total_puertos }} Puertos</span>
+                </div>
+
+                {% if element.tipo == 'SWITCH' %}
+                <div class="port-grid">
+                    {% for i in range(1, 49, 2) %}
+                    {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                    <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port else 'vac') }}"
+                        id="port-{{ port.id if port else 'null-'~i }}"
+                        onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
+                        {{ port.tag if port and port.tag else i }}
+                        {% if port %}
+                        <div class="edit-btn"
+                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}', '{{ port.conectado_a_id or '' }}')">
+                            <i class="fa-solid fa-pencil"></i>
+                        </div>
+                        {% endif %}
+                        <div class="tooltip">ID {{ i }}: {{ port.destino if port else 'Vacío' }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="height:5px"></div>
+                <div class="port-grid">
+                    {% for i in range(2, 49, 2) %}
+                    {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                    <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port else 'vac') }}"
+                        id="port-{{ port.id if port else 'null-'~i }}"
+                        onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
+                        {{ port.tag if port and port.tag else i }}
+                        {% if port %}
+                        <div class="edit-btn"
+                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}', '{{ port.conectado_a_id or '' }}')">
+                            <i class="fa-solid fa-pencil"></i>
+                        </div>
+                        {% endif %}
+                        <div class="tooltip">ID {{ i }}: {{ port.destino if port else 'Vacío' }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="port-grid">
+                    {% for i in range(1, 25) %}
+                    {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
+                    <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port else 'vac') }}"
+                        id="port-{{ port.id if port else 'null-'~i }}"
+                        onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
+                        {{ port.tag if port and port.tag else i }}
+                        {% if port %}
+                        <div class="edit-btn"
+                            onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}', '{{ port.conectado_a_id or '' }}')">
+                            <i class="fa-solid fa-pencil"></i>
+                        </div>
+                        {% endif %}
+                        <div class="tooltip">ID {{ i }}: {{ port.destino if port else 'Vacío' }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- MODAL DE PARCHEO -->
     <div id="modal-puerto" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title"><i class="fa-solid fa-pen-to-square"></i> Editar Punto de Red</h3>
-            <div id="info-conexion-modal" style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:15px; font-size:13px; border:1px solid #e2e8f0;"></div>
-            
+            <h3><i class="fa-solid fa-plug"></i> Configurar Punto</h3>
+            <div id="info-modal"
+                style="background:#eff6ff; padding:10px; border-radius:8px; font-size:12px; margin-bottom:15px; color:#1e40af;">
+            </div>
+
             <label>Ubicación / Destino:</label>
             <input type="text" id="edit-destino">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <div>
                     <label>Servicio:</label>
                     <select id="edit-servicio">
                         <option value="Datos">Datos</option>
-                        <option value="AP">AP/WIFI</option>
+                        <option value="AP">AP / WIFI</option>
                         <option value="Voz">Voz</option>
                         <option value="Reloj">Reloj</option>
                         <option value="VAC">Libre</option>
                     </select>
                 </div>
                 <div>
-                    <label>Etiqueta (PXX):</label>
+                    <label>Etiqueta:</label>
                     <input type="text" id="edit-tag">
                 </div>
             </div>
-            
-            <div style="margin-top:20px; display:flex; gap:10px;">
-                <button onclick="guardarPuerto()" style="flex:2; background:#0ea5e9; color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Guardar Cambios</button>
-                <button onclick="cerrarModal()" style="flex:1; background:#f1f5f9; border:none; padding:12px; border-radius:6px; cursor:pointer;">Cancelar</button>
-            </div>
-        </div>
-    </div>
 
-    <div class="header">
-        <div>
-            <h1><i class="fa-solid fa-diagram-project"></i> Gestión de Infraestructura TIC</h1>
-            <p>Usa <b>Click</b> para resaltar conexión | <b>Icono Lápiz</b> para editar</p>
-        </div>
-        <a href="/" style="color:white; text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Panel Principal</a>
-    </div>
-
-    <div class="legend">
-        <div class="legend-item"><div class="dot" style="background: var(--color-ap);"></div> WAP</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-voice);"></div> Telefonía</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-datos);"></div> Datos</div>
-        <div class="legend-item"><div class="dot" style="background: var(--color-reloj);"></div> Biométrico</div>
-        <div class="legend-item"><div class="dot" style="background: #fff;"></div> Libre</div>
-    </div>
-
-    <div class="rack-container">
-        {% for element in elementos %}
-        <div class="floor-group">
-            <span class="floor-label">{{ element.nombre }}</span>
-            <div class="network-element" style="border-left-color: {{ '#3b82f6' if element.tipo == 'SWITCH' else '#10b981' }}">
-                <div class="element-title">
-                    <strong>{{ element.nombre }} ({{ element.tipo }})</strong>
-                    <span>{{ element.total_puertos }} Puertos</span>
+            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
+                <label>Parcheo Físico (Conectar a):</label>
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:5px; margin-top:5px;">
+                    <select id="select-equipo" onchange="updatePorts()">
+                        <option value="">-- Sin Conexión --</option>
+                        {% for el in todos_elementos %}
+                        <option value="{{ el.id }}">{{ el.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="select-puerto">
+                        <option value="">Port</option>
+                    </select>
                 </div>
+            </div>
 
-                <!-- Renderizado de Puertos -->
-                {% if element.tipo == 'SWITCH' %}
-                    <div class="port-grid">
-                        {% for i in range(1, element.total_puertos + 1, 2) %}
-                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                            <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
-                                 id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
-                                {{ port.tag if port and port.tag else i }}
-                                {% if port %}
-                                <div class="edit-btn" onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </div>
-                                {% endif %}
-                                <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div style="height:4px"></div>
-                    <div class="port-grid">
-                        {% for i in range(2, element.total_puertos + 1, 2) %}
-                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                            <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
-                                 id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
-                                {{ port.tag if port and port.tag else i }}
-                                {% if port %}
-                                <div class="edit-btn" onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </div>
-                                {% endif %}
-                                <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="port-grid">
-                        {% for i in range(1, element.total_puertos + 1) %}
-                            {% set port = element.puertos | selectattr('numero_puerto', 'equalto', i) | first %}
-                            <div class="port {{ 'service-' + (port.tipo_servicio.lower() if port and port.tipo_servicio else 'vac') }}" 
-                                 id="port-{{ port.id if port else 'null-' ~ i }}"
-                                 onclick="resaltarConexion('{{ port.conectado_a_id if port else '' }}')">
-                                {{ port.tag if port and port.tag else i }}
-                                {% if port %}
-                                <div class="edit-btn" onclick="event.stopPropagation(); abrirEditor('{{ port.id }}', '{{ port.destino or '' }}', '{{ port.tipo_servicio or 'VAC' }}', '{{ port.tag or '' }}')">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </div>
-                                {% endif %}
-                                <div class="tooltip">P{{ i }}: {{ port.destino if port else 'Libre' }}</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+            <div class="modal-actions">
+                <button onclick="save()" class="btn-save">Guardar</button>
+                <button onclick="closeModal()" class="btn-cancel">Cancelar</button>
             </div>
         </div>
-        {% endfor %}
     </div>
 
     <script>
-        let puertoSeleccionado = null;
+        const DB = {
+            {% for el in todos_elementos %}
+        "{{ el.id }}": [
+            {% for p in el.puertos %}
+        { id: { { p.id } }, n: { { p.numero_puerto } }, t: "{{ p.tag or '' }}" },
+        {% endfor %}
+            ],
+        {% endfor %}
+        };
 
-        function resaltarConexion(conectadoA) {
-            document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
-            if (!conectadoA || conectadoA === 'None' || conectadoA === '') return;
+        let selectedPort = null;
 
-            const target = document.getElementById('port-' + conectadoA);
-            if (target) {
-                target.classList.add('highlight');
-                target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        function updatePorts(preselectId = null) {
+            const elId = document.getElementById('select-equipo').value;
+            const pSel = document.getElementById('select-puerto');
+            pSel.innerHTML = '<option value="">Port</option>';
+            if (elId && DB[elId]) {
+                DB[elId].sort((a, b) => a.n - b.n).forEach(p => {
+                    const o = document.createElement('option');
+                    o.value = p.id;
+                    o.text = `P${p.n} ${p.t ? '[' + p.t + ']' : ''}`;
+                    if (preselectId && p.id == preselectId) o.selected = true;
+                    pSel.appendChild(o);
+                });
             }
         }
 
-        function abrirEditor(id, destino, servicio, tag) {
-            puertoSeleccionado = id;
-            document.getElementById('edit-destino').value = destino;
-            document.getElementById('edit-servicio').value = servicio;
-            document.getElementById('edit-tag').value = tag;
-            document.getElementById('info-conexion-modal').innerHTML = "📍 Editando Punto: " + (tag || 'Sin etiqueta');
-            document.getElementById('modal-puerto').style.display = 'block';
+        function resaltarConexion(targetId) {
+            document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
+            if (!targetId || targetId === 'None') return;
+            const target = document.getElementById('port-' + targetId);
+            if (target) {
+                target.classList.add('highlight');
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
-        function cerrarModal() { document.getElementById('modal-puerto').style.display = 'none'; }
+        function abrirEditor(id, dest, serv, tag, connId) {
+            selectedPort = id;
+            document.getElementById('edit-destino').value = dest;
+            document.getElementById('edit-servicio').value = serv;
+            document.getElementById('edit-tag').value = tag;
+            document.getElementById('info-modal').innerHTML = `<b>Punto:</b> ${tag || 'Sin Tag'} (Sistema: ${id})`;
 
-        async function guardarPuerto() {
+            if (connId && connId !== 'None') {
+                for (let elId in DB) {
+                    if (DB[elId].some(p => p.id == connId)) {
+                        document.getElementById('select-equipo').value = elId;
+                        updatePorts(connId);
+                        break;
+                    }
+                }
+            } else {
+                document.getElementById('select-equipo').value = "";
+                document.getElementById('select-puerto').innerHTML = '<option value="">Port</option>';
+            }
+            document.getElementById('modal-puerto').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal-puerto').style.display = 'none'; }
+
+        async function save() {
             const data = {
-                id: puertoSeleccionado,
+                id: selectedPort,
                 destino: document.getElementById('edit-destino').value,
                 servicio: document.getElementById('edit-servicio').value,
-                tag: document.getElementById('edit-tag').value
+                tag: document.getElementById('edit-tag').value,
+                conectado_a_id: document.getElementById('select-puerto').value
             };
-
-            const response = await fetch('/api/infra/editar_puerto', {
+            const res = await fetch('/api/infra/editar_puerto', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-
-            if (response.ok) location.reload();
-            else alert("Error al guardar");
+            if (res.ok) location.reload();
         }
     </script>
 </body>
+
 </html>

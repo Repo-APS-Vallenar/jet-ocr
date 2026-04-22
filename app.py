@@ -1632,36 +1632,60 @@ def visualizar_infraestructura():
         "Patch Panel 9", "Switch 5"
     ]
     
-    # Ordenar la lista según el índice en el array definido arriba
     elementos_ordenados = sorted(
         elementos, 
         key=lambda x: orden_rack.index(x.nombre) if x.nombre in orden_rack else 99
     )
     
-    return render_template('infra_red.html', elementos=elementos_ordenados)
+    return render_template('infra_red.html', elementos=elementos_ordenados, todos_elementos=elementos)
 
 @app.route('/api/infra/editar_puerto', methods=['POST'])
 def editar_puerto():
     data = request.json
     p_id = data.get('id')
+    nuevo_conectado_a = data.get('conectado_a_id')
     
     puerto = InfraPort.query.get(p_id)
     if not puerto:
-        return jsonify({"status": "error"}), 404
+        return jsonify({"status": "error", "message": "Puerto no encontrado"}), 404
         
+    # --- LÓGICA DE PARCHEO BIDIRECCIONAL ---
+    # 1. Si tenía una conexión vieja, limpiamos el "otro lado"
+    if puerto.conectado_a_id:
+        viejo_destino = InfraPort.query.get(puerto.conectado_a_id)
+        if viejo_destino:
+            viejo_destino.conectado_a_id = None
+
+    # 2. Si el nuevo destino es VÁLIDO y distinto de "None"
+    if nuevo_conectado_a and str(nuevo_conectado_a).isdigit():
+        target_id = int(nuevo_conectado_a)
+        # Limpiar lo que el puerto destino tenía conectado antes (si existía)
+        target_port = InfraPort.query.get(target_id)
+        if target_port:
+            if target_port.conectado_a_id:
+                otro_afectado = InfraPort.query.get(target_port.conectado_a_id)
+                if otro_afectado: otro_afectado.conectado_a_id = None
+            
+            # Establecer link bidireccional
+            target_port.conectado_a_id = puerto.id
+            puerto.conectado_a_id = target_id
+    else:
+        # Si eligió "Sin Conexión"
+        puerto.conectado_a_id = None
+        
+    # --- ACTUALIZAR METADATOS ---
     puerto.destino = data.get('destino')
     puerto.tipo_servicio = data.get('servicio')
     puerto.tag = data.get('tag')
     
-    # Mapeo de colores segun servicio
     colores = {
-        "Datos": "#ffa500",
+        "Datos": "#f97316",
         "AP": "#00ffff",
-        "Voz": "#0000ff",
-        "Reloj": "#00ff00",
-        "VAC": "#ffffff"
+        "Voz": "#3b82f6",
+        "Reloj": "#22c55e",
+        "VAC": "#f1f5f9"
     }
-    puerto.color_hex = colores.get(puerto.tipo_servicio, "#ffffff")
+    puerto.color_hex = colores.get(puerto.tipo_servicio, "#f1f5f9")
     
     db.session.commit()
     return jsonify({"status": "ok"})
