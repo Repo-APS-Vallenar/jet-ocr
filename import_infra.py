@@ -18,11 +18,9 @@ def import_infra_fisica_v4():
             print("🧹 Limpiando base de datos a fondo...")
             db.session.execute(text("TRUNCATE TABLE infra_ports CASCADE"))
             db.session.execute(text("DELETE FROM infra_elements"))
-            # 1. Obtener compañía por defecto para visibilidad
-            from app import Company
-            default_company = Company.query.filter_by(name='Tu Empresa (Dashboard)').first()
-            c_id = default_company.id if default_company else None
-            print(f"🏢 Asignando equipos a compañía: {default_company.name if default_company else 'NINGUNA'}")
+            # 1. ID de Compañía específica (businesswolsmart@gmail.com)
+            c_id = '6dfd3c8d-8981-41d2-938d-64e79f21f540'
+            print(f"🏢 Asignando equipos a compañía ID: {c_id}")
 
             # 2. Crear Equipos
             sws = {}
