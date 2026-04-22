@@ -18,25 +18,29 @@ def import_infra_fisica_v4():
             print("🧹 Limpiando base de datos a fondo...")
             db.session.execute(text("TRUNCATE TABLE infra_ports CASCADE"))
             db.session.execute(text("DELETE FROM infra_elements"))
-            db.session.commit()
+            # 1. Obtener compañía por defecto para visibilidad
+            from app import Company
+            default_company = Company.query.filter_by(name='Tu Empresa (Dashboard)').first()
+            c_id = default_company.id if default_company else None
+            print(f"🏢 Asignando equipos a compañía: {default_company.name if default_company else 'NINGUNA'}")
 
-            # 1. Crear Equipos
+            # 2. Crear Equipos
             sws = {}
             for i in range(1, 6):
-                sw = InfraElement(nombre=f"Switch {i}", tipo="SWITCH", total_puertos=48, piso=(1 if i <= 3 else 2))
+                sw = InfraElement(nombre=f"Switch {i}", tipo="SWITCH", total_puertos=48, piso=(1 if i <= 3 else 2), company_id=c_id)
                 db.session.add(sw)
                 db.session.flush()
                 sws[f"SW{i}"] = sw
 
             pps = {}
             for i in range(1, 10):
-                pp = InfraElement(nombre=f"Patch Panel {i}", tipo="PATCH_PANEL", total_puertos=24, piso=(1 if i <= 5 else 2))
+                pp = InfraElement(nombre=f"Patch Panel {i}", tipo="PATCH_PANEL", total_puertos=24, piso=(1 if i <= 5 else 2), company_id=c_id)
                 db.session.add(pp)
                 db.session.flush()
                 pps[f"PP{i}"] = pp
             
-            fw = InfraElement(nombre="Firewall", tipo="OTRO", total_puertos=8, piso=2)
-            voip = InfraElement(nombre="FortiVoice", tipo="OTRO", total_puertos=4, piso=2)
+            fw = InfraElement(nombre="Firewall", tipo="OTRO", total_puertos=8, piso=2, company_id=c_id)
+            voip = InfraElement(nombre="FortiVoice", tipo="OTRO", total_puertos=4, piso=2, company_id=c_id)
             db.session.add_all([fw, voip])
             db.session.commit()
 
