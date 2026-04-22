@@ -635,10 +635,11 @@
             el.style.borderColor = c.border;
             el.style.boxShadow = `0 0 24px ${c.glow}`;
             el.style.background = c.bg;
+            el.style.color = '#0f172a';
         }
         function clearHL(el) {
             el.classList.remove('hl-active');
-            el.style.borderColor = el.style.boxShadow = el.style.background = '';
+            el.style.borderColor = el.style.boxShadow = el.style.background = el.style.color = '';
         }
 
         // ─── HOVER ───────────────────────────────────────────────
