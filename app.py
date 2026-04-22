@@ -1673,20 +1673,29 @@ def editar_puerto():
         # Si eligió "Sin Conexión"
         puerto.conectado_a_id = None
         
-    # --- ACTUALIZAR METADATOS ---
-    puerto.destino = data.get('destino')
+    # --- ACTUALIZAR METADATOS (puerto editado) ---
+    puerto.destino       = data.get('destino')
     puerto.tipo_servicio = data.get('servicio')
-    puerto.tag = data.get('tag')
-    
+    puerto.tag           = data.get('tag')
+
     colores = {
-        "Datos": "#f97316",
-        "AP": "#00ffff",
-        "Voz": "#3b82f6",
-        "Reloj": "#22c55e",
-        "VAC": "#f1f5f9"
+        "Datos": "#f97316", "AP": "#00ffff",
+        "Voz":   "#3b82f6", "Reloj": "#22c55e", "VAC": "#f1f5f9"
     }
     puerto.color_hex = colores.get(puerto.tipo_servicio, "#f1f5f9")
-    
+
+    # --- SINCRONIZACIÓN BIDIRECCIONAL DE METADATOS ---
+    # El puerto conectado (el otro extremo del cable) hereda destino y servicio
+    # automáticamente, ya que representan el MISMO punto físico de la red.
+    if puerto.conectado_a_id:
+        partner = InfraPort.query.get(puerto.conectado_a_id)
+        if partner:
+            partner.destino       = puerto.destino
+            partner.tipo_servicio = puerto.tipo_servicio
+            partner.color_hex     = puerto.color_hex
+            # El tag del partner NO se copia: cada extremo mantiene su propio
+            # formato (P01 para Patch Panel, P1 para Switch).
+
     db.session.commit()
     return jsonify({"status": "ok"})
 
