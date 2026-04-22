@@ -147,6 +147,7 @@
             min-width: 860px;
         }
 
+        /* ─── Puertos: VAC = gris, resto = color sólido de servicio ─── */
         .port {
             aspect-ratio: 1;
             border: 2px solid #e2e8f0;
@@ -158,38 +159,40 @@
             font-weight: 900;
             cursor: pointer;
             position: relative;
-            background: white;
-            color: #64748b;
+            background: #f8fafc;
+            color: #cbd5e1;
+            /* VAC por defecto = gris */
             transition: all 0.15s ease;
             font-family: 'Courier New', monospace;
         }
 
         .port.service-ap {
-            border-color: var(--color-ap);
-            background: #f0fffe;
-            color: #0e7490;
+            border-color: #00d4d4;
+            background: #e0fffe;
+            color: #006b6b;
         }
 
         .port.service-reloj {
-            border-color: var(--color-reloj);
-            background: #f0fdf4;
-            color: #166534;
+            border-color: #16a34a;
+            background: #dcfce7;
+            color: #14532d;
         }
 
         .port.service-voice {
-            border-color: var(--color-voice);
-            background: #eff6ff;
-            color: #1e40af;
+            border-color: #2563eb;
+            background: #dbeafe;
+            color: #1e3a8a;
         }
 
         .port.service-datos {
-            border-color: var(--color-datos);
-            background: #fff7ed;
-            color: #9a3412;
+            border-color: #ea580c;
+            background: #ffedd5;
+            color: #7c2d12;
         }
 
         .port.service-vac {
             border-color: #e2e8f0;
+            background: #f8fafc;
             color: #cbd5e1;
         }
 
@@ -209,32 +212,22 @@
             z-index: 30;
         }
 
-        .port.hl-self {
-            border-color: #f59e0b !important;
-            background: #fffbeb !important;
-            box-shadow: 0 0 18px rgba(245, 158, 11, 0.7);
-            z-index: 40;
-            transform: scale(1.15);
+        /* ─── Highlight dinámico (color inyectado por JS inline) ─── */
+        .port.hl-active {
+            z-index: 40 !important;
+            transform: scale(1.18) !important;
+            animation: hl-beat 1.1s ease-in-out infinite;
         }
 
-        .port.hl-partner {
-            border-color: #0ea5e9 !important;
-            background: #eff6ff !important;
-            box-shadow: 0 0 18px rgba(14, 165, 233, 0.8);
-            z-index: 40;
-            transform: scale(1.15);
-            animation: partner-beat 1.2s ease-in-out infinite;
-        }
-
-        @keyframes partner-beat {
+        @keyframes hl-beat {
 
             0%,
             100% {
-                box-shadow: 0 0 14px rgba(14, 165, 233, 0.6);
+                opacity: 1;
             }
 
             50% {
-                box-shadow: 0 0 28px rgba(14, 165, 233, 1);
+                opacity: 0.82;
             }
         }
 
@@ -627,42 +620,65 @@
         let selectedId = null;
         const bubble = document.getElementById('bubble');
 
+        // Mapa de colores por servicio
+        const SVC_COLOR = {
+            'AP': { border: '#00d4d4', glow: 'rgba(0,212,212,.85)', bg: '#cffffe' },
+            'Voz': { border: '#2563eb', glow: 'rgba(37,99,235,.85)', bg: '#bfdbfe' },
+            'Datos': { border: '#ea580c', glow: 'rgba(234,88,12,.85)', bg: '#fed7aa' },
+            'Reloj': { border: '#16a34a', glow: 'rgba(22,163,74,.85)', bg: '#bbf7d0' },
+            'VAC': { border: '#94a3b8', glow: 'rgba(148,163,184,.5)', bg: '#f1f5f9' },
+        };
+        function getColor(serv) { return SVC_COLOR[serv] || SVC_COLOR['VAC']; }
+
+        function applyHL(el, c) {
+            el.classList.add('hl-active');
+            el.style.borderColor = c.border;
+            el.style.boxShadow = `0 0 24px ${c.glow}`;
+            el.style.background = c.bg;
+        }
+        function clearHL(el) {
+            el.classList.remove('hl-active');
+            el.style.borderColor = el.style.boxShadow = el.style.background = '';
+        }
+
         // ─── HOVER ───────────────────────────────────────────────
         function pEnter(el) {
-            el.classList.add('hl-self');
+            const serv = el.getAttribute('data-serv') || 'VAC';
+            const color = getColor(serv);
             const connId = el.getAttribute('data-conn');
             let html = '';
+
+            applyHL(el, color);
 
             if (connId && connId !== '') {
                 const partner = document.getElementById('port-' + connId);
                 if (partner) {
-                    partner.classList.add('hl-partner');
-                    // Tag compuesto: propio-partner-prefijo
+                    applyHL(partner, color);
                     const myTag = el.getAttribute('data-tag');
                     const pTag = partner.getAttribute('data-tag');
                     const pPrefix = partner.getAttribute('data-prefix') || '';
                     const compound = `${myTag}-${pTag}-${pPrefix}`;
-                    html = `<span class="tag-label">${compound}</span>
-                    <span class="link-line"><i class="fa-solid fa-link"></i> Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b></span>`;
+                    html = `<span class="tag-label" style="color:${color.border}">${compound}</span>
+                            <span class="link-line"><i class="fa-solid fa-link"></i> Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b></span>`;
                 }
             } else {
                 const dest = el.getAttribute('data-dest') || 'Sin destino asignado';
                 const tag = el.getAttribute('data-tag');
-                html = `<span class="tag-label">${tag}</span>
-                <span class="link-line"><i class="fa-solid fa-location-dot"></i> ${dest}</span>`;
+                html = `<span class="tag-label" style="color:${color.border}">${tag}</span>
+                        <span class="link-line"><i class="fa-solid fa-circle-xmark"></i> Sin parcheo</span>`;
             }
 
             bubble.innerHTML = html;
+            bubble.style.borderColor = color.border;
             bubble.style.opacity = '1';
-
             const rect = el.getBoundingClientRect();
-            bubble.style.top = Math.max(10, rect.top - 80) + 'px';
+            bubble.style.top = Math.max(10, rect.top - 85) + 'px';
             bubble.style.left = rect.left + 'px';
         }
 
         function pLeave() {
             bubble.style.opacity = '0';
-            document.querySelectorAll('.port').forEach(p => p.classList.remove('hl-self', 'hl-partner'));
+            document.querySelectorAll('.port.hl-active').forEach(p => clearHL(p));
         }
 
         // ─── EDITOR ─────────────────────────────────────────────
