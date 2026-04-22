@@ -538,12 +538,14 @@
                         <span class="badge {{ tipo_badge }}">{{ element.tipo }}</span>
                         <span class="badge">{{ element.total_puertos }}P</span>
                         <div class="el-actions">
-                            <button class="btn-edit-el"
-                                onclick="openEditEl({{ element.id }}, {{ element.nombre | tojson }}, {{ element.tipo | tojson }}, {{ (element.prefijo or '') | tojson }}, {{ element.total_puertos }})">
+                            <button class="btn-edit-el" data-id="{{ element.id }}"
+                                data-nombre="{{ element.nombre | e }}" data-tipo="{{ element.tipo }}"
+                                data-prefijo="{{ (element.prefijo or '') | e }}"
+                                data-puertos="{{ element.total_puertos }}" onclick="openEditEl(this)">
                                 <i class="fa-solid fa-pen"></i> Editar
                             </button>
-                            <button class="btn-del-el"
-                                onclick="deleteEl({{ element.id }}, {{ element.nombre | tojson }})">
+                            <button class="btn-del-el" data-id="{{ element.id }}" data-nombre="{{ element.nombre | e }}"
+                                onclick="deleteEl(this)">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -897,7 +899,13 @@
             document.getElementById('modal-el').style.display = 'flex';
         }
 
-        function openEditEl(id, nombre, tipo, prefijo, puertos) {
+        function openEditEl(btn) {
+            const id = btn.dataset.id;
+            const nombre = btn.dataset.nombre;
+            const tipo = btn.dataset.tipo;
+            const prefijo = btn.dataset.prefijo;
+            const puertos = btn.dataset.puertos;
+
             editElId = id;
             document.getElementById('el-modal-title').innerHTML = '<i class="fa-solid fa-pen"></i> Editar Equipo';
             document.getElementById('el-nombre').value = nombre;
@@ -941,7 +949,10 @@
             else { alert('Error al guardar'); btn.disabled = false; btn.textContent = 'Guardar Equipo'; }
         }
 
-        async function deleteEl(id, nombre) {
+        async function deleteEl(btn) {
+            const id = btn.dataset.id;
+            const nombre = btn.dataset.nombre;
+
             if (!confirm(`¿Eliminar "${nombre}" y todos sus puertos? Esta acción no se puede deshacer.`)) return;
             const res = await fetch('/api/infra/eliminar_elemento', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id })
