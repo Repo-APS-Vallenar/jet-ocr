@@ -78,6 +78,7 @@
             border-radius: 15px;
             border: 1px solid #e2e8f0;
             border-left: 5px solid #64748b;
+            margin-bottom: 15px;
         }
 
         .element-title {
@@ -135,6 +136,7 @@
             transform: scale(1.05);
             z-index: 10;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #333;
         }
 
         .port.highlight {
@@ -255,7 +257,6 @@
                     <strong>{{ element.nombre }}</strong>
                     <span>{{ element.total_puertos }} Puertos</span>
                 </div>
-
                 <div class="port-grid">
                     {% for p in element.puertos | sort(attribute='numero_puerto') %}
                     <div class="port {{ 'service-' + (p.tipo_servicio.lower() if p.tipo_servicio else 'vac') }}"
@@ -325,32 +326,35 @@
             ],
         {% endfor %}
         };
-        let selectedPort = null;
+
         function updatePorts(preId = null) {
             const elId = document.getElementById('select-equipo').value;
             const pSel = document.getElementById('select-puerto');
             pSel.innerHTML = '<option value="">Puerto</option>';
             if (elId && DB[elId]) {
-                DB[elId].sort((a, b) => a.n - b.n).forEach(p => {
+                [...DB[elId]].sort((a, b) => a.n - b.n).forEach(p => {
                     const o = document.createElement('option'); o.value = p.id; o.text = `P${p.n} ${p.t ? '[' + p.t + ']' : ''}`;
                     if (preId && p.id == preId) o.selected = true;
                     pSel.appendChild(o);
                 });
             }
         }
+
         function resaltarConexion(targetId) {
             document.querySelectorAll('.port').forEach(p => p.classList.remove('highlight'));
-            if (!targetId) return;
+            if (!targetId || targetId == 'None' || targetId == '') return;
             const target = document.getElementById('port-' + targetId);
             if (target) { target.classList.add('highlight'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         }
+
+        let selectedPortGlobal = null;
         function abrirEditor(id, dest, serv, tag, connId) {
-            selectedPort = id;
+            selectedPortGlobal = id;
             document.getElementById('edit-destino').value = dest;
             document.getElementById('edit-servicio').value = serv;
             document.getElementById('edit-tag').value = tag;
             document.getElementById('modal-title').innerText = "Puerto " + (tag || "Nave");
-            if (connId) {
+            if (connId && connId !== 'None' && connId !== '') {
                 for (let elId in DB) {
                     if (DB[elId].some(p => p.id == connId)) {
                         document.getElementById('select-equipo').value = elId;
@@ -362,12 +366,16 @@
             }
             document.getElementById('modal-puerto').style.display = 'flex';
         }
+
         function closeModal() { document.getElementById('modal-puerto').style.display = 'none'; }
+
         async function save() {
-            const data = { id: selectedPort, destino: document.getElementById('edit-destino').value, servicio: document.getElementById('edit-servicio').value, tag: document.getElementById('edit-tag').value, conectado_a_id: document.getElementById('select-puerto').value };
+            const data = { id: selectedPortGlobal, destino: document.getElementById('edit-destino').value, servicio: document.getElementById('edit-servicio').value, tag: document.getElementById('edit-tag').value, conectado_a_id: document.getElementById('select-puerto').value };
             const res = await fetch('/api/infra/editar_puerto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             if (res.ok) location.reload();
         }
+
+        window.onclick = function (event) { if (event.target == document.getElementById('modal-puerto')) closeModal(); }
     </script>
 </body>
 
