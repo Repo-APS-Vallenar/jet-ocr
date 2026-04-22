@@ -41,6 +41,13 @@ def verificar_autenticacion():
             return jsonify({"status": "error", "message": "Acceso denegado. Inicia sesión"}), 401
         return redirect(url_for('login'))
 
+# --- LIMPIEZA DE TRANSACCIONES ---
+@app.teardown_request
+def shutdown_session(exception=None):
+    if exception:
+        db.session.rollback()
+    db.session.remove()
+
 # ==========================================================
 # DEFINICIÓN DE TABLAS (MODELOS SAAS & CMDB GEOESPACIAL)
 # ==========================================================
