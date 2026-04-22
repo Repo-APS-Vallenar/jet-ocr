@@ -1676,8 +1676,11 @@ def crear_elemento():
     db.session.flush()
 
     for n in range(1, puertos_n + 1):
-        auto_tag = f"P{n:02d}" if tipo == 'PATCH_PANEL' else f"P{n}"
-        db.session.add(InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC'))
+        # Nomenclatura específica: Patch Panels llevan P01, Switches llevan P1
+        is_patch_panel = tipo in ['PATCH_PANEL', 'PATCH']
+        auto_tag = f"P{n:02d}" if is_patch_panel else f"P{n}"
+        p = InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC')
+        db.session.add(p)
 
     db.session.commit()
     normalizar_posiciones(company_id)
@@ -1718,7 +1721,8 @@ def editar_elemento():
 
     if nuevo_total > actual_max:
         for n in range(actual_max + 1, nuevo_total + 1):
-            auto_tag = f"P{n:02d}" if el.tipo == 'PATCH_PANEL' else f"P{n}"
+            is_patch_panel = el.tipo in ['PATCH_PANEL', 'PATCH']
+            auto_tag = f"P{n:02d}" if is_patch_panel else f"P{n}"
             db.session.add(InfraPort(element_id=el.id, numero_puerto=n, tag=auto_tag, tipo_servicio='VAC'))
     elif nuevo_total < actual_max:
         sobrantes = InfraPort.query.filter_by(element_id=el.id)\
