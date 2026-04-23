@@ -688,7 +688,8 @@
                         data-tag="{{ p.tag or ('P' ~ p.numero_puerto) }}" data-dest="{{ p.destino or '' }}"
                         data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
-                        data-pasillo="{{ p.pasillo or '' }}" data-pname="{{ element.nombre }}"
+                        data-pasillo="{{ p.pasillo or '' }}" data-disponibilidad="{{ p.disponibilidad or 'OCUPADO' }}"
+                        data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
                         onmouseleave="pLeave()">
@@ -713,7 +714,8 @@
                         data-tag="{{ p.tag or ('P' ~ p.numero_puerto) }}" data-dest="{{ p.destino or '' }}"
                         data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
-                        data-pasillo="{{ p.pasillo or '' }}" data-pname="{{ element.nombre }}"
+                        data-pasillo="{{ p.pasillo or '' }}" data-disponibilidad="{{ p.disponibilidad or 'OCUPADO' }}"
+                        data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
                         onmouseleave="pLeave()">
@@ -738,8 +740,8 @@
                         id="port-{{ p.id | string }}" data-id="{{ p.id | string }}" data-tag="{{ p.tag or auto_tag }}"
                         data-dest="{{ p.destino or '' }}" data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
-                        data-pasillo="{{ p.pasillo or '' }}"
-                        data-disponibilidad="{{ p.disponibilidad or 'DISPONIBLE' }}" data-pname="{{ element.nombre }}"
+                        data-pasillo="{{ p.pasillo or '' }}" data-disponibilidad="{{ p.disponibilidad or 'OCUPADO' }}"
+                        data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
                         onmouseleave="pLeave()">
@@ -947,7 +949,7 @@
             document.getElementById('edit-tag').value = portEl.getAttribute('data-tag');
             document.getElementById('edit-destino').value = portEl.getAttribute('data-dest');
             document.getElementById('edit-pasillo').value = portEl.getAttribute('data-pasillo') || '';
-            document.getElementById('edit-disponibilidad').value = portEl.getAttribute('data-disponibilidad') || 'DISPONIBLE';
+            document.getElementById('edit-disponibilidad').value = portEl.getAttribute('data-disponibilidad') || 'OCUPADO';
             document.getElementById('edit-servicio').value = portEl.getAttribute('data-serv');
             document.getElementById('tag-preview').innerText = portEl.getAttribute('data-tag');
             document.getElementById('m-tag-show').innerText = tag || autoTag;

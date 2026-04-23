@@ -155,7 +155,7 @@ class InfraPort(db.Model):
     tag = db.Column(db.String(20), nullable=True)
     conectado_a_id = db.Column(db.Integer, nullable=True) # ID de otro InfraPort (Cruce)
     pasillo = db.Column(db.String(100), nullable=True)     # Ej: Pasillo 1 Piso 1
-    disponibilidad = db.Column(db.String(50), default='DISPONIBLE') # DISPONIBLE, OCUPADO, RESERVADO, FALLA
+    disponibilidad = db.Column(db.String(50), default='OCUPADO') # DISPONIBLE, OCUPADO, RESERVADO, FALLA
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -1804,7 +1804,7 @@ def editar_puerto():
     puerto.tipo_servicio = data.get('servicio')
     puerto.tag           = data.get('tag')
     puerto.pasillo        = data.get('pasillo')
-    puerto.disponibilidad = data.get('disponibilidad', 'DISPONIBLE')
+    puerto.disponibilidad = data.get('disponibilidad', 'OCUPADO')
 
     colores = {
         "Datos": "#f97316", "AP": "#00ffff", "Voz": "#3b82f6", 
