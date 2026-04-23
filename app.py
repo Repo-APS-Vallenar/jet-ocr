@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
@@ -23,6 +23,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
     'pool_recycle': 300,
 }
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2) # Sesión expira tras 4 horas de inactividad
 db = SQLAlchemy(app)
 
 # --- MIDDLEWARE DE SEGURIDAD GLOBAL ---
@@ -482,6 +483,7 @@ def login():
             session['usuario_rol'] = usuario.rol
             session['usuario_correo'] = usuario.correo
             session['company_id'] = str(usuario.company_id) if usuario.company_id else None
+            session.permanent = True # Activar la duración configurada (4 horas)
             
             if usuario.correo == 'businesswolsmart@gmail.com':
                 return redirect(url_for('saas_master'))
