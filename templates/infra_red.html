@@ -356,6 +356,18 @@
             min-width: 180px;
         }
 
+        .bubble .bubble-dest {
+            font-size: 9px;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         .bubble .tag-label {
             font-family: monospace;
             font-size: 15px;
@@ -852,9 +864,15 @@
             const serv = el.getAttribute('data-serv') || 'VAC';
             const color = getColor(serv);
             const connId = el.getAttribute('data-conn');
+            const dest = el.getAttribute('data-dest') || '';
             let html = '';
 
             applyHL(el, color);
+
+            let headerHtml = '';
+            if (dest) {
+                headerHtml = `<div class="bubble-dest"><i class="fa-solid fa-location-dot"></i> ${dest}</div>`;
+            }
 
             if (connId && connId !== '') {
                 const partner = document.getElementById('port-' + connId);
@@ -864,13 +882,14 @@
                     const pTag = partner.getAttribute('data-tag');
                     const pPrefix = partner.getAttribute('data-prefix') || '';
                     const compound = `${myTag}-${pTag}-${pPrefix}`;
-                    html = `<span class="tag-label" style="color:${color.border}">${compound}</span>
+                    html = headerHtml +
+                        `<span class="tag-label" style="color:${color.border}">${compound}</span>
                             <span class="link-line"><i class="fa-solid fa-link"></i> Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b></span>`;
                 }
             } else {
-                const dest = el.getAttribute('data-dest') || 'Sin destino asignado';
                 const tag = el.getAttribute('data-tag');
-                html = `<span class="tag-label" style="color:${color.border}">${tag}</span>
+                html = headerHtml +
+                    `<span class="tag-label" style="color:${color.border}">${tag}</span>
                         <span class="link-line"><i class="fa-solid fa-circle-xmark"></i> Sin parcheo</span>`;
             }
 
@@ -878,7 +897,7 @@
             bubble.style.borderColor = color.border;
             bubble.style.opacity = '1';
             const rect = el.getBoundingClientRect();
-            bubble.style.top = Math.max(10, rect.top - 85) + 'px';
+            bubble.style.top = Math.max(10, rect.top - 100) + 'px'; // Ajustado un poco más arriba por el nuevo texto
             bubble.style.left = rect.left + 'px';
         }
 
