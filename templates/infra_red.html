@@ -738,7 +738,8 @@
                         id="port-{{ p.id | string }}" data-id="{{ p.id | string }}" data-tag="{{ p.tag or auto_tag }}"
                         data-dest="{{ p.destino or '' }}" data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
-                        data-pasillo="{{ p.pasillo or '' }}" data-pname="{{ element.nombre }}"
+                        data-pasillo="{{ p.pasillo or '' }}"
+                        data-disponibilidad="{{ p.disponibilidad or 'DISPONIBLE' }}" data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
                         onmouseleave="pLeave()">
@@ -790,11 +791,20 @@
 
             <label class="form-lbl">Tipo de Servicio:</label>
             <select class="form-ctrl" id="edit-servicio">
-                <option value="Datos">Datos (PC)</option>
-                <option value="AP">AP / WiFi</option>
-                <option value="Voz">Voz IP</option>
-                <option value="Reloj">Reloj Biométrico</option>
-                <option value="VAC">Libre / Sin uso</option>
+                <option value="VAC">Ninguno (VAC)</option>
+                <option value="Datos">Datos / Red</option>
+                <option value="Voz">Voz / Telefonía</option>
+                <option value="AP">Access Point (WiFi)</option>
+                <option value="Reloj">Reloj Control</option>
+                <option value="TRONCAL">TRONCAL (Enlace SW)</option>
+            </select>
+
+            <label class="form-lbl">Estado de Disponibilidad:</label>
+            <select class="form-ctrl" id="edit-disponibilidad">
+                <option value="DISPONIBLE">🟢 Disponible</option>
+                <option value="OCUPADO">🔴 Ocupado</option>
+                <option value="RESERVADO">🟡 Reservado</option>
+                <option value="FALLA">⚠️ Falla / Dañado</option>
             </select>
 
             <div class="parcheo-box">
@@ -845,6 +855,7 @@
             'Voz': { border: '#2563eb', glow: 'rgba(37,99,235,.85)', bg: '#bfdbfe' },
             'Datos': { border: '#ea580c', glow: 'rgba(234,88,12,.85)', bg: '#fed7aa' },
             'Reloj': { border: '#16a34a', glow: 'rgba(22,163,74,.85)', bg: '#bbf7d0' },
+            'TRONCAL': { border: '#ef4444', glow: 'rgba(239, 68, 68, .85)', bg: '#fee2e2' },
             'VAC': { border: '#94a3b8', glow: 'rgba(148,163,184,.5)', bg: '#f1f5f9' },
         };
         function getColor(serv) { return SVC_COLOR[serv] || SVC_COLOR['VAC']; }
@@ -876,6 +887,14 @@
                 headerHtml = `<div class="bubble-dest"><i class="fa-solid fa-location-dot"></i> ${dest}</div>`;
             }
 
+            const disp = el.getAttribute('data-disponibilidad') || 'DISPONIBLE';
+            const dispIcons = {
+                'DISPONIBLE': '<span style="color:#22c55e">🟢 Disponible</span>',
+                'OCUPADO': '<span style="color:#ef4444">🔴 Ocupado</span>',
+                'RESERVADO': '<span style="color:#f59e0b">🟡 Reservado</span>',
+                'FALLA': '<span style="color:#ef4444">⚠️ Falla</span>'
+            };
+
             if (connId && connId !== '') {
                 const partner = document.getElementById('port-' + connId);
                 if (partner) {
@@ -886,13 +905,15 @@
                     const compound = `${myTag}-${pTag}-${pPrefix}`;
                     html = headerHtml +
                         `<span class="tag-label" style="color:${color.border}">${compound}</span>
-                            <span class="link-line"><i class="fa-solid fa-link"></i> Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b></span>`;
+                         <span class="link-line"><i class="fa-solid fa-link"></i> Unido a: <b>${partner.getAttribute('data-pname')} [${partner.getAttribute('data-pnum')}]</b></span>
+                         <div style="font-size:10px; margin-top:8px; opacity:0.8;">Estado: ${dispIcons[disp] || disp}</div>`;
                 }
             } else {
                 const tag = el.getAttribute('data-tag');
                 html = headerHtml +
                     `<span class="tag-label" style="color:${color.border}">${tag}</span>
-                        <span class="link-line"><i class="fa-solid fa-circle-xmark"></i> Sin parcheo</span>`;
+                     <span class="link-line"><i class="fa-solid fa-circle-xmark"></i> Sin parcheo</span>
+                     <div style="font-size:10px; margin-top:8px; opacity:0.8;">Estado: ${dispIcons[disp] || disp}</div>`;
             }
 
             bubble.innerHTML = html;
@@ -926,6 +947,7 @@
             document.getElementById('edit-tag').value = portEl.getAttribute('data-tag');
             document.getElementById('edit-destino').value = portEl.getAttribute('data-dest');
             document.getElementById('edit-pasillo').value = portEl.getAttribute('data-pasillo') || '';
+            document.getElementById('edit-disponibilidad').value = portEl.getAttribute('data-disponibilidad') || 'DISPONIBLE';
             document.getElementById('edit-servicio').value = portEl.getAttribute('data-serv');
             document.getElementById('tag-preview').innerText = portEl.getAttribute('data-tag');
             document.getElementById('m-tag-show').innerText = tag || autoTag;
@@ -971,6 +993,7 @@
                 id: selectedId,
                 destino: document.getElementById('edit-destino').value,
                 pasillo: document.getElementById('edit-pasillo').value,
+                disponibilidad: document.getElementById('edit-disponibilidad').value,
                 servicio: document.getElementById('edit-servicio').value,
                 tag: document.getElementById('edit-tag').value,
                 conectado_a_id: document.getElementById('select-puerto').value

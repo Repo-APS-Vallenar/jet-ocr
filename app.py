@@ -155,6 +155,7 @@ class InfraPort(db.Model):
     tag = db.Column(db.String(20), nullable=True)
     conectado_a_id = db.Column(db.Integer, nullable=True) # ID de otro InfraPort (Cruce)
     pasillo = db.Column(db.String(100), nullable=True)     # Ej: Pasillo 1 Piso 1
+    disponibilidad = db.Column(db.String(50), default='DISPONIBLE') # DISPONIBLE, OCUPADO, RESERVADO, FALLA
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -1802,11 +1803,12 @@ def editar_puerto():
     puerto.destino       = data.get('destino')
     puerto.tipo_servicio = data.get('servicio')
     puerto.tag           = data.get('tag')
-    puerto.pasillo       = data.get('pasillo')
+    puerto.pasillo        = data.get('pasillo')
+    puerto.disponibilidad = data.get('disponibilidad', 'DISPONIBLE')
 
     colores = {
-        "Datos": "#f97316", "AP": "#00ffff",
-        "Voz":   "#3b82f6", "Reloj": "#22c55e", "VAC": "#f1f5f9"
+        "Datos": "#f97316", "AP": "#00ffff", "Voz": "#3b82f6", 
+        "Reloj": "#22c55e", "VAC": "#f1f5f9", "TRONCAL": "#ef4444"
     }
     puerto.color_hex = colores.get(puerto.tipo_servicio, "#f1f5f9")
 
@@ -1820,6 +1822,7 @@ def editar_puerto():
             partner.tipo_servicio = puerto.tipo_servicio
             partner.color_hex     = puerto.color_hex
             partner.pasillo       = puerto.pasillo
+            partner.disponibilidad = puerto.disponibilidad
             # El tag del partner NO se copia: cada extremo mantiene su propio
             # formato (P01 para Patch Panel, P1 para Switch).
 
