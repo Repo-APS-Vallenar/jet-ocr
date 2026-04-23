@@ -689,6 +689,8 @@
                         data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
                         data-pasillo="{{ p.pasillo or '' }}" data-disponibilidad="{{ p.disponibilidad or 'OCUPADO' }}"
+                        data-eid="{{ p.equipo_id or '' }}"
+                        data-equipo="{{ (p.equipo.sn ~ ' - ' ~ (p.equipo.nombre or '')) if p.equipo else '' }}"
                         data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
@@ -715,6 +717,8 @@
                         data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
                         data-pasillo="{{ p.pasillo or '' }}" data-disponibilidad="{{ p.disponibilidad or 'OCUPADO' }}"
+                        data-eid="{{ p.equipo_id or '' }}"
+                        data-equipo="{{ (p.equipo.sn ~ ' - ' ~ (p.equipo.nombre or '')) if p.equipo else '' }}"
                         data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
@@ -741,6 +745,8 @@
                         data-dest="{{ p.destino or '' }}" data-serv="{{ p.tipo_servicio or 'VAC' }}"
                         data-conn="{{ p.conectado_a_id | string if p.conectado_a_id else '' }}"
                         data-pasillo="{{ p.pasillo or '' }}" data-disponibilidad="{{ p.disponibilidad or 'OCUPADO' }}"
+                        data-eid="{{ p.equipo_id or '' }}"
+                        data-equipo="{{ (p.equipo.sn ~ ' - ' ~ (p.equipo.nombre or '')) if p.equipo else '' }}"
                         data-pname="{{ element.nombre }}"
                         data-prefix="{{ element.prefijo or element.nombre[:3].upper() }}"
                         data-pnum="{{ p.numero_puerto }}" data-tipo="{{ element.tipo }}" onmouseenter="pEnter(this)"
@@ -789,6 +795,11 @@
                 <option value="Pasillo 1 Piso 2">Pasillo 1 Piso 2</option>
                 <option value="Pasillo 2 Piso 2">Pasillo 2 Piso 2</option>
                 <option value="Pasillo 3 Piso 2">Pasillo 3 Piso 2</option>
+            </select>
+
+            <label class="form-lbl">Activo IT Vinculado (OCR):</label>
+            <select class="form-ctrl" id="edit-equipo">
+                <option value="">-- Sin activo vinculado --</option>
             </select>
 
             <label class="form-lbl">Tipo de Servicio:</label>
@@ -916,6 +927,13 @@
                     `<span class="tag-label" style="color:${color.border}">${tag}</span>
                      <span class="link-line"><i class="fa-solid fa-circle-xmark"></i> Sin parcheo</span>
                      <div style="font-size:10px; margin-top:8px; opacity:0.8;">Estado: ${dispIcons[disp] || disp}</div>`;
+
+                const eqInfo = el.getAttribute('data-equipo');
+                if (eqInfo) {
+                    html += `<div class="bubble-dest" style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:6px; color:#10b981;">
+                                <i class="fa-solid fa-laptop-code"></i> ${eqInfo}
+                             </div>`;
+                }
             }
 
             bubble.innerHTML = html;
@@ -950,6 +968,23 @@
             document.getElementById('edit-destino').value = portEl.getAttribute('data-dest');
             document.getElementById('edit-pasillo').value = portEl.getAttribute('data-pasillo') || '';
             document.getElementById('edit-disponibilidad').value = portEl.getAttribute('data-disponibilidad') || 'OCUPADO';
+
+            // Cargar equipos y seleccionar el actual
+            const currentEid = portEl.getAttribute('data-eid');
+            fetch('/api/infra/equipos_disponibles')
+                .then(r => r.json())
+                .then(data => {
+                    const sel = document.getElementById('edit-equipo');
+                    sel.innerHTML = '<option value="">-- Sin activo vinculado --</option>';
+                    data.forEach(e => {
+                        const opt = document.createElement('option');
+                        opt.value = e.id;
+                        opt.textContent = `${e.sn} - ${e.nombre}`;
+                        if (e.id == currentEid) opt.selected = true;
+                        sel.appendChild(opt);
+                    });
+                });
+
             document.getElementById('edit-servicio').value = portEl.getAttribute('data-serv');
             document.getElementById('tag-preview').innerText = portEl.getAttribute('data-tag');
             document.getElementById('m-tag-show').innerText = tag || autoTag;
@@ -996,6 +1031,7 @@
                 destino: document.getElementById('edit-destino').value,
                 pasillo: document.getElementById('edit-pasillo').value,
                 disponibilidad: document.getElementById('edit-disponibilidad').value,
+                equipo_id: document.getElementById('edit-equipo').value,
                 servicio: document.getElementById('edit-servicio').value,
                 tag: document.getElementById('edit-tag').value,
                 conectado_a_id: document.getElementById('select-puerto').value

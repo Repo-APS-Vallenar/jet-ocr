@@ -156,6 +156,9 @@ class InfraPort(db.Model):
     conectado_a_id = db.Column(db.Integer, nullable=True) # ID de otro InfraPort (Cruce)
     pasillo = db.Column(db.String(100), nullable=True)     # Ej: Pasillo 1 Piso 1
     disponibilidad = db.Column(db.String(50), default='OCUPADO') # DISPONIBLE, OCUPADO, RESERVADO, FALLA
+    equipo_id = db.Column(db.Integer, db.ForeignKey('equipos.id'), nullable=True)
+    
+    equipo = db.relationship('Equipo', backref='puerto_red', uselist=False)
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -1762,6 +1765,14 @@ def eliminar_elemento():
     normalizar_posiciones(company_id)
     return jsonify({"status": "ok"})
 
+@app.route('/api/infra/equipos_disponibles')
+def get_equipos_disponibles():
+    company_id = session.get('company_id')
+    # Listamos todos los activos de la empresa para poder vincularlos
+    equipos = Equipo.query.filter_by(company_id=company_id).order_by(Equipo.sn).all()
+    res = [{"id": e.id, "sn": e.sn, "nombre": e.nombre or "Sin nombre"} for e in equipos]
+    return jsonify(res)
+
 @app.route('/api/infra/editar_puerto', methods=['POST'])
 def editar_puerto():
     data = request.json
@@ -1805,6 +1816,7 @@ def editar_puerto():
     puerto.tag           = data.get('tag')
     puerto.pasillo        = data.get('pasillo')
     puerto.disponibilidad = data.get('disponibilidad', 'OCUPADO')
+    puerto.equipo_id      = data.get('equipo_id') if data.get('equipo_id') else None
 
     colores = {
         "Datos": "#f97316", "AP": "#00ffff", "Voz": "#3b82f6", 
@@ -1823,6 +1835,7 @@ def editar_puerto():
             partner.color_hex     = puerto.color_hex
             partner.pasillo       = puerto.pasillo
             partner.disponibilidad = puerto.disponibilidad
+            partner.equipo_id      = puerto.equipo_id
             # El tag del partner NO se copia: cada extremo mantiene su propio
             # formato (P01 para Patch Panel, P1 para Switch).
 
