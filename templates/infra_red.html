@@ -247,6 +247,25 @@
         .sc-disp { background: #dcfce7; color: #16a34a; }
         .sc-fail { background: #fef3c7; color: #d97706; }
 
+        .stats-group {
+            margin-bottom: 25px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+        .stats-header {
+            font-size: 13px;
+            font-weight: 800;
+            color: #64748b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .network-element.switch-type {
             border-left-color: #3b82f6;
         }
@@ -712,33 +731,58 @@
             <button class="btn-export" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Exportar Inventario</button>
         </div>
 
-        <div class="stats-bar">
-            <div class="stat-card">
-                <div class="stat-icon sc-total"><i class="fa-solid fa-server"></i></div>
-                <div>
-                    <p class="stat-val">{{ stats.total }}</p>
-                    <p class="stat-lbl">Puertos Totales</p>
+        <!-- SECCION SWITCHES -->
+        <div class="stats-group">
+            <div class="stats-header"><i class="fa-solid fa-toggle-on" style="color:#3b82f6;"></i> Capacidad de Red (Switches)</div>
+            <div class="stats-bar" style="margin-bottom:0;">
+                <div class="stat-card">
+                    <div class="stat-icon sc-total"><i class="fa-solid fa-server"></i></div>
+                    <div>
+                        <p class="stat-val">{{ stats_sw.total }}</p>
+                        <p class="stat-lbl">Puertos Totales</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon sc-occ"><i class="fa-solid fa-plug-circle-check"></i></div>
+                    <div>
+                        <p class="stat-val">{{ stats_sw.ocupados }}</p>
+                        <p class="stat-lbl">En Uso</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon sc-disp"><i class="fa-solid fa-plug-circle-exclamation"></i></div>
+                    <div>
+                        <p class="stat-val">{{ stats_sw.disponibles }}</p>
+                        <p class="stat-lbl">Disponibles</p>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon sc-occ"><i class="fa-solid fa-plug-circle-check"></i></div>
-                <div>
-                    <p class="stat-val">{{ stats.ocupados }}</p>
-                    <p class="stat-lbl">Ocupados</p>
+        </div>
+
+        <!-- SECCION PATCH PANELS -->
+        <div class="stats-group">
+            <div class="stats-header"><i class="fa-solid fa-ethernet" style="color:#94a3b8;"></i> Puntos de Pared (Patch Panels)</div>
+            <div class="stats-bar" style="margin-bottom:0;">
+                <div class="stat-card">
+                    <div class="stat-icon sc-total"><i class="fa-solid fa-network-wired"></i></div>
+                    <div>
+                        <p class="stat-val">{{ stats_pp.total }}</p>
+                        <p class="stat-lbl">Bocas Totales</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon sc-disp"><i class="fa-solid fa-plug-circle-exclamation"></i></div>
-                <div>
-                    <p class="stat-val">{{ stats.disponibles }}</p>
-                    <p class="stat-lbl">Disponibles</p>
+                <div class="stat-card">
+                    <div class="stat-icon sc-occ"><i class="fa-solid fa-link"></i></div>
+                    <div>
+                        <p class="stat-val">{{ stats_pp.ocupados }}</p>
+                        <p class="stat-lbl">Conectados</p>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon sc-fail"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div>
-                    <p class="stat-val">{{ stats.fallas }}</p>
-                    <p class="stat-lbl">Con Fallas</p>
+                <div class="stat-card">
+                    <div class="stat-icon sc-disp"><i class="fa-solid fa-circle-dot"></i></div>
+                    <div>
+                        <p class="stat-val">{{ stats_pp.disponibles }}</p>
+                        <p class="stat-lbl">Vacantes</p>
+                    </div>
                 </div>
             </div>
         </div>

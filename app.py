@@ -1646,19 +1646,25 @@ def visualizar_infraestructura():
     elementos = InfraElement.query.filter_by(company_id=company_id)\
                     .order_by(InfraElement.posicion).all()
 
-    # --- CALCULO DE ESTADISTICAS ---
-    stats = {"total": 0, "ocupados": 0, "disponibles": 0, "fallas": 0}
+    # --- CALCULO DE ESTADISTICAS SEGMENTADAS ---
+    stats_sw = {"total": 0, "ocupados": 0, "disponibles": 0, "fallas": 0}
+    stats_pp = {"total": 0, "ocupados": 0, "disponibles": 0, "fallas": 0}
+    
     for el in elementos:
+        # Solo procesamos si es Switch o Patch Panel (evitamos etiquetas, etc)
+        if el.tipo not in ['SWITCH', 'PATCH_PANEL', 'PATCH']: continue
+        
+        target = stats_sw if el.tipo == 'SWITCH' else stats_pp
         for p in el.puertos:
-            stats["total"] += 1
+            target["total"] += 1
             if p.disponibilidad == 'OCUPADO' or p.disponibilidad == 'RESERVADO':
-                stats["ocupados"] += 1
+                target["ocupados"] += 1
             elif p.disponibilidad == 'DISPONIBLE' or not p.disponibilidad:
-                stats["disponibles"] += 1
+                target["disponibles"] += 1
             elif p.disponibilidad == 'FALLA':
-                stats["fallas"] += 1
+                target["fallas"] += 1
 
-    return render_template('infra_red.html', elementos=elementos, todos_elementos=elementos, stats=stats)
+    return render_template('infra_red.html', elementos=elementos, todos_elementos=elementos, stats_sw=stats_sw, stats_pp=stats_pp)
 
 # ─── CRUD ELEMENTOS DE INFRAESTRUCTURA ──────────────────────────────────────
 
