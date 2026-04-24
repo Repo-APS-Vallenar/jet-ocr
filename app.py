@@ -1886,27 +1886,41 @@ def editar_puerto():
             partner.pasillo       = puerto.pasillo
             partner.disponibilidad = puerto.disponibilidad
             partner.equipo_id      = puerto.equipo_id
-            # El tag del partner NO se copia: cada extremo mantiene su propio
-            # formato (P01 para Patch Panel, P1 para Switch).
 
     db.session.commit()
     return jsonify({"status": "ok"})
 
 @app.route('/api/infra/exportar')
 def exportar_infra():
-    from flask import Response
-    import io, csv
+    import io
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    
     company_id = session.get('company_id')
-    # Obtener todos los puertos de la empresa actual
     puertos = InfraPort.query.join(InfraElement).filter(InfraElement.company_id == company_id).order_by(InfraElement.nombre, InfraPort.numero_puerto).all()
     
-    si = io.StringIO()
-    cw = csv.writer(si)
-    cw.writerow(['EQUIPO', 'TIPO', 'PISO', 'PUERTO_NUM', 'TAG', 'DESTINO_BOX', 'PASILLO_ZONA', 'ESTADO', 'SERVICIO', 'ACTIVO_VINCULADO_SN'])
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Inventario de Red"
     
+    # Cabeceras
+    headers = ['EQUIPO', 'TIPO', 'PISO', 'PUERTO', 'TAG', 'DESTINO/BOX', 'PASILLO/ZONA', 'ESTADO', 'SERVICIO', 'ACTIVO (S/N)']
+    ws.append(headers)
+    
+    # Estilo de Cabecera (Azul Profesional)
+    header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)
+    alignment = Alignment(horizontal="center", vertical="center")
+    
+    for cell in ws[1]:
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = alignment
+
+    # Datos
     for p in puertos:
-        sn_activo = p.equipo.sn if p.equipo else "SIN_ACTIVO"
-        cw.writerow([
+        sn_activo = p.equipo.sn if p.equipo else "---"
+        ws.append([
             p.elemento.nombre,
             p.elemento.tipo,
             p.elemento.piso,
@@ -1919,10 +1933,27 @@ def exportar_infra():
             sn_activo
         ])
     
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=inventario_infraestructura.csv"
-    output.headers["Content-type"] = "text/csv; charset=utf-8"
-    return output
+    # Auto-ajustar columnas y añadir filtros
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if cell.value and len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except: pass
+        ws.column_dimensions[column].width = max_length + 3
+    
+    ws.auto_filter.ref = ws.dimensions
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    res = make_response(output.getvalue())
+    res.headers["Content-Disposition"] = "attachment; filename=Inventario_Infraestructura.xlsx"
+    res.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    return res
 
 @app.route('/api/reportar_falla', methods=['POST'])
 def reportar_falla():
