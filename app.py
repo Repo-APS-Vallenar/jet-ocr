@@ -168,6 +168,8 @@ class Usuario(db.Model):
     rol = db.Column(db.String(50), default='Operador') # "Admin" o "Operador"
     empresa_id = db.Column(db.Integer, nullable=True) # Legado
     company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True) # Nuevo multi-tenant
+    
+    company = db.relationship('Company', backref='usuarios')
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
 class AuditLog(db.Model):
@@ -487,6 +489,7 @@ def login():
             session['usuario_rol'] = usuario.rol
             session['usuario_correo'] = usuario.correo
             session['company_id'] = str(usuario.company_id) if usuario.company_id else None
+            session['company_name'] = usuario.company.name if usuario.company else "Gestión Red"
             session.permanent = True # Activar la duración configurada (4 horas)
             
             if usuario.correo == 'businesswolsmart@gmail.com':
@@ -1808,9 +1811,6 @@ def editar_puerto():
         puerto.conectado_a_id = None
         
     # --- ACTUALIZAR METADATOS (puerto editado) ---
-    print(f"DEBUG IN_AN: Editando puerto {p_id}")
-    print(f"DEBUG IN_AN: Payload recibido: {data}")
-    
     puerto.destino       = data.get('destino')
     puerto.tipo_servicio = data.get('servicio')
     puerto.tag           = data.get('tag')
@@ -1841,6 +1841,38 @@ def editar_puerto():
 
     db.session.commit()
     return jsonify({"status": "ok"})
+
+@app.route('/api/infra/exportar')
+def exportar_infra():
+    from flask import Response
+    import io, csv
+    company_id = session.get('company_id')
+    # Obtener todos los puertos de la empresa actual
+    puertos = InfraPort.query.join(InfraElement).filter(InfraElement.company_id == company_id).order_by(InfraElement.nombre, InfraPort.numero_puerto).all()
+    
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['EQUIPO', 'TIPO', 'PISO', 'PUERTO_NUM', 'TAG', 'DESTINO_BOX', 'PASILLO_ZONA', 'ESTADO', 'SERVICIO', 'ACTIVO_VINCULADO_SN'])
+    
+    for p in puertos:
+        sn_activo = p.equipo.sn if p.equipo else "SIN_ACTIVO"
+        cw.writerow([
+            p.elemento.nombre,
+            p.elemento.tipo,
+            p.elemento.piso,
+            p.numero_puerto,
+            p.tag or f"P{p.numero_puerto}",
+            p.destino or "",
+            p.pasillo or "",
+            p.disponibilidad,
+            p.tipo_servicio,
+            sn_activo
+        ])
+    
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=inventario_red_altiplano.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 @app.route('/api/reportar_falla', methods=['POST'])
 def reportar_falla():
