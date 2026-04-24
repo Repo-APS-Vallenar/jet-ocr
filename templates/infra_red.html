@@ -213,6 +213,40 @@
             .network-element { padding: 12px; }
         }
 
+        /* STATS BAR */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .stat-val { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; }
+        .stat-lbl { font-size: 11px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .sc-total { background: #f8fafc; color: #64748b; }
+        .sc-occ { background: #fee2e2; color: #ef4444; }
+        .sc-disp { background: #dcfce7; color: #16a34a; }
+        .sc-fail { background: #fef3c7; color: #d97706; }
+
         .network-element.switch-type {
             border-left-color: #3b82f6;
         }
@@ -676,6 +710,37 @@
                 <input type="text" id="global-search" placeholder="Buscar por box, puerto, tag o activo (S/N)..." oninput="filterNetwork()">
             </div>
             <button class="btn-export" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Exportar Inventario</button>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon sc-total"><i class="fa-solid fa-server"></i></div>
+                <div>
+                    <p class="stat-val">{{ stats.total }}</p>
+                    <p class="stat-lbl">Puertos Totales</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sc-occ"><i class="fa-solid fa-plug-circle-check"></i></div>
+                <div>
+                    <p class="stat-val">{{ stats.ocupados }}</p>
+                    <p class="stat-lbl">Ocupados</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sc-disp"><i class="fa-solid fa-plug-circle-exclamation"></i></div>
+                <div>
+                    <p class="stat-val">{{ stats.disponibles }}</p>
+                    <p class="stat-lbl">Disponibles</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sc-fail"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <p class="stat-val">{{ stats.fallas }}</p>
+                    <p class="stat-lbl">Con Fallas</p>
+                </div>
+            </div>
         </div>
 
         <div class="legend">

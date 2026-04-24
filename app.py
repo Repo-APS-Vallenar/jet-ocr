@@ -1646,7 +1646,19 @@ def visualizar_infraestructura():
     elementos = InfraElement.query.filter_by(company_id=company_id)\
                     .order_by(InfraElement.posicion).all()
 
-    return render_template('infra_red.html', elementos=elementos, todos_elementos=elementos)
+    # --- CALCULO DE ESTADISTICAS ---
+    stats = {"total": 0, "ocupados": 0, "disponibles": 0, "fallas": 0}
+    for el in elementos:
+        for p in el.puertos:
+            stats["total"] += 1
+            if p.disponibilidad == 'OCUPADO' or p.disponibilidad == 'RESERVADO':
+                stats["ocupados"] += 1
+            elif p.disponibilidad == 'DISPONIBLE' or not p.disponibilidad:
+                stats["disponibles"] += 1
+            elif p.disponibilidad == 'FALLA':
+                stats["fallas"] += 1
+
+    return render_template('infra_red.html', elementos=elementos, todos_elementos=elementos, stats=stats)
 
 # ─── CRUD ELEMENTOS DE INFRAESTRUCTURA ──────────────────────────────────────
 
