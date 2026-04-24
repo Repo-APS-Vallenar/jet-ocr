@@ -202,6 +202,15 @@ def inicializar_db():
     except Exception as e:
         print(f"Error en inicio de DB: {e}")
         db.session.rollback()
+
+    # Migración de Quotas Mensuales
+    try:
+        db.session.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS last_quota_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"))
+        db.session.execute(text("ALTER TABLE companies ADD COLUMN IF NOT EXISTS scans_consumed INTEGER DEFAULT 0;"))
+        db.session.commit()
+    except Exception as eq:
+        print(f"Alerta al migrar cuotas: {eq}")
+        db.session.rollback()
             
     # Crear Compañía por defecto si no existe
     default_company = Company.query.filter_by(name='Tu Empresa (Dashboard)').first()
@@ -1955,9 +1964,10 @@ def inventario_eliminar(id):
 def escanear_qr():
     return render_template('escanear.html')
 
+with app.app_context():
+    inicializar_db()
+
 if __name__ == '__main__':
-    with app.app_context():
-        inicializar_db()
     # host='0.0.0.0' permite que otros dispositivos en la red local (el celular) accedan a la página
     is_debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     app.run(host='0.0.0.0', port=5000, debug=is_debug)
