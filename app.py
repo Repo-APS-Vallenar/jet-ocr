@@ -63,6 +63,8 @@ class Company(db.Model):
     trial_ends_at = db.Column(db.DateTime, nullable=True)
     admins_limit = db.Column(db.Integer, default=1)
     operadores_limit = db.Column(db.Integer, default=2)
+    last_quota_reset = db.Column(db.DateTime, default=datetime.utcnow)
+    scans_consumed = db.Column(db.Integer, default=0)
 
 class OcrConfig(db.Model):
     __tablename__ = 'ocr_configs'
@@ -1011,15 +1013,30 @@ def procesar():
     empresa = Company.query.get(company_id)
     
     if empresa:
-        # 1. Validar expiración de tiempo (Solo Freemium)
-        if empresa.plan_type == 'Freemium' and empresa.trial_ends_at and datetime.now() > empresa.trial_ends_at:
-            return jsonify({"status": "error", "message": "Tu prueba gratuita de 14 días ha expirado. ¡Actualiza para seguir escaneando!"}), 402
+        now = datetime.utcnow()
+        # Inicializar si es nuevo
+        if not empresa.last_quota_reset:
+            empresa.last_quota_reset = now
+            empresa.scans_consumed = 0
+            db.session.commit()
             
-        # 2. Validar límite de escaneos (Solo Freemium y Pro)
-        if empresa.plan_type != 'Premium':
-            total_escaneos = RegistroOCR.query.filter_by(company_id=company_id).count()
-            if total_escaneos >= empresa.scans_quota:
-                return jsonify({"status": "error", "message": f"Has alcanzado el límite de {empresa.scans_quota} escaneos de tu plan. ¡Actualiza tu suscripción!"}), 402
+        # Verificar si pasó un mes para renovar
+        meses_pasados = (now.year - empresa.last_quota_reset.year) * 12 + (now.month - empresa.last_quota_reset.month)
+        if meses_pasados >= 1:
+            empresa.last_quota_reset = now
+            empresa.scans_consumed = 0
+            db.session.commit()
+
+        # 1. Validar expiración de tiempo (Solo Freemium)
+        if empresa.plan_type == 'Freemium' and empresa.trial_ends_at and now > empresa.trial_ends_at:
+            return jsonify({"status": "error", "message": "Tu prueba gratuita ha expirado. ¡Actualiza para seguir escaneando!"}), 402
+            
+        # 2. Validar límite de escaneos
+        if empresa.scans_consumed >= empresa.scans_quota:
+            return jsonify({
+                "status": "error", 
+                "message": f"Has alcanzado el límite de {empresa.scans_quota} escaneos mensuales de tu plan {empresa.plan_type}. Se renovarán pronto."
+            }), 402
 
     if 'foto' not in request.files:
         return jsonify({"status": "error", "message": "Falta la fotografía"}), 400
@@ -1129,8 +1146,12 @@ def procesar():
             sincronizar_resultado_con_bd(resultado, ubicacion, usuario, estado, form_proyecto_id, company_id=active_company_id)
             
             resultados.append(resultado)
+            
+            # Incrementar consumo
+            if resultado.get("status") == "success":
+                empresa.scans_consumed += 1
         
-        # 5. Respuesta
+        db.session.commit()
         img_b64 = None
         try:
             import base64
@@ -1442,8 +1463,10 @@ def pago_exitoso():
             empresa.scans_quota = 1000
         elif plan == 'premium':
             empresa.plan_type = 'Premium'
-            empresa.scans_quota = 999999
+            empresa.scans_quota = 5000
             
+        empresa.last_quota_reset = datetime.utcnow()
+        empresa.scans_consumed = 0
         db.session.commit()
         flash("¡Felicidades! Tu Plan ha sido actualizado correctamente.", "success")
     else:
