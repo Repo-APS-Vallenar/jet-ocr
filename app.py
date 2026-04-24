@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for, flash
+from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for, flash, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -1920,8 +1920,8 @@ def exportar_infra():
         ])
     
     output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=inventario_red_altiplano.csv"
-    output.headers["Content-type"] = "text/csv"
+    output.headers["Content-Disposition"] = "attachment; filename=inventario_infraestructura.csv"
+    output.headers["Content-type"] = "text/csv; charset=utf-8"
     return output
 
 @app.route('/api/reportar_falla', methods=['POST'])
