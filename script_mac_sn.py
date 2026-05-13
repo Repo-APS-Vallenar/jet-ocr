@@ -92,13 +92,20 @@ def procesar_lote_cajas(ruta_imagen, campos_config="S/N,MAC"):
                      continue
 
              # B. PATRONES ESTÁNDAR (Por Defecto / Respaldos)
-             # Prioridad 1: Patrón exacto solicitado 30104 (con corrección de O por 0)
-             match_sn_prefijo = re.search(r'([3][0O]1[0O]4[A-Z0-9]+)', t_clean_raw, re.IGNORECASE)
-             if match_sn_prefijo:
+              # Prioridad 1: Patrón exacto solicitado 30104 (Yealink)
+              match_sn_prefijo = re.search(r'([3][0O]1[0O]4[A-Z0-9]+)', t_clean_raw, re.IGNORECASE)
+              if match_sn_prefijo:
                  val_sn = match_sn_prefijo.group(1).upper().replace('O', '0')
                  if val_sn.startswith('30104'):
-                    hallazgos_sn.append({"valor": val_sn, "centro": calcular_centro(bbox), "prioridad": 8}) # Reducido a 8 para que empate/pierda contra la regla del Cliente
+                    hallazgos_sn.append({"valor": val_sn, "centro": calcular_centro(bbox), "prioridad": 8})
                     continue
+
+              # Prioridad 1.5: Patrones Fortinet (FGT, FON, FSW o 16 caracteres alfanuméricos)
+              match_fortinet = re.search(r'((FGT|FON|FSW)[A-Z0-9]{13})', t_clean_raw, re.IGNORECASE)
+              if match_fortinet:
+                  val_sn = match_fortinet.group(1).upper().replace('O', '0')
+                  hallazgos_sn.append({"valor": val_sn, "centro": calcular_centro(bbox), "prioridad": 9})
+                  continue
 
              # Prioridad 2: Buscar palabra clave "S/N" o "SN" en el texto
              sn_found_by_kw = False

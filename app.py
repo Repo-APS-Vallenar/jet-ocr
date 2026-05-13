@@ -13,8 +13,19 @@ import requests
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'super-secreto-temporal-123')
 
-# --- CONFIGURACIÓN BASE DE DATOS (SUPERBASE POSTGRESQL) ---
-DB_URI = os.environ.get('DATABASE_URL') or os.environ.get('DB_URI', "postgresql://postgres.afusiddjuczrkzltnfae:1J3e9t8b.$$.@aws-1-us-east-1.pooler.supabase.com:5432/postgres")
+# --- CONFIGURACIÓN BASE DE DATOS (SUPERBASE VS LOCAL) ---
+# Cambia OFFLINE_MODE a True si no tienes internet en el centro
+OFFLINE_MODE = os.environ.get('OFFLINE_MODE', 'True').lower() == 'true'
+
+if OFFLINE_MODE:
+    # Usar SQLite local para trabajo sin internet
+    db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inventario_local.db')
+    DB_URI = f"sqlite:///{db_path}"
+    print(f"--- MODO OFFLINE ACTIVADO: Usando base de datos local en {db_path} ---")
+else:
+    # Usar Supabase (Requiere Internet)
+    DB_URI = os.environ.get('DATABASE_URL') or os.environ.get('DB_URI', "postgresql://postgres.afusiddjuczrkzltnfae:1J3e9t8b.$$.@aws-1-us-east-1.pooler.supabase.com:5432/postgres")
+    print("--- MODO ONLINE: Conectando a Supabase ---")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -1203,15 +1214,39 @@ def procesar_batch():
                     proyecto_batch = Proyecto.query.get(proj_id) if proj_id else None
                     active_company_id = proyecto_batch.company_id if proyecto_batch else session.get('company_id')
                     
-                    sincronizar_resultado_con_bd(
-                        res, 
-                        meta.get('ubicacion'), 
-                        meta.get('usuario'), 
-                        meta.get('estado'), 
-                        proj_id,
-                        company_id=active_company_id
-                    )
-                    resultados_totales.append(res)
+                    # Obtener reglas OCR para este batch
+                    config_batch = OcrConfig.query.filter_by(company_id=active_company_id).first()
+                    reglas_batch = {
+                        "sn_prefix": config_batch.sn_prefix if config_batch else None,
+                        "sn_length": config_batch.sn_length if config_batch else None
+                    }
+                    campos_batch = config_batch.campos_personalizados if (config_batch and config_batch.campos_personalizados) else "S/N,MAC"
+
+                    # 1. Re-procesar con REGLAS si es necesario (o asegurar que se detecten bien)
+                    detectados = ocr_script.procesar_lote_cajas(ruta_temp, campos_config=campos_batch, reglas=reglas_batch)
+
+                    for eq in detectados:
+                        res = ocr_script.actualizar_inventario_web(
+                            eq["sn"], eq["mac"], ruta_excel_local,
+                            ubicacion=meta.get('ubicacion'), 
+                            usuario=meta.get('usuario'), 
+                            estado=meta.get('estado'),
+                            forzar_actualizacion=True
+                        )
+                        res.setdefault("sn", eq["sn"])
+                        res.setdefault("mac", eq["mac"])
+                        
+                        sincronizar_resultado_con_bd(
+                            res, 
+                            meta.get('ubicacion'), 
+                            meta.get('usuario'), 
+                            meta.get('estado'), 
+                            proj_id,
+                            company_id=active_company_id
+                        )
+                        
+                        if res.get('status') == 'success':
+                            resultados_totales.append(res)
                     
             except Exception as e:
                 print(f"Error procesando scaneo {i}: {e}")
