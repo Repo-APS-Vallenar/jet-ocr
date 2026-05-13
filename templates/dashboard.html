@@ -1002,9 +1002,14 @@
                 <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0;">Base de Datos: Equipos Oficiales (<span id="count-total">{{ total_equipos
                             }}</span>)</h3>
-                    <button class="btn-export" style="background:#3b82f6;" onclick="abrirCrear()">
-                        <i class="fa-solid fa-plus"></i> Añadir Manual
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-export" style="background:#ef4444;" onclick="limpiarNoTelefonos()">
+                            <i class="fa-solid fa-broom"></i> Limpiar No-Teléfonos
+                        </button>
+                        <button class="btn-export" style="background:#3b82f6;" onclick="abrirCrear()">
+                            <i class="fa-solid fa-plus"></i> Añadir Manual
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 📅 FILTRO POR FECHA Y HORA -->
@@ -1078,13 +1083,10 @@
                                         onclick="abrirEditar('{{ eq.id }}', '{{ eq.sn }}', '{{ eq.mac }}', '{{ eq.nombre }}', '{{ eq.ubicacion }}', '{{ eq.usuario }}', '{{ eq.estado }}')">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    <form action="/api/admin/eliminar_equipo" method="POST"
-                                        onsubmit="return confirm('¿Seguro que deseas eliminar este equipo?')">
-                                        <input type="hidden" name="equipo_id" value="{{ eq.id }}">
-                                        <button type="submit" class="btn-icon btn-delete" title="Eliminar">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button class="btn-icon btn-delete" title="Eliminar"
+                                        onclick="eliminarEquipoLive('{{ eq.id }}', this)">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -1132,12 +1134,10 @@
                                     onclick="abrirEditar('{{ eq.id }}', '{{ eq.sn }}', '{{ eq.mac }}', '{{ eq.nombre }}', '{{ eq.ubicacion }}', '{{ eq.usuario }}', '{{ eq.estado }}')">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-                                <form action="/api/admin/eliminar_equipo" method="POST"
-                                    onsubmit="return confirm('¿Seguro que deseas eliminar este equipo?')">
-                                    <input type="hidden" name="equipo_id" value="{{ eq.id }}">
-                                    <button type="submit" class="btn-icon btn-delete"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </form>
+                                <button class="btn-icon btn-delete" 
+                                    onclick="eliminarEquipoLive('{{ eq.id }}', this)">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                         {% endfor %}
@@ -1857,6 +1857,71 @@
             }
 
             abrirVer();
+        }
+
+        // --- FUNCIONES AJAX PARA BORRADO EN VIVO ---
+        function eliminarEquipoLive(id, btn) {
+            if (!confirm('¿Seguro que deseas eliminar este equipo?')) return;
+
+            const formData = new FormData();
+            formData.append('equipo_id', id);
+
+            fetch('/api/admin/eliminar_equipo?ajax=1', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    mostrarNotificacion(data.message, 'success');
+                    
+                    // Remover de la DataTable si existe
+                    const table = $('#dt-inventario').DataTable();
+                    const row = $(btn).closest('tr');
+                    if (row.length) {
+                        table.row(row).remove().draw(false);
+                    }
+                    
+                    // Remover de las tarjetas móviles si existe
+                    const card = $(btn).closest('.cards-item');
+                    if (card.length) {
+                        card.fadeOut(300, function() { $(this).remove(); });
+                    }
+                    
+                    // Actualizar contador visual si existe
+                    const countEl = document.getElementById('count-total');
+                    if (countEl) {
+                        countEl.textContent = parseInt(countEl.textContent) - 1;
+                    }
+                } else {
+                    mostrarNotificacion('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                mostrarNotificacion('Error de red al intentar eliminar.', 'danger');
+            });
+        }
+
+        function limpiarNoTelefonos() {
+            if (!confirm('¿Seguro que deseas eliminar TODOS los registros que no tengan MAC? Esta acción no se puede deshacer.')) return;
+
+            fetch('/api/admin/limpiar_no_telefonos', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    mostrarNotificacion(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500); // Recargar para limpiar todo visualmente de una vez
+                } else {
+                    mostrarNotificacion('Error: ' + data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                mostrarNotificacion('Error de red al intentar limpiar.', 'danger');
+            });
         }
 
         // --- BUSCADOR FILTRADO MÓVIL (Con Paginación) ---

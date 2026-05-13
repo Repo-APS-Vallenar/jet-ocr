@@ -878,15 +878,47 @@ def config_ocr():
 @app.route('/api/admin/eliminar_equipo', methods=['POST'])
 def eliminar_equipo():
     if session.get('usuario_rol') != 'Admin':
-        return "Acceso denegado", 403
+        return jsonify({"status": "error", "message": "Acceso denegado"}), 403
     
     equipo_id = request.form.get('equipo_id')
     company_id = session.get('company_id')
     equipo = Equipo.query.filter_by(id=equipo_id, company_id=company_id).first()
+    
     if equipo:
         db.session.delete(equipo)
         db.session.commit()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.args.get('ajax'):
+            return jsonify({"status": "success", "message": "Equipo eliminado correctamente"})
+            
     return redirect(url_for('admin') + '#tab-inventario')
+
+@app.route('/api/admin/limpiar_no_telefonos', methods=['POST'])
+def limpiar_no_telefonos():
+    if session.get('usuario_rol') != 'Admin':
+        return jsonify({"status": "error", "message": "Acceso denegado"}), 403
+        
+    company_id = session.get('company_id')
+    
+    # Eliminar equipos sin MAC de esta empresa
+    equipos_a_borrar = Equipo.query.filter_by(company_id=company_id).filter((Equipo.mac == None) | (Equipo.mac == '')).all()
+    count_e = len(equipos_a_borrar)
+    for e in equipos_a_borrar:
+        db.session.delete(e)
+        
+    # También registros OCR
+    registros_a_borrar = RegistroOCR.query.filter_by(company_id=company_id).filter((RegistroOCR.mac == None) | (RegistroOCR.mac == '')).all()
+    count_r = len(registros_a_borrar)
+    for r in registros_a_borrar:
+        db.session.delete(r)
+        
+    db.session.commit()
+    
+    return jsonify({
+        "status": "success", 
+        "message": f"Limpieza completada. Se eliminaron {count_e} equipos y {count_r} registros sin MAC.",
+        "count_e": count_e,
+        "count_r": count_r
+    })
 
 @app.route('/api/admin/exportar_excel')
 def exportar_excel():
