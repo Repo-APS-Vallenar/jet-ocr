@@ -7,41 +7,34 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image, ImageOps
 import script_mac_sn as ocr_script
 import requests
-
-# --- COMPATIBILIDAD SQLITE/POSTGRES ---
-if OFFLINE_MODE:
-    from sqlalchemy import JSON
-    JSONB = JSON
-    # En SQLite usamos String para los UUIDs
-    UUID_TYPE = db.String(36)
-else:
-    from sqlalchemy.dialects.postgresql import JSONB, UUID as pgUUID
-    UUID_TYPE = pgUUID(as_uuid=True)
+import uuid
+# --- CONFIGURACIÓN GLOBAL ---
+OFFLINE_MODE = os.environ.get('OFFLINE_MODE', 'True').lower() == 'true'
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'super-secreto-temporal-123')
 
-# --- CONFIGURACIÓN BASE DE DATOS (SUPERBASE VS LOCAL) ---
-# Cambia OFFLINE_MODE a True si no tienes internet en el centro
-OFFLINE_MODE = os.environ.get('OFFLINE_MODE', 'True').lower() == 'true'
-
 if OFFLINE_MODE:
-    # Usar SQLite local para trabajo sin internet
     db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inventario_local.db')
     DB_URI = f"sqlite:///{db_path}"
     print(f"--- MODO OFFLINE ACTIVADO: Usando base de datos local en {db_path} ---")
 else:
-    # Usar Supabase (Requiere Internet)
     DB_URI = os.environ.get('DATABASE_URL') or os.environ.get('DB_URI', "postgresql://postgres.afusiddjuczrkzltnfae:1J3e9t8b.$$.@aws-1-us-east-1.pooler.supabase.com:5432/postgres")
     print("--- MODO ONLINE: Conectando a Supabase ---")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,
-    'pool_recycle': 300,
-}
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True, 'pool_recycle': 300}
 db = SQLAlchemy(app)
+
+# --- COMPATIBILIDAD DE TIPOS (SQLITE/POSTGRES) ---
+if OFFLINE_MODE:
+    from sqlalchemy import JSON
+    JSONB = JSON
+    UUID_TYPE = db.String(36)
+else:
+    from sqlalchemy.dialects.postgresql import JSONB, UUID as pgUUID
+    UUID_TYPE = pgUUID(as_uuid=True)
 
 # --- MIDDLEWARE DE SEGURIDAD GLOBAL ---
 @app.before_request
