@@ -6,9 +6,17 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image, ImageOps
 import script_mac_sn as ocr_script
-import uuid
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 import requests
+
+# --- COMPATIBILIDAD SQLITE/POSTGRES ---
+if OFFLINE_MODE:
+    from sqlalchemy import JSON
+    JSONB = JSON
+    # En SQLite usamos String para los UUIDs
+    UUID_TYPE = db.String(36)
+else:
+    from sqlalchemy.dialects.postgresql import JSONB, UUID as pgUUID
+    UUID_TYPE = pgUUID(as_uuid=True)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'super-secreto-temporal-123')
@@ -57,7 +65,7 @@ def verificar_autenticacion():
 
 class Company(db.Model):
     __tablename__ = 'companies'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = db.Column(UUID_TYPE, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(150), nullable=False)
     # --- SUBSCRIPCION ---
     plan_type = db.Column(db.String(20), default='Freemium')
@@ -68,8 +76,8 @@ class Company(db.Model):
 
 class OcrConfig(db.Model):
     __tablename__ = 'ocr_configs'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), unique=True, nullable=False)
+    id = db.Column(UUID_TYPE, primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'), unique=True, nullable=False)
     
     sn_prefix = db.Column(db.String(50), nullable=True)     # Ej: "30104"
     sn_length = db.Column(db.Integer, nullable=True)        # Ej: 15
@@ -82,8 +90,8 @@ class OcrConfig(db.Model):
 
 class ProjectSite(db.Model):
     __tablename__ = 'project_sites'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'))
+    id = db.Column(UUID_TYPE, primary_key=True, default=lambda: str(uuid.uuid4()))
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'))
     name = db.Column(db.String(150), nullable=False) # e.g., "Hospital Vallenar"
 
 class Equipo(db.Model):
@@ -99,7 +107,7 @@ class Equipo(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_actualizacion = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     proyecto_id = db.Column(db.Integer, nullable=True) # Legado, mantenido por compatibilidad
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'), nullable=True)
     datos_dinamicos = db.Column(db.JSON, nullable=True) # Campos Flexibles por empresa
 
 class RegistroOCR(db.Model):
@@ -113,7 +121,7 @@ class RegistroOCR(db.Model):
     ubicacion_enviada = db.Column(db.String(100))
     usuario_enviado = db.Column(db.String(100))
     proyecto_id = db.Column(db.Integer, nullable=True)
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'), nullable=True)
     datos_dinamicos = db.Column(db.JSON, nullable=True) # Campos Flexibles por empresa
 
 class Proyecto(db.Model):
@@ -122,7 +130,7 @@ class Proyecto(db.Model):
     nombre = db.Column(db.String(150), nullable=False)
     campos_ocr = db.Column(db.String(255), default='S/N,MAC') # Para OCR Dinámico
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'), nullable=True)
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -131,34 +139,32 @@ class Usuario(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     rol = db.Column(db.String(50), default='Operador') # "Admin" o "Operador"
     empresa_id = db.Column(db.Integer, nullable=True) # Legado
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True) # Nuevo multi-tenant
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'), nullable=True) # Nuevo multi-tenant
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
 class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = db.Column(UUID_TYPE, primary_key=True, default=lambda: str(uuid.uuid4()))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     action_type = db.Column(db.String(50)) # e.g., "SWAP_ASSET"
     details = db.Column(JSONB)
-    company_id = db.Column(UUID(as_uuid=True), db.ForeignKey('companies.id'), nullable=True)
+    company_id = db.Column(UUID_TYPE, db.ForeignKey('companies.id'), nullable=True)
 
 
 # Funciones de migración inicial
-from sqlalchemy import text, func
-def inicializar_db():
-    db.create_all()
-    
-    # Agregar columnas si no existen (Migración MVP para Postgres)
-    tablas = ['equipos', 'registros_ocr', 'proyectos', 'usuarios', 'audit_logs']
-    for t in tablas:
-        try:
-            db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS company_id UUID;"))
-            if t in ['equipos', 'registros_ocr']:
-                db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS datos_dinamicos JSONB;"))
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Bypass column ADD for {t}: {e}")
+    # Solo intentar migraciones de columnas si estamos en POSTGRES
+    if not OFFLINE_MODE:
+        # Agregar columnas si no existen (Migración MVP para Postgres)
+        tablas = ['equipos', 'registros_ocr', 'proyectos', 'usuarios', 'audit_logs']
+        for t in tablas:
+            try:
+                db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS company_id UUID;"))
+                if t in ['equipos', 'registros_ocr']:
+                    db.session.execute(text(f"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS datos_dinamicos JSONB;"))
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"Bypass column ADD for {t}: {e}")
             
     # Crear Compañía por defecto si no existe
     default_company = Company.query.filter_by(name='Tu Empresa (Dashboard)').first()
