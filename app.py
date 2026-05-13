@@ -208,7 +208,8 @@ with app.app_context():
 
 def importar_desde_excel():
     import openpyxl
-    ruta_excel_local = r"c:\Users\usuario\Documents\Proyectos\IN_AN\numeros de serie.xlsx"
+    # Ruta relativa para que funcione en Windows y Linux
+    ruta_excel_local = os.path.join(os.path.abspath(os.path.dirname(__file__)), "numeros de serie.xlsx")
     
     # Solo importar si la tabla Equipos está vacía
     if Equipo.query.first() is not None:
@@ -442,7 +443,7 @@ def login():
         usuario = Usuario.query.filter_by(correo=correo).first()
         
         # --- DEBUG LOG ---
-        with open("c:/Users/usuario/Documents/Proyectos/IN_AN/debug_saas.txt", "w") as f_debug:
+        with open("debug_saas.txt", "w") as f_debug:
             f_debug.write(f"Correo ingresado: {correo}\n")
             f_debug.write(f"Usuario en DB: {usuario is not None}\n")
             if usuario:
