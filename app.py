@@ -145,6 +145,10 @@ class AuditLog(db.Model):
 
 
 # Funciones de migración inicial
+from sqlalchemy import text, func
+def inicializar_db():
+    db.create_all()
+    
     # Solo intentar migraciones de columnas si estamos en POSTGRES
     if not OFFLINE_MODE:
         # Agregar columnas si no existen (Migración MVP para Postgres)
@@ -178,6 +182,10 @@ class AuditLog(db.Model):
     except Exception as em:
         db.session.rollback()
         print(f"Alerta al migrar registros: {em}")
+
+# Ejecutar inicialización al cargar el módulo (necesario para Gunicorn)
+with app.app_context():
+    inicializar_db()
         
     # Crear proyecto por defecto si no existe
     proyecto = Proyecto.query.first()
