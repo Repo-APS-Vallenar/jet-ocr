@@ -18,10 +18,11 @@ def calcular_distancia(centro1, centro2):
     """Calcula la distancia espacial entre dos textos en la imagen."""
     return math.sqrt((centro1[0] - centro2[0])**2 + (centro1[1] - centro2[1])**2)
 
-def procesar_lote_cajas(ruta_imagen, campos_config="S/N,MAC"):
+def procesar_lote_cajas(ruta_imagen, campos_config="S/N,MAC", reglas=None):
     """
     Lee una foto con múltiples equipos y extrae los campos definidos en campos_config.
     campos_config: string ej 'S/N,MAC' o 'IMEI,Activo'
+    reglas: dict con prefijos o longitudes específicas para validar S/N
     """
     print(f"Procesando imagen con configuración OCR [{campos_config}]: {ruta_imagen}...")
     results = reader.readtext(ruta_imagen)
